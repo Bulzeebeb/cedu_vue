@@ -4,10 +4,10 @@
     <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
         <img src="/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold text-white">CEDU | <span class="text-blue-300">Central</span></h1>
+        <h1 class="text-lg font-bold text-white">CEDU <span class="text-blue-300">i<span class="text-lg font-bold text-white">Central</span></span></h1>
       </div>
       <nav class="flex gap-2">
-        <button class="nav-btn">Pay-for-Print</button>
+        <button class="nav-btn">Pay-to-Park</button>
         <button class="nav-btn">Online Market</button>
         <button class="nav-btn">Use-of-Facilities</button>
         <button class="nav-btn">About CEDU</button>
@@ -50,7 +50,7 @@
       <div>
         <h3 class="font-bold mb-1">Support</h3>
         <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-        <p>osorio.jg@usep.edu.ph<br>+63915-8538-959</p>
+        <p>cedu@usep.edu.ph<br>+63915-8538-959</p>
       </div>
       <div>
         <h3 class="font-bold mb-1">Account</h3>
