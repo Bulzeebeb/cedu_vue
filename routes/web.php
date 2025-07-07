@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('LandingPage');
+    return Inertia::render('OnlineMarket/omLandingPage');
 })->name('home');
 
 // Route::get('dashboard', function () {

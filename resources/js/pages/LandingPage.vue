@@ -3,12 +3,8 @@
     <!-- Header -->
     <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-<<<<<<< Updated upstream
-        <img src="/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold text-white">CEDU <span class="text-blue-300">i<span class="text-lg font-bold text-white">Central</span></span></h1>
-=======
+        <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
         <h1 class="text-lg font-bold text-white">CEDU  <span class="text-yellow-300">iCentral</span></h1>
->>>>>>> Stashed changes
       </div>
       <nav class="flex gap-2">
         <button class="nav-btn">Pay-to-Park</button>
