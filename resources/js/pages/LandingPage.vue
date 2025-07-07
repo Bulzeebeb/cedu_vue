@@ -1,14 +1,24 @@
+<script setup>
+import { ref } from 'vue'
+import { Link } from '@inertiajs/inertia-vue3'
+</script>
+
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
     <!-- Header -->
     <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <h1 class="text-lg font-bold text-white">CEDU <span class="text-yellow-300">iCentral</span></h1>
+        <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
+        <h1 class="text-lg font-bold text-white">CEDU  <span class="text-yellow-300">iCentral</span></h1>
       </div>
       <nav class="flex gap-2 ">
         <button class="nav-btn">Pay-to-Park</button>
         <button class="nav-btn">Online Market</button>
-        <button class="nav-btn">Use-of-Facilities</button>
+
+       <button class="nav-btn" @click="goToFacilities">Use-of-Facilities</button>
+
+
+
         <button class="nav-btn">About CEDU</button>
         <button class="nav-btn">Contact Us</button>
         <button class="nav-btn">Account</button>
@@ -35,7 +45,7 @@
     </section>
 
     <!-- Hostel Section -->
-    <section class="mt-8 px-4">
+    <section class="mt-8 px-4 mx-5.5">
       <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Our Hostel</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div v-for="i in 4" :key="i" class="bg-black text-white flex justify-center items-center h-50 sm:h-100 text-xs sm:text-sm">
@@ -49,7 +59,7 @@
       <div>
         <h3 class="font-bold mb-1">Support</h3>
         <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-        <p>osorio.jg@usep.edu.ph<br>+63915-8538-959</p>
+        <p>cedu@usep.edu.ph<br>+63915-8538-959</p>
       </div>
       <div>
         <h3 class="font-bold mb-1">Account</h3>
@@ -88,10 +98,16 @@ export default {
   background-color: #650000;
 }
 .nav-btn {
-  background: white;
-  color: black;
+  color: white;
   padding: 6px 12px;
   border-radius: 4px;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
+
+.nav-btn:hover {
+  color: #ffd700;
+}
+
+
 </style>
