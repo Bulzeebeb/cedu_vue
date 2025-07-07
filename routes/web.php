@@ -1,11 +1,18 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('PayToPark/client_Dashboard');
+    return Inertia::render('LandingPage');
 })->name('home');
+
+Route::get('/ptpcheckout', function () {
+    return Inertia::render('PayToPark/billing_checkout');
+});
+
+Route::get('/ptp-to-billing', function () {
+    return Inertia::render('PayToPark/client_Dashboard');
+});
 
 // Route::get('dashboard', function () {
 //     return Inertia::render('Dashboard');
