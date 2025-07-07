@@ -13,7 +13,7 @@
 
     <!-- Text -->
     <div class="w-full md:w-1/2 text-left">
- =    <h2 class="text-lg text-gray-500">WELCOME TO CEDU ONLINE MARKET!</h2>
+      <h2 class="text-lg text-gray-500">WELCOME TO CEDU ONLINE MARKET!</h2>
       <h1 class="text-3xl font-bold text-yellow-600 mt-2">Fresh & Healthy Organic Goods</h1>
       <p class="mt-2 text-gray-600">Free shipping on all your order, we deliver, you enjoy</p>
       <button class="mt-4 px-6 py-2 bg-maroon text-white rounded">Shop now</button>
