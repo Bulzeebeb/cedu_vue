@@ -3,8 +3,12 @@
     <!-- Header -->
     <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
+<<<<<<< Updated upstream
         <img src="/logo.png" alt="CEDU Logo" class="h-10 w-10" />
         <h1 class="text-lg font-bold text-white">CEDU <span class="text-blue-300">i<span class="text-lg font-bold text-white">Central</span></span></h1>
+=======
+        <h1 class="text-lg font-bold text-white">CEDU  <span class="text-yellow-300">iCentral</span></h1>
+>>>>>>> Stashed changes
       </div>
       <nav class="flex gap-2">
         <button class="nav-btn">Pay-to-Park</button>
@@ -50,7 +54,11 @@
       <div>
         <h3 class="font-bold mb-1">Support</h3>
         <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
+<<<<<<< Updated upstream
         <p>cedu@usep.edu.ph<br>+63915-8538-959</p>
+=======
+        <p>kemeru00256@usep.edu.ph<br>+63915-8538-959</p>
+>>>>>>> Stashed changes
       </div>
       <div>
         <h3 class="font-bold mb-1">Account</h3>
