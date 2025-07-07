@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('LandingPage');
+    return Inertia::render('Client/Login');
 })->name('home');
 
 Route::get('/use-of-facilities', function () {
