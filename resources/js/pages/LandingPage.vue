@@ -1,3 +1,8 @@
+<script setup>
+import { ref } from 'vue'
+import { Link } from '@inertiajs/inertia-vue3'
+</script>
+
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
     <!-- Header -->
@@ -9,7 +14,11 @@
       <nav class="flex gap-2 ">
         <button class="nav-btn">Pay-to-Park</button>
         <button class="nav-btn">Online Market</button>
-        <button class="nav-btn">Use-of-Facilities</button>
+
+       <button class="nav-btn" @click="goToFacilities">Use-of-Facilities</button>
+
+
+
         <button class="nav-btn">About CEDU</button>
         <button class="nav-btn">Contact Us</button>
         <button class="nav-btn">Account</button>
@@ -50,7 +59,7 @@
       <div>
         <h3 class="font-bold mb-1">Support</h3>
         <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-        <p>osorio.jg@usep.edu.ph<br>+63915-8538-959</p>
+        <p>cedu@usep.edu.ph<br>+63915-8538-959</p>
       </div>
       <div>
         <h3 class="font-bold mb-1">Account</h3>
@@ -89,10 +98,16 @@ export default {
   background-color: #650000;
 }
 .nav-btn {
-  background: white;
-  color: black;
+  color: white;
   padding: 6px 12px;
   border-radius: 4px;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
+
+.nav-btn:hover {
+  color: #ffd700;
+}
+
+
 </style>
