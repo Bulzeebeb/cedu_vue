@@ -5,7 +5,7 @@
       <div class="flex items-center gap-2">
         <h1 class="text-lg font-bold text-white">CEDU <span class="text-yellow-300">iCentral</span></h1>
       </div>
-      <nav class="flex gap-2">
+      <nav class="flex gap-2 ">
         <button class="nav-btn">Pay-to-Park</button>
         <button class="nav-btn">Online Market</button>
         <button class="nav-btn">Use-of-Facilities</button>
@@ -16,18 +16,18 @@
     </header>
 
     <!-- Carousel -->
-    <section class="bg-black h-64 flex justify-between items-center text-white relative mt-2 mx-4 rounded overflow-hidden">
+    <section class="bg-black h-100 flex justify-between items-center text-white relative mt-4 mx-10 rounded overflow-hidden">
       <button class="text-2xl absolute left-4">&#8592;</button>
       <div class="mx-auto">[ Image Carousel Placeholder ]</div>
       <button class="text-2xl absolute right-4">&#8594;</button>
     </section>
 
     <!-- Online Market Section -->
-    <section class="mt-6 px-4">
+    <section class="mt-6 px-4 mx-5.5">
       <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Online Market’s Best</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div v-for="item in marketItems" :key="item.name" class="text-center">
-          <img :src="item.image" alt="Product" class="w-full h-32 object-cover mb-2" />
+          <img :src="item.image" alt="Product" class="w-full h-100 object-cover mb-z" />
           <p>{{ item.name }}</p>
           <p class="text-sm text-gray-600">₱{{ item.price }}</p>
         </div>
@@ -38,7 +38,7 @@
     <section class="mt-8 px-4">
       <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Our Hostel</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div v-for="i in 4" :key="i" class="bg-black text-white flex justify-center items-center h-32 sm:h-48 text-xs sm:text-sm">
+        <div v-for="i in 4" :key="i" class="bg-black text-white flex justify-center items-center h-50 sm:h-100 text-xs sm:text-sm">
           REPLACE PHOTO OF HOSTEL
         </div>
       </div>
