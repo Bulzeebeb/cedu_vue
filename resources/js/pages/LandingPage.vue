@@ -35,7 +35,7 @@
     </section>
 
     <!-- Hostel Section -->
-    <section class="mt-8 px-4">
+    <section class="mt-8 px-4 mx-5.5">
       <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Our Hostel</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div v-for="i in 4" :key="i" class="bg-black text-white flex justify-center items-center h-50 sm:h-100 text-xs sm:text-sm">
