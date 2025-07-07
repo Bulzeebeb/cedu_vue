@@ -1,7 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { Link } from '@inertiajs/inertia-vue3'
-</script>
+import { router } from '@inertiajs/vue3'
+
+function goToFacilities() {
+  router.visit('/use-of-facilities', { replace: true })
+}
+  </script>
 
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
@@ -13,7 +18,11 @@ import { Link } from '@inertiajs/inertia-vue3'
       <nav class="flex gap-2 ">
         <button class="nav-btn">Pay-to-Park</button>
         <button class="nav-btn">Online Market</button>
-        <button class="nav-btn">Use-of-Facilities</button>
+
+       <button class="nav-btn" @click="goToFacilities">Use-of-Facilities</button>
+
+
+
         <button class="nav-btn">About CEDU</button>
         <button class="nav-btn">Contact Us</button>
         <button class="nav-btn">Account</button>
