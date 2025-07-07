@@ -5,6 +5,7 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('LandingPage');
+    return Inertia::render('PayToPark/edit_Form');
 })->name('home');
 
 // Route::get('dashboard', function () {
