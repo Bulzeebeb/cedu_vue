@@ -4,7 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+<<<<<<< Updated upstream
     return Inertia::render('LandingPage');
+=======
+>>>>>>> Stashed changes
     return Inertia::render('PayToPark/edit_Form');
 })->name('home');
 
