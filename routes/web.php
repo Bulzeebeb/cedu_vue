@@ -1,20 +1,10 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('LandingPage');
 })->name('home');
-
-Route::get('/use-of-facilities', function () {
-    return Inertia::render('UseFaci/uf_home');
-});
-
-Route::get('/use-of-facilities/hostel', function () {
-    return Inertia::render('UseFaci/Hostel');
-})->name('usefacilities.hostel');
-
 
 // Route::get('dashboard', function () {
 //     return Inertia::render('Dashboard');
