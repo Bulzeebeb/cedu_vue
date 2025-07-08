@@ -3,24 +3,16 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Client/Login');
+    return Inertia::render('PayToPark/billing_checkout');
 })->name('home');
 
-Route::get('/use-of-facilities', function () {
-    return Inertia::render('UseFaci/uf_home');
+Route::get('/payment_procedure', function () {
+    return Inertia::render('PayToPark/payment_procedure');
 });
 
-Route::get('/use-of-facilities/hostel', function () {
-    return Inertia::render('UseFaci/Hostel');
-})->name('usefacilities.hostel');
-
-Route::get('/use-of-facilities/commercial', function () {
-    return Inertia::render('UseFaci/Commercial'); 
-})->name('usefacilities.commercial');
-
-Route::get('/use-of-facilities/rental', function () {
-    return Inertia::render('UseFaci/Rental'); 
-})->name('usefacilities.rental');
+Route::get('/generate_pos', function () {
+    return Inertia::render('PayToPark/generated_pos');
+});
 
 
 // Route::get('dashboard', function () {
