@@ -4,16 +4,21 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-<<<<<<< Updated upstream
-    return Inertia::render('LandingPage');
-=======
->>>>>>> Stashed changes
-    return Inertia::render('PayToPark/edit_Form');
+    return Inertia::render('PayToPark/staff_Dashboard');
 })->name('home');
 
-// Route::get('dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/client_Form', function () {
+    return Inertia::render('PayToPark/client_Form');
+})->name('client.form');
+
+Route::get('/parking_History', function () {
+    return Inertia::render('PayToPark/parking_History');
+});
+
+Route::get('/edit_Form', function () {
+    return Inertia::render('PayToPark/edit_Form');
+});
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
