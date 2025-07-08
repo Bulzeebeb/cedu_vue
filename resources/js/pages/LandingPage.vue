@@ -1,8 +1,3 @@
-<script setup>
-import { ref } from 'vue'
-import { Link } from '@inertiajs/inertia-vue3'
-</script>
-
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
     <!-- Header -->
