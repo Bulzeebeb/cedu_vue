@@ -13,18 +13,18 @@
         <img src="/images/OnlineMarket/shoppingcart.png" alt="Cart" class="h-10 w-10" />
         <img src="/images/OnlineMarket/profile.png" alt="Profile" class="h-10 w-10" />
       </div>
-    </nav>
-  </header>
+    </header>
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'header'
+  name: 'Header'
 };
 </script>
 
 <style scoped>
-.bg-maroon {
-  background-color: #651818;
+.text-maroon {
+  color: #651818;
 }
 </style>
