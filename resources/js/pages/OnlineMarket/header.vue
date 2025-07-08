@@ -8,23 +8,23 @@
     </div>
     <nav class="flex gap-2">
       <div class="flex items-center gap-4">
-        <input type="text" placeholder="Type Here" class="bg-white text-black border rounded px-3 py-1" />
+        <input type="text" placeholder="Search" class="bg-white text-black border rounded px-3 py-1" />
         <button class="bg-yellow-500 text-white px-4 py-1 rounded">Search</button>
         <img src="/images/OnlineMarket/shoppingcart.png" alt="Cart" class="h-10 w-10" />
         <img src="/images/OnlineMarket/profile.png" alt="Profile" class="h-10 w-10" />
       </div>
-    </nav>
-  </header>
+    </header>
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'header'
+  name: 'Header'
 };
 </script>
 
 <style scoped>
-.bg-maroon {
-  background-color: #651818;
+.text-maroon {
+  color: #651818;
 }
 </style>
