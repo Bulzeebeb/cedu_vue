@@ -23,6 +23,8 @@
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
+        "@coreui/coreui": "^5.4.1",
+        "@coreui/vue": "^5.5.0",
         "@inertiajs/vue3": "^2.0.0",
         "@tailwindcss/vite": "^4.1.1",
         "@vitejs/plugin-vue": "^5.2.1",

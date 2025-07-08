@@ -20,7 +20,7 @@
   
         <div class="flex justify-end mb-4">
           <select class="px-2 py-1 border rounded text-sm">
-            <option>Filter: Daily</option>
+            <option>Daily</option>
           </select>
         </div>
   

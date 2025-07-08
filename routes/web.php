@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('PayToPark/client_info');
+    return Inertia::render('PayToPark/billing_checkout');
 })->name('home');
 
 Route::get('/payment_procedure', function () {
@@ -11,7 +11,7 @@ Route::get('/payment_procedure', function () {
 });
 
 Route::get('/generate_pos', function () {
-    return Inertia::render('PayToPark/generate_pos');
+    return Inertia::render('PayToPark/generated_pos');
 });
 
 
