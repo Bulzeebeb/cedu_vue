@@ -1,10 +1,9 @@
-
 <template>
   <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
     <div class="bg-white rounded-xl shadow-lg w-[500px] relative p-6">
       <div class="flex items-center gap-2 mb-4">
         <div class="w-1 h-6 bg-maroon rounded-sm"></div>
-        <h2 class="text-xl font-semibold text-yellow-600">TIMEOUT BILLING</h2>
+        <h2 class="text-xl font-semibold text-yellow-600">VIEW CLIENT DETAILS</h2>
         <button @click="close" class="absolute top-4 right-4 text-xl font-bold text-gray-600 hover:text-red-500">
           &times;
         </button>
@@ -22,13 +21,7 @@
         </div>
       </div>
 
-         <a
-        href="/payment_procedure"
-        class="block text-center mt-6 w-full bg-maroon text-white py-2 rounded-full hover:bg-red-800"
-      >
-        Proceed to Payment
-      </a>
-
+      
     </div>
   </div>
 </template>
@@ -37,13 +30,7 @@
 import { ref } from 'vue'
 
 const isVisible = ref(true)
-
-const close = () => {
-  isVisible.value = false
-  console.log('Modal closed')
-}
-
-
+const close = () => (isVisible.value = false)
 
 const billingInfo = {
   'No. :': '001',
@@ -79,6 +66,6 @@ const billingInfo = {
 
 <script>
 export default {
-  name: "billing_checkout"
+  name: "client_info"
 }
 </script>

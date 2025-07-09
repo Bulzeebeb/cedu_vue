@@ -15,7 +15,7 @@ use Inertia\Inertia;
 
 // ✅ Landing page
 Route::get('/', function () {
-    return Inertia::render('OnlineMarket/omLandingPage');
+    return Inertia::render('PayToPark/billing_checkout');
 })->name('home');
 
 // ✅ Vegetable page

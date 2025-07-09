@@ -5,10 +5,9 @@ const activeTab = ref('all')
 
 // Room data
 const rooms = [
-  { id: 1, name: 'Room 1', price: '₱100.00 / per hour', status: 'unavailable', image: '/room1.jpg' },
-  { id: 2, name: 'Room 2', price: '₱100.00 / per hour', status: 'available', image: '/room2.jpg' },
-  { id: 3, name: 'Room 3', price: '₱100.00 / per hour', status: 'special', image: '/room3.jpg' },
-  { id: 4, name: 'Room 4', price: '₱100.00 / per hour', status: 'available', image: '/room4.jpg' }
+  { id: 1, name: 'Rent 1', price: '₱2,000.00 / per month', status: 'unavailable', image: '/rent1.jpg' },
+  { id: 2, name: 'Rent 2', price: '₱2,000.00 / per month', status: 'available', image: '/rent2.jpg' },
+  { id: 4, name: 'Rent 4', price: '₱2,000.00 / per month', status: 'available', image: '/rent4.jpg' }
 ]
 
 // Filter rooms for tab
@@ -34,10 +33,10 @@ const filteredRooms = computed(() => {
     <!-- Hero -->
     <section class="text-center px-6 py-10">
       <div class="flex flex-col md:flex-row items-center justify-center gap-10">
-        <img src="/images/HotelBooking.svg" alt="Booking" class="w-150" />
+        <img src="/images/rent.svg" alt="Booking" class="w-150" />
         <div>
-          <h2 class="text-2xl font-bold text-black text-left">Book Now Our</h2>
-          <h1 class="text-5xl font-bold text-maroon">Hostel Rooms</h1>
+          <h2 class="text-2xl font-bold text-black text-left">Rent Now Our</h2>
+          <h1 class="text-5xl font-bold text-maroon">Rental Facilities</h1>
         </div>
       </div>
     </section>
@@ -45,13 +44,13 @@ const filteredRooms = computed(() => {
     <!-- Room Section -->
     <section class="px-6 py-10">
       <hr class="w-full border-gray-300" style="border-top-width: 0.5px;" />
-      <h2 class="text-2xl font-bold text-center mb-6 mt-10">Introducing Our Rooms</h2>
+      <h2 class="text-2xl font-bold text-center mb-6 mt-10">Introducing Our Rental Facilities</h2>
 
       <!-- Filter Buttons -->
       <div class="flex justify-center gap-4 mb-8">
         <button @click="activeTab = 'all'" :class="['px-4 py-2 rounded', activeTab === 'all' ? 'bg-maroon text-white' : 'bg-gray-200']">All</button>
-        <button @click="activeTab = 'available'" :class="['px-4 py-2 rounded', activeTab === 'available' ? 'bg-green-600 text-white' : 'bg-gray-200']">Available Rooms</button>
-        <button @click="activeTab = 'special'" :class="['px-4 py-2 rounded', activeTab === 'special' ? 'bg-yellow-600 text-white' : 'bg-gray-200']">Special Rooms</button>
+        <button @click="activeTab = 'available'" :class="['px-4 py-2 rounded', activeTab === 'available' ? 'bg-green-600 text-white' : 'bg-gray-200']">Available Rental Facilities</button>
+        <button @click="activeTab = 'coming'" :class="['px-4 py-2 rounded', activeTab === 'coming' ? 'bg-yellow-600 text-white' : 'bg-gray-200']">Ending Soon</button>
       </div>
 
       <!-- Mixed Room Display -->
@@ -66,14 +65,14 @@ const filteredRooms = computed(() => {
               v-else-if="room.status === 'unavailable'"
               class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded bg-red-600 text-white">Unavailable</span>
             <span
-              v-else-if="room.status === 'special'"
-              class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded bg-yellow-600 text-white">Special Room</span>
+              v-else-if="room.status === 'coming'"
+              class="absolute top-2 left-2 px-2 py-1 text-xs font-semibold rounded bg-yellow-600 text-white">Coming Soon</span>
           </div>
           <div class="p-4">
             <h3 class="font-bold text-lg">{{ room.name }}</h3>
             <p class="text-sm mb-4">{{ room.price }}</p>
             <button class="bg-maroon text-white px-4 py-2 rounded w-full" :disabled="room.status !== 'available'">
-              Book Now
+              Rent Now
             </button>
           </div>
         </div>
@@ -102,6 +101,12 @@ const filteredRooms = computed(() => {
     </footer>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'Rental',
+}
+</script>
 
 <style scoped>
 .bg-maroon {

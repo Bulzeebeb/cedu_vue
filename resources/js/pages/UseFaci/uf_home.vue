@@ -6,6 +6,15 @@ import { Link } from '@inertiajs/inertia-vue3'
 function goToHostel() {
   router.get('/use-of-facilities/hostel')
 }
+
+const goToCommercial = () => {
+  router.get('/use-of-facilities/commercial') 
+}
+
+const goToRental = () => {
+  router.get('/use-of-facilities/rental') 
+}
+
 </script>
 
 <template>
@@ -14,10 +23,7 @@ function goToHostel() {
     <!-- Header -->
     <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <img src="/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold text-white">
-          CEDU | <span class="text-blue-300">Central</span>
-        </h1>
+        <h1 class="text-lg font-bold text-white">CEDU <span class="text-yellow-300">iCentral</span></h1>
       </div>
       <nav class="flex gap-2">
         <button class="text-white bg-transparent hover:underline">Back to Home</button>
@@ -49,16 +55,20 @@ function goToHostel() {
 
         <!-- Commercial Space -->
         <div class="relative rounded-md overflow-hidden shadow-md">
-          <img src="/images/commercial.jpg" alt="Commercial Space" class="w-full h-120 object-cover">
-          <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
+        <img src="/images/commercial.svg" alt="Commercial Space" class="w-full h-120 object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
             <h3 class="text-white text-3xl font-bold text-center mt-4">Commercial Space</h3>
             <div class="text-center">
-              <button class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4">
+            <button
+                class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4"
+                @click="goToCommercial"
+            >
                 Rent Now →
-              </button>
+            </button>
             </div>
-          </div>
         </div>
+        </div>
+
 
         <!-- Rental Facilities -->
         <div class="relative rounded-md overflow-hidden shadow-md mr-6 sm:mr-8">
@@ -66,7 +76,9 @@ function goToHostel() {
           <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
             <h3 class="text-white text-3xl font-bold text-center mt-4">Rental Facilities</h3>
             <div class="text-center">
-              <button class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4">
+              <button class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4"                 
+              @click="goToRental"
+            >
                 Rent Now →
               </button>
             </div>

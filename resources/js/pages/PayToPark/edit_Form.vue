@@ -40,7 +40,7 @@
   
               <!-- Clear Button -->
               <div class="flex items-end">
-                <button type="button" @click="clearForm" class="w-full bg-yellow-500 text-white font-semibold py-2 rounded">SAV</button>
+                <button type="button" @click="clearForm" class="w-full bg-yellow-500 text-white font-semibold py-2 rounded">SAVE</button>
               </div>
   
               <!-- Plate Number -->
