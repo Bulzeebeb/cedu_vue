@@ -16,7 +16,6 @@ function edit_Form() {
 function deleteClient(index) {
   if (confirm('Are you sure you want to delete this client?')) {
     alert(`Client #${index + 1} will be deleted.`)
-    // You can replace this alert with a call to a delete endpoint or store mutation.
   }
 }
 </script>
@@ -30,7 +29,7 @@ function deleteClient(index) {
         <h1 class="text-lg font-bold text-white">CEDU <span class="text-blue-300">iCentral</span></h1>
       </div>
       <div class="flex items-center gap-2">
-        <input type="text" placeholder="Search" class="rounded px-2 py-1 text-black border border-white" />
+        <input type="text" placeholder="Search" class="rounded px-2 py-1 text-white border border-white" />
         <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 border border-white">Search</button>
         <button class="text-white hover:text-yellow-300"><i class="fas fa-bell"></i></button>
         <div class="w-8 h-8 bg-red-700 rounded-full"></div>
@@ -71,12 +70,8 @@ function deleteClient(index) {
             </select>
           </div>
           <div class="flex gap-2 w-full sm:w-auto justify-end">
-            <button @click="parking_History" class="bg-white border text-maroon px-3 py-1 rounded shadow hover:bg-gray-200">
-              Parking History
-            </button>
-            <button @click="client_Form" class="bg-maroon text-white px-3 py-1 rounded hover:bg-red-900">
-              + ADD NEW CLIENT
-            </button>
+            <button @click="parking_History" class="bg-white border text-maroon px-3 py-1 rounded shadow hover:bg-gray-200">Parking History</button>
+            <button @click="client_Form" class="bg-maroon text-white px-3 py-1 rounded hover:bg-red-900">+ ADD NEW CLIENT</button>
           </div>
         </div>
 
@@ -118,8 +113,8 @@ function deleteClient(index) {
     <footer class="bg-maroon text-white mt-10 py-6 px-4 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
       <div>
         <h3 class="font-bold mb-1">Support</h3>
-        <p>University of Southeastern Philippines,<br>Tagum-Mabini Campus, Tagum Unit, CEDU Office, Apokon, Tagum City</p>
-        <p>cedu@usep.edu.ph<br>+88015-88888-9998</p>
+        <p>University of Southeastern Philippines,<br />Tagum-Mabini Campus, Tagum Unit, CEDU Office, Apokon, Tagum City</p>
+        <p>cedu@usep.edu.ph<br />+88015-88888-9998</p>
       </div>
       <div>
         <h3 class="font-bold mb-1">Account</h3>
@@ -148,33 +143,33 @@ export default {
           plate: 'ABC 1234',
           timeIn: '7:30 AM - 07/03/2025',
           timeOut: '9:00 AM - 07/03/2025',
-          status: 'Active',
+          status: 'Active'
         },
         {
           name: 'Axl Rose Supranes',
           plate: 'XYZ 5678',
           timeIn: '8:00 AM - 07/03/2025',
           timeOut: '10:00 AM - 07/03/2025',
-          status: 'Complete',
+          status: 'Complete'
         },
         {
           name: 'Christine Jane Tabacon',
           plate: 'JLN 1111',
           timeIn: '7:30 AM - 07/03/2025',
           timeOut: '',
-          status: 'Active',
+          status: 'Active'
         },
         {
           name: 'Precious Lyn Suico',
           plate: 'SBC 2222',
           timeIn: '9:00 AM - 07/03/2025',
           timeOut: '',
-          status: 'Active',
-        },
-      ],
-    };
-  },
-};
+          status: 'Active'
+        }
+      ]
+    }
+  }
+}
 </script>
 
 <style scoped>

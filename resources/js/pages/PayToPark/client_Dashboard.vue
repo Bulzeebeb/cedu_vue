@@ -1,15 +1,27 @@
+<script setup>
+import { router } from '@inertiajs/vue3'
+
+function client_Form() {
+  router.visit('/omLandingPage')
+}
+</script>
+
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
-    <!-- Header -->
-    <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
+      <!-- Header -->
+      <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <img src="/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold text-white">CEDU | <span class="text-blue-300">Central</span></h1>
+        <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
+        <h1 class="text-lg font-bold text-white">CEDU  <span class="text-yellow-300">iCentral</span></h1>
       </div>
-      <nav class="flex gap-2">
-        <button class="nav-btn">Pay-for-Print</button>
-        <button class="nav-btn">Online Market</button>
-        <button class="nav-btn">Use-of-Facilities</button>
+      <nav class="flex gap-2 ">
+        <button class="nav-btn">Pay-to-Park</button>
+        <button @click="omLandingPage" class="nav-btn">Online Market</button>
+
+       <button class="nav-btn" @click="goToFacilities">Use-of-Facilities</button>
+
+
+
         <button class="nav-btn">About CEDU</button>
         <button class="nav-btn">Contact Us</button>
         <button class="nav-btn">Account</button>
@@ -73,7 +85,6 @@ export default {
   name: 'client_Dashboard'
 }
 </script>
-
 <style scoped>
 .bg-maroon {
   background-color: #650000;
@@ -82,10 +93,17 @@ export default {
   color: #650000;
 }
 .nav-btn {
-  background: white;
-  color: black;
+  background: transparent; /* Remove default background */
+  color: white; /* Match header text */
   padding: 6px 12px;
   border-radius: 4px;
   font-weight: 500;
+  transition: background-color 0.3s, color 0.3s;
+}
+.nav-btn:hover {
+  color: white; /* Yellow on hover */
+  color: #facc15; /* Maroon text on hover */
 }
 </style>
+
+
