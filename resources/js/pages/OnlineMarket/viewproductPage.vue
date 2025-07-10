@@ -41,7 +41,7 @@
             v-for="product in sortedProducts"
             :key="product.id"
             class="bg-white rounded-2xl shadow-sm overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-            @click="viewProduct(product.id)"
+            @click="goToProduct(product)" <!-- ✅ ADDED -->
           >
             <div class="relative">
               <img
@@ -72,21 +72,11 @@
         <!-- Pagination (static) -->
         <nav aria-label="Page navigation" class="mt-8 flex justify-center">
           <ul class="flex space-x-1">
-            <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&laquo;</a>
-            </li>
-            <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">1</a>
-            </li>
-            <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">2</a>
-            </li>
-            <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">3</a>
-            </li>
-            <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&raquo;</a>
-            </li>
+            <li><a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&laquo;</a></li>
+            <li><a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">1</a></li>
+            <li><a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">2</a></li>
+            <li><a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">3</a></li>
+            <li><a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&raquo;</a></li>
           </ul>
         </nav>
       </div>
@@ -96,51 +86,61 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import SiteHeader from './header.vue'
 import SiteFooter from './footer.vue'
-import { router } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
 
-const sortBy = ref('asc')
-const itemsToShow = ref(10)
-const cart = ref([])
-
-const products = ref([
-  { id: 1, title: 'Fresh Apples', quantity: 25, price: '120.00', image: 'https://source.unsplash.com/800x600/?apples' },
-  { id: 2, title: 'Sweet Mangoes', quantity: 20, price: '150.00', image: 'https://source.unsplash.com/800x600/?mangoes' },
-  { id: 3, title: 'Juicy Oranges', quantity: 30, price: '90.00', image: 'https://source.unsplash.com/800x600/?oranges' },
-  { id: 4, title: 'Ripe Bananas', quantity: 40, price: '60.00', image: 'https://source.unsplash.com/800x600/?bananas' },
-  { id: 5, title: 'Red Strawberries', quantity: 18, price: '200.00', image: 'https://source.unsplash.com/800x600/?strawberries' },
-  { id: 6, title: 'Watermelons', quantity: 12, price: '180.00', image: 'https://source.unsplash.com/800x600/?watermelon' },
-  { id: 7, title: 'Fresh Grapes', quantity: 22, price: '160.00', image: 'https://source.unsplash.com/800x600/?grapes' },
-  { id: 8, title: 'Pineapples', quantity: 10, price: '140.00', image: 'https://source.unsplash.com/800x600/?pineapple' },
-  { id: 9, title: 'Blueberries', quantity: 15, price: '220.00', image: 'https://source.unsplash.com/800x600/?blueberries' },
-  { id: 10, title: 'Cherries', quantity: 12, price: '250.00', image: 'https://source.unsplash.com/800x600/?cherries' },
-])
-
-const sortedProducts = computed(() => {
-  return products.value
-    .slice()
-    .sort((a, b) => {
-      const priceA = parseFloat(a.price)
-      const priceB = parseFloat(b.price)
-      return sortBy.value === 'asc' ? priceA - priceB : priceB - priceA
-    })
-    .slice(0, itemsToShow.value)
-})
-
-function addToCart(product) {
-  const found = cart.value.find(item => item.id === product.id)
-  if (found) {
-    found.qty += 1
-  } else {
-    cart.value.push({ ...product, qty: 1 })
+export default {
+  name: 'FruitPage',
+  components: {
+    SiteHeader,
+    SiteFooter
+  },
+  data() {
+    return {
+      sortBy: 'asc',
+      itemsToShow: 10,
+      cart: [],
+      products: [
+        { id: 1, title: 'Fresh Apples', quantity: 25, price: '120.00', image: 'https://source.unsplash.com/800x600/?apples' },
+        { id: 2, title: 'Sweet Mangoes', quantity: 20, price: '150.00', image: 'https://source.unsplash.com/800x600/?mangoes' },
+        { id: 3, title: 'Juicy Oranges', quantity: 30, price: '90.00', image: 'https://source.unsplash.com/800x600/?oranges' },
+        { id: 4, title: 'Ripe Bananas', quantity: 40, price: '60.00', image: 'https://source.unsplash.com/800x600/?bananas' },
+        { id: 5, title: 'Red Strawberries', quantity: 18, price: '200.00', image: 'https://source.unsplash.com/800x600/?strawberries' },
+        { id: 6, title: 'Watermelons', quantity: 12, price: '180.00', image: 'https://source.unsplash.com/800x600/?watermelon' },
+        { id: 7, title: 'Fresh Grapes', quantity: 22, price: '160.00', image: 'https://source.unsplash.com/800x600/?grapes' },
+        { id: 8, title: 'Pineapples', quantity: 10, price: '140.00', image: 'https://source.unsplash.com/800x600/?pineapple' },
+        { id: 9, title: 'Blueberries', quantity: 15, price: '220.00', image: 'https://source.unsplash.com/800x600/?blueberries' },
+        { id: 10, title: 'Cherries', quantity: 12, price: '250.00', image: 'https://source.unsplash.com/800x600/?cherries' },
+      ]
+    }
+  },
+  computed: {
+    sortedProducts() {
+      return this.products
+        .slice()
+        .sort((a, b) => {
+          const priceA = parseFloat(a.price)
+          const priceB = parseFloat(b.price)
+          return this.sortBy === 'asc' ? priceA - priceB : priceB - priceA
+        })
+        .slice(0, this.itemsToShow)
+    }
+  },
+  methods: {
+    addToCart(product) {
+      const found = this.cart.find(item => item.id === product.id)
+      if (found) {
+        found.qty += 1
+      } else {
+        this.cart.push({ ...product, qty: 1 })
+      }
+    },
+    goToProduct(product) {
+      this.$inertia.visit(`/product/${product.id}`)
+      // Or if using Vue Router only: this.$router.push(`/product/${product.id}`)
+    }
   }
-}
-
-function viewProduct(id) {
-  router.visit(`/viewproduct/${id}`)
 }
 </script>
 

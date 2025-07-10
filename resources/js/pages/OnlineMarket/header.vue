@@ -1,5 +1,24 @@
 <script setup>
 import { router } from '@inertiajs/vue3'
+import { ref } from 'vue'
+const props = defineProps({
+  cartCount: {
+    type: Number,
+    default: 0
+  }
+})
+
+const isOpen = ref(false)
+const isDropdownOpen = ref(false)
+const searchQuery = ref('')
+
+function toggleDropdown() {
+  isDropdownOpen.value = !isDropdownOpen.value
+}
+
+function handleSearch() {
+  alert(`Searching for: ${searchQuery.value}`)
+}
 
 function goHome() {
   router.visit('/')
@@ -13,20 +32,17 @@ function goToVegetable() {
 function goToPoultry() {
   router.visit('/poultry')
 }
+function goCart() {
+  router.visit('/cart')
+}
 </script>
 
 <template>
   <div class="w-full">
     <!-- Top maroon bar -->
-    <div
-      class="w-full bg-maroon text-[10px] text-gray-200 flex justify-end items-center pr-4 py-2 border-b border-yellow-500"
-    >
+    <div class="w-full bg-maroon text-[10px] text-gray-200 flex justify-end items-center pr-4 py-2 border-b border-yellow-500">
       <a href="/" class="flex items-center gap-1 hover:underline">
-        <img
-          src="/images/OnlineMarket/back.png"
-          alt="Back"
-          class="h-3 w-3 invert"
-        />
+        <img src="/images/OnlineMarket/back.png" alt="Back" class="h-3 w-3 invert" />
         Back to main
       </a>
     </div>
@@ -82,11 +98,7 @@ function goToPoultry() {
             <!-- Search -->
             <div class="flex bg-white border border-gray-200 rounded overflow-hidden">
               <div class="flex items-center px-2">
-                <img
-                  src="/images/OnlineMarket/searchicon.png"
-                  alt="Search Icon"
-                  class="h-4 w-4"
-                />
+                <img src="/images/OnlineMarket/searchicon.png" alt="Search Icon" class="h-4 w-4" />
               </div>
               <input
                 v-model="searchQuery"
@@ -98,22 +110,23 @@ function goToPoultry() {
             </div>
 
             <!-- Cart -->
-            <button class="relative">
-              <img
-                src="/images/OnlineMarket/shopping-cart.png"
-                alt="Cart"
-                class="h-6 w-6"
-              />
-            </button>
+            <div class="relative">
+              <button @click="goCart">
+                <img src="/images/OnlineMarket/shopping-cart.png" alt="Cart" class="h-6 w-6" />
+                <!-- Badge -->
+                <span
+                  v-if="props.cartCount > 0"
+                  class="absolute -top-2 -right-2 bg-yellow-500 text-[10px] text-white rounded-full px-1.5"
+                >
+                  {{ props.cartCount }}
+                </span>
+              </button>
+            </div>
 
             <!-- Profile + Dropdown -->
             <div class="relative">
               <button @click="toggleDropdown" class="focus:outline-none">
-                <img
-                  src="/images/OnlineMarket/icons8-profile-50.png"
-                  alt="Profile"
-                  class="h-6 w-6"
-                />
+                <img src="/images/OnlineMarket/icons8-profile-50.png" alt="Profile" class="h-6 w-6" />
               </button>
               <div
                 v-if="isDropdownOpen"
@@ -128,61 +141,63 @@ function goToPoultry() {
       </div>
     </nav>
 
-   <!-- Mobile Sidebar -->
-<div v-if="isOpen" class="md:hidden px-4 pb-4 pt-4 bg-white">
-  <div class="border border-gray-200 rounded p-4 space-y-4 shadow-lg">
-    <!-- Search + Button same box -->
-    <div class="flex bg-white border border-gray-200 rounded overflow-hidden max-w-full">
-      <div class="flex items-center px-2">
-        <img
-          src="/images/OnlineMarket/searchicon.png"
-          alt="Search Icon"
-          class="h-4 w-4"
-        />
+    <!-- Mobile Sidebar -->
+    <div v-if="isOpen" class="md:hidden px-4 pb-4 pt-4 bg-white">
+      <div class="border border-gray-200 rounded p-4 space-y-4 shadow-lg">
+        <!-- Search + Button same box -->
+        <div class="flex bg-white border border-gray-200 rounded overflow-hidden max-w-full">
+          <div class="flex items-center px-2">
+            <img src="/images/OnlineMarket/searchicon.png" alt="Search Icon" class="h-4 w-4" />
+          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search"
+            class="flex-grow px-2 py-1 text-black outline-none bg-white"
+          />
+          <button @click="handleSearch" class="bg-yellow-500 text-white px-4">Search</button>
+        </div>
+
+        <!-- Links with icons -->
+        <a href="/profilePage.vue" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+          <img src="/images/OnlineMarket/icons8-profile-50.png" alt="Profile Icon" class="h-4 w-4" />
+          Profile
+        </a>
+        <button @click="goCart" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline relative">
+          <img src="/images/OnlineMarket/shopping-cart.png" alt="Cart Icon" class="h-4 w-4" />
+          Cart
+          <!-- Mobile badge -->
+          <span
+            v-if="props.cartCount > 0"
+            class="absolute -top-2 -right-2 bg-yellow-500 text-[10px] text-white rounded-full px-1.5"
+          >
+            {{ props.cartCount }}
+          </span>
+        </button>
+
+        <button @click="goHome" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+          <img src="/images/OnlineMarket/home-icon.png" alt="Home Icon" class="h-4 w-4" />
+          Home
+        </button>
+        <button @click="goToFruit" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+          <img src="/images/OnlineMarket/fruits-icon.png" alt="Fruits Icon" class="h-4 w-4" />
+          Fruits
+        </button>
+        <button @click="goToVegetable" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+          <img src="/images/OnlineMarket/vegetables-icon.png" alt="Vegetables Icon" class="h-4 w-4" />
+          Vegetables
+        </button>
+        <button @click="goToPoultry" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+          <img src="/images/OnlineMarket/poultry-icon.png" alt="Poultry Icon" class="h-4 w-4" />
+          Poultry
+        </button>
+
+        <a href="/signout" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+          <img src="/images/OnlineMarket/logout-icon.png" alt="Sign Out Icon" class="h-4 w-4" />
+          Sign Out
+        </a>
       </div>
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Search"
-        class="flex-grow px-2 py-1 text-black outline-none bg-white"
-      />
-      <button @click="handleSearch" class="bg-yellow-500 text-white px-4">Search</button>
     </div>
-
-    <!-- Links with icons -->
-    <a href="/profilePage.vue" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-      <img src="/images/OnlineMarket/icons8-profile-50.png" alt="Profile Icon" class="h-4 w-4" />
-      Profile
-    </a>
-    <a href="/cartPage.vue" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-      <img src="/images/OnlineMarket/shopping-cart.png" alt="Cart Icon" class="h-4 w-4" />
-      Cart
-    </a>
-
-    <button @click="goHome" href="#" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-  <img src="/images/OnlineMarket/home-icon.png" alt="Home Icon" class="h-4 w-4" />
-  Home
-</button>
-<button @click="goToFruit" href="#" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-  <img src="/images/OnlineMarket/fruits-icon.png" alt="Fruits Icon" class="h-4 w-4" />
-  Fruits
-</button>
-<button @click="goToVegetable" href="#" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-  <img src="/images/OnlineMarket/vegetables-icon.png" alt="Vegetables Icon" class="h-4 w-4" />
-  Vegetables
-</button>
-<button @click="goToPoultry" href="#" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-  <img src="/images/OnlineMarket/poultry-icon.png" alt="Poultry Icon" class="h-4 w-4" />
-  Poultry
-</button>
-
-
-    <a href="/signout" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
-      <img src="/images/OnlineMarket/logout-icon.png" alt="Sign Out Icon" class="h-4 w-4" />
-      Sign Out
-    </a>
-  </div>
-</div>
   </div>
 </template>
 
@@ -191,26 +206,15 @@ export default {
   name: "SiteHeader",
   data() {
     return {
-      isOpen: false,
-      isDropdownOpen: false,
-      searchQuery: "",
       navItems: [
         { name: "Home", href: "/" },
         { name: "Fruits", href: "/fruit" },
         { name: "Vegetables", href: "/vegetable" },
         { name: "Poultry", href: "/poultry" },
       ],
-    };
+    }
   },
-  methods: {
-    toggleDropdown() {
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    handleSearch() {
-      alert(`Searching for: ${this.searchQuery}`);
-    },
-  },
-};
+}
 </script>
 
 <style scoped>
@@ -220,7 +224,6 @@ export default {
 .text-maroon {
   color: #651818;
 }
-
 .nav-link:hover,
 .mobile-link:hover {
   color: #facc15; /* Tailwind yellow-400 */
