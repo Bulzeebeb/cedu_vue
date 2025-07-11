@@ -16,50 +16,50 @@ function goToPoultry() {
   <div>
     <SiteHeader />
 
-<!-- Hero Carousel Section -->
-<section class="py-7 bg-white relative overflow-hidden">
-  <div class="container mx-auto flex flex-col md:flex-row items-center md:items-start justify-center gap-10 px-10">
-    <!-- Carousel Image -->
-    <div class="w-full md:w-1/3">
-      <img
-        :src="slides[currentSlide].image"
-        alt="Hero Slide"
-        class="w-full h-auto rounded transition duration-500"
-      />
-    </div>
+    <!-- Hero Carousel Section -->
+    <section class="py-7 bg-white relative overflow-hidden">
+      <div class="container mx-auto flex flex-col md:flex-row items-center md:items-start justify-center gap-10 px-4 sm:px-6 md:px-10">
+        <!-- Carousel Image -->
+        <div class="w-full md:w-1/3">
+          <img
+            :src="slides[currentSlide].image"
+            alt="Hero Slide"
+            class="w-full h-auto rounded transition duration-500"
+          />
+        </div>
 
-    <!-- Carousel Text -->
-    <div class="w-full md:w-1/2 text-center md:text-left mt-6 md:mt-0">
-      <h2 class="text-lg text-gray-500">{{ slides[currentSlide].subtitle }}</h2>
-      <h1 class="text-3xl font-bold text-yellow-600 mt-2">
-        {{ slides[currentSlide].title }}
-      </h1>
-      <p class="mt-2 text-gray-600">{{ slides[currentSlide].description }}</p>
-      <button
-        @click="handleShopNow"
-        class="mt-4 px-6 py-2 bg-maroon text-white rounded-full"
-      >
-        Shop now →
-      </button>
-    </div>
-    </div>
+        <!-- Carousel Text -->
+        <div class="w-full md:w-1/2 text-center md:text-left mt-6 md:mt-0">
+          <h2 class="text-md sm:text-lg text-gray-500">{{ slides[currentSlide].subtitle }}</h2>
+          <h1 class="text-2xl sm:text-3xl font-bold text-yellow-600 mt-2">
+            {{ slides[currentSlide].title }}
+          </h1>
+          <p class="mt-2 text-gray-600">{{ slides[currentSlide].description }}</p>
+          <button
+            @click="handleShopNow"
+            class="mt-4 px-6 py-2 bg-maroon text-white rounded-full"
+          >
+            Shop now →
+          </button>
+        </div>
+      </div>
 
-      <!-- Carousel Arrows -->
+      <!-- Carousel Arrows (visible on all sizes, but smaller on mobile) -->
       <button
         @click="prevSlide"
-        class="hidden md:block absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 px-3 py-1 rounded"
+        class="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 px-2 py-1 rounded bg-white/70 hover:bg-white"
       >
         ‹
       </button>
       <button
         @click="nextSlide"
-        class="hidden md:block absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-500 px-3 py-1 rounded"
+        class="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-500 px-2 py-1 rounded bg-white/70 hover:bg-white"
       >
         ›
       </button>
 
       <!-- Carousel Dots -->
-      <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
         <span
           v-for="(slide, index) in slides"
           :key="index"
@@ -81,14 +81,12 @@ function goToPoultry() {
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4 md:px-8">
         <!-- VEGETABLE Card -->
         <div
-          class="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-cover bg-center group"
+          class="relative rounded-xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group"
           style="background-image: url('images/OnlineMarket/Vegetable_Card.png');"
         >
-          <div
-            class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"
-          ></div>
-          <div class="relative flex flex-col justify-between items-center h-full px-6 py-8">
-            <h4 class="text-2xl font-bold text-white text-center">VEGETABLE</h4>
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
+          <div class="relative flex flex-col justify-between items-center h-full px-4 py-6">
+            <h4 class="text-xl sm:text-2xl font-bold text-white text-center">VEGETABLE</h4>
             <button
               @click="goToVegetable"
               class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
@@ -100,12 +98,12 @@ function goToPoultry() {
 
         <!-- FRUITS Card -->
         <div
-          class="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-cover bg-center group"
+          class="relative rounded-xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group"
           style="background-image: url('images/OnlineMarket/Fruit_Card.png');"
         >
           <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
-          <div class="relative flex flex-col justify-between items-center h-full px-6 py-8">
-            <h4 class="text-2xl font-bold text-white text-center">FRUITS</h4>
+          <div class="relative flex flex-col justify-between items-center h-full px-4 py-6">
+            <h4 class="text-xl sm:text-2xl font-bold text-white text-center">FRUITS</h4>
             <button
               @click="goToFruit"
               class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
@@ -117,12 +115,12 @@ function goToPoultry() {
 
         <!-- POULTRY Card -->
         <div
-          class="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-cover bg-center group"
+          class="relative rounded-xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group"
           style="background-image: url('images/OnlineMarket/Poultry_Card.png');"
         >
           <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
-          <div class="relative flex flex-col justify-between items-center h-full px-6 py-8">
-            <h4 class="text-2xl font-bold text-white text-center">POULTRY</h4>
+          <div class="relative flex flex-col justify-between items-center h-full px-4 py-6">
+            <h4 class="text-xl sm:text-2xl font-bold text-white text-center">POULTRY</h4>
             <button
               @click="goToPoultry"
               class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
