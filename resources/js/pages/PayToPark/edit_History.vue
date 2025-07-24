@@ -1,17 +1,8 @@
 <script setup>
-import { router, usePage } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 
-const page = usePage()
-const from = page.props.from || 'staff_Dashboard'
-
-function goBack() {
-  router.visit(`/${from}`)
-}
-
-function deleteClient(index) {
-  if (confirm('Are you sure you want to delete this client?')) {
-    alert(`Client #${index + 1} will be deleted.`)
-  }
+function parking_History() {
+  router.visit('/parking_History')
 }
 </script>
 
@@ -74,8 +65,8 @@ function deleteClient(index) {
                 <input v-model="client.date" type="date" class="w-full border px-3 py-2 rounded" />
               </div>
 
-              <!-- Time + AM/PM -->
-              <div class="flex gap-2 items-end w-full">
+              <!-- Time and AM/PM -->
+              <div class="flex gap-2 w-full">
                 <div class="w-full">
                   <label class="block text-sm font-medium mb-1">Time</label>
                   <input v-model="client.time" type="time" class="w-full border px-3 py-2 rounded" />
@@ -96,7 +87,7 @@ function deleteClient(index) {
       <!-- Back Button -->
       <div class="flex justify-center sm:justify-end mt-6 max-w-4xl mx-auto">
         <button
-          @click="goBack"
+          @click="parking_History"
           class="bg-maroon text-white px-5 py-2 rounded hover:bg-red-800 transition-colors"
         >
           ← Back
@@ -170,7 +161,6 @@ export default {
 .bg-maroon {
   background-color: #650000;
 }
-
 .text-maroon {
   color: #650000;
 }

@@ -23,13 +23,13 @@ function deleteClient(index) {
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
     <!-- Header -->
-    <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
+    <header class="bg-maroon text-white py-2 px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
       <div class="flex items-center gap-2">
         <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold text-white">CEDU <span class="text-blue-300">iCentral</span></h1>
+        <h1 class="text-lg font-bold">CEDU <span class="text-blue-300">iCentral</span></h1>
       </div>
-      <div class="flex items-center gap-2">
-        <input type="text" placeholder="Search" class="rounded px-2 py-1 text-white border border-white" />
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <input type="text" placeholder="Search" class="flex-1 rounded px-2 py-1 text-white border border-white bg-transparent" />
         <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 border border-white">Search</button>
         <button class="text-white hover:text-yellow-300"><i class="fas fa-bell"></i></button>
         <div class="w-8 h-8 bg-red-700 rounded-full"></div>
@@ -40,20 +40,21 @@ function deleteClient(index) {
     <section class="px-4 py-4 sm:px-6">
       <h2 class="text-gray-500 text-sm">WELCOME BACK!</h2>
       <h1 class="text-3xl font-bold text-maroon">SHANNEN ANN</h1>
-      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 my-6">
-        <div class="bg-maroon text-white text-center py-6 rounded shadow">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-6">
+        <div class="bg-maroon text-white text-center py-6 rounded-2xl shadow">
           <p class="text-2xl font-bold">00</p>
           <p class="text-sm mt-1">TOTAL NO. OF<br />VEHICLE PARKED</p>
         </div>
-        <div class="bg-maroon text-white text-center py-6 rounded shadow">
+        <div class="bg-maroon text-white text-center py-6 rounded-2xl shadow">
           <p class="text-2xl font-bold">00</p>
           <p class="text-sm mt-1">VEHICLES IN</p>
         </div>
-        <div class="bg-maroon text-white text-center py-6 rounded shadow">
+        <div class="bg-maroon text-white text-center py-6 rounded-2xl shadow">
           <p class="text-2xl font-bold">00</p>
           <p class="text-sm mt-1">VEHICLES OUT</p>
         </div>
-        <div class="bg-maroon text-white text-center py-6 rounded shadow">
+        <div class="bg-maroon text-white text-center py-6 rounded-2xl shadow">
           <p class="text-2xl font-bold">₱0.00</p>
           <p class="text-sm mt-1">DAILY TOTAL SALES</p>
         </div>
@@ -61,22 +62,22 @@ function deleteClient(index) {
 
       <!-- Search & Table -->
       <div class="bg-gray-100 p-4 rounded shadow-md overflow-x-auto">
-        <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <input type="text" placeholder="Search" class="px-2 py-1 rounded border border-white" />
+        <div class="flex flex-col lg:flex-row justify-between items-center gap-4 mb-4">
+          <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+            <input type="text" placeholder="Search" class="px-2 py-1 rounded border border-white w-full sm:w-auto" />
             <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 border border-white">Search</button>
-            <select class="ml-2 px-2 py-1 rounded border text-sm">
+            <select class="px-2 py-1 rounded border text-sm w-full sm:w-auto">
               <option>Filter: Daily</option>
             </select>
           </div>
-          <div class="flex gap-2 w-full sm:w-auto justify-end">
-            <button @click="parking_History" class="bg-white border text-maroon px-3 py-1 rounded shadow hover:bg-gray-200">Parking History</button>
-            <button @click="client_Form" class="bg-maroon text-white px-3 py-1 rounded hover:bg-red-900">+ ADD NEW CLIENT</button>
+          <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
+            <button @click="parking_History" class="bg-white border text-maroon px-3 py-1 rounded shadow hover:bg-gray-200 w-full sm:w-auto">Parking History</button>
+            <button @click="client_Form" class="bg-maroon text-white px-3 py-1 rounded hover:bg-red-900 w-full sm:w-auto">+ ADD NEW CLIENT</button>
           </div>
         </div>
 
         <!-- Table -->
-        <div class="overflow-auto">
+        <div class="overflow-x-auto">
           <table class="min-w-full text-left text-sm bg-white rounded">
             <thead class="bg-gray-200 text-gray-700">
               <tr>
