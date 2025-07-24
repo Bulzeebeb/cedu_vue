@@ -27,8 +27,8 @@
           </div>
         </div>
 
-        <!-- Basic Info -->
-        <div class="text-sm mb-6 space-y-2">
+        <!-- Basic Info (with border) -->
+        <div class="border border-gray-300 rounded-md p-4 text-sm mb-6 space-y-2 shadow-sm">
           <div class="flex justify-between">
             <div></div>
             <div><span class="font-semibold">Control No.:</span> 001</div>
