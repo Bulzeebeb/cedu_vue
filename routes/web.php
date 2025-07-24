@@ -2,55 +2,51 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ClientRegisterController;
+use App\Http\Controllers\ClientLoginController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes for CEDU Online Market
-|--------------------------------------------------------------------------
-|
-| Here is where you define the main pages for your online market.
-| Each page returns an Inertia Vue component.
-|
-*/
+// ====================
+// 🔐 CLIENT AUTH ROUTES
+// ====================
 
-// ✅ Landing page
-Route::get('/', function () {
-    return Inertia::render('OnlineMarket/omLandingPage');
-})->name('home');
+// 📌 Client Signup (Multi-Step with OTP)
+Route::get('/signup/step1', [ClientRegisterController::class, 'step1']);
+Route::get('/signup/step2', fn() => Inertia::render('Client/Signup2'));
+Route::post('/signup/step2', [ClientRegisterController::class, 'step2']);
+Route::post('/signup/store', [ClientRegisterController::class, 'store']);
+Route::get('/signup/verify-otp', fn() => Inertia::render('Client/VerifyOtp'));
+Route::post('/signup/verify-otp', [ClientRegisterController::class, 'verifyOtp']);
+Route::post('/signup/resend-otp', [ClientRegisterController::class, 'resendOtp']);
 
-// ✅ Vegetable page
-Route::get('/vegetable', function () {
-    return Inertia::render('OnlineMarket/vegetablePage');
-})->name('vegetable');
+// 📌 Client Login / Logout
+Route::get('/signin', [ClientLoginController::class, 'showLoginForm'])->name('login.form');
+Route::post('/signin', [ClientLoginController::class, 'login'])->name('login.attempt');
+Route::post('/logout', [ClientLoginController::class, 'logout'])->name('logout');
 
-// ✅ Fruit page
-Route::get('/fruit', function () {
-    return Inertia::render('OnlineMarket/fruitPage');
-})->name('fruit');
+// ===========================
+// 🔐 PROTECTED CLIENT ROUTES
+// ===========================
 
-// ✅ Poultry page
-Route::get('/poultry', function () {
-    return Inertia::render('OnlineMarket/poultryPage');
-})->name('poultry');
+Route::middleware('auth:userclient')->group(function () {
+    // Protected routes only accessible after login
 
-// ✅ 🛒 Add To Cart Page
-Route::get('/cart', function () {
-    return Inertia::render('OnlineMarket/addtocartPage');
-})->name('cart');
+    Route::get('/clientProfile', [ClientLoginController::class, 'profile'])->name('Profile');
 
-// ✅ 🆕 View Product Page (dynamic {id} param)
-Route::get('/viewproduct/{id}', function ($id) {
-    return Inertia::render('OnlineMarket/viewproductPage', [
-        'id' => $id
-    ]);
-})->name('viewproduct');
+    Route::get('/om-landing', function () {
+        return Inertia::render('OnlineMarket/omLandingPage', [
+            'user' => Auth::guard('userclient')->user(),
+        ]);
+    })->name('client.landing');
+});
 
-
-// ✅ Checkout confirmation page
-Route::get('/checkout', function () {
-    return Inertia::render('OnlineMarket/checkoutPage');
-})->name('checkout');
+// ===========================
+// CLIENT ROUTES
+// ===========================
 
 
+// ======================
+// 🔧 OTHER ROUTES
+// ======================
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
