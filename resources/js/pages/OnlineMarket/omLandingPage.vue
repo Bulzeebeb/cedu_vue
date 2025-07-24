@@ -1,11 +1,24 @@
+<script setup>
+import { router } from '@inertiajs/vue3'
+
+function goToVegetable() {
+  router.visit('/vegetable')
+}
+function goToFruit() {
+  router.visit('/fruit')
+}
+function goToPoultry() {
+  router.visit('/poultry')
+}
+</script>
+
 <template>
   <div>
     <SiteHeader />
 
     <!-- Hero Carousel Section -->
-    <section class="py-10 bg-white relative">
-      <div class="container mx-auto flex flex-col md:flex-row items-center md:items-start gap-10 px-4">
-
+    <section class="py-7 bg-white relative overflow-hidden">
+      <div class="container mx-auto flex flex-col md:flex-row items-center md:items-start justify-center gap-10 px-4 sm:px-6 md:px-10">
         <!-- Carousel Image -->
         <div class="w-full md:w-1/3">
           <img
@@ -16,103 +29,108 @@
         </div>
 
         <!-- Carousel Text -->
-        <div class="w-full md:w-1/2 text-left">
-          <h2 class="text-lg text-gray-500">{{ slides[currentSlide].subtitle }}</h2>
-          <h1 class="text-3xl font-bold text-yellow-600 mt-2">{{ slides[currentSlide].title }}</h1>
+        <div class="w-full md:w-1/2 text-center md:text-left mt-6 md:mt-0">
+          <h2 class="text-md sm:text-lg text-gray-500">{{ slides[currentSlide].subtitle }}</h2>
+          <h1 class="text-2xl sm:text-3xl font-bold text-yellow-600 mt-2">
+            {{ slides[currentSlide].title }}
+          </h1>
           <p class="mt-2 text-gray-600">{{ slides[currentSlide].description }}</p>
-          <button class="mt-4 px-6 py-2 bg-maroon text-white rounded-full">
+          <button
+            @click="handleShopNow"
+            class="mt-4 px-6 py-2 bg-maroon text-white rounded-full"
+          >
             Shop now →
           </button>
         </div>
       </div>
 
-      <!-- Arrows outside -->
+      <!-- Carousel Arrows (visible on all sizes, but smaller on mobile) -->
       <button
         @click="prevSlide"
-        class="absolute top-1/2 left-4 transform -translate-y-1/2  text-gray-500 px-3 py-1 rounded"
+        class="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 px-2 py-1 rounded bg-white/70 hover:bg-white"
       >
         ‹
       </button>
-
       <button
         @click="nextSlide"
-        class="absolute top-1/2 right-4 transform -translate-y-1/2  text-gray-500 px-3 py-1 rounded"
+        class="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-500 px-2 py-1 rounded bg-white/70 hover:bg-white"
       >
         ›
       </button>
 
+      <!-- Carousel Dots -->
       <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-  <span
-    v-for="(slide, index) in slides"
-    :key="index"
-    @click="currentSlide = index"
-    :class="[
-      'w-3 h-3 rounded-full cursor-pointer transition duration-300',
-      currentSlide === index ? 'bg-yellow-600' : 'bg-gray-300'
-    ]"
-  ></span>
-</div>
+        <span
+          v-for="(slide, index) in slides"
+          :key="index"
+          @click="currentSlide = index"
+          :class="[
+            'w-3 h-1 rounded-full cursor-pointer transition duration-300',
+            currentSlide === index ? 'bg-yellow-600' : 'bg-gray-300'
+          ]"
+        ></span>
+      </div>
     </section>
-<!-- Market Products -->
-<section class="bg-gray-100 py-12">
-  <h3 class="text-2xl font-bold text-yellow-600 text-center mb-8">
-    CEDU Market Products
-  </h3>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4 md:px-8">
-    <!-- Card 1: VEGETABLE -->
-    <div
-      class="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-cover bg-center group"
-      style="background-image: url('https://source.unsplash.com/600x800/?vegetables');"
-    >
-      <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
+    <!-- Market Products -->
+    <section class="bg-gray-100 py-12">
+      <h3 class="text-2xl font-bold text-yellow-600 text-center mb-8">
+        CEDU Market Products
+      </h3>
 
-      <div class="relative flex flex-col justify-between items-center h-full px-6 py-8">
-        <h4 class="text-2xl font-bold text-white text-center">VEGETABLE</h4>
-        <button
-          class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4 md:px-8">
+        <!-- VEGETABLE Card -->
+        <div
+          class="relative rounded-xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group"
+          style="background-image: url('images/OnlineMarket/Vegetable_Card.png');"
         >
-          Shop now →
-        </button>
-      </div>
-    </div>
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
+          <div class="relative flex flex-col justify-between items-center h-full px-4 py-6">
+            <h4 class="text-xl sm:text-2xl font-bold text-white text-center">VEGETABLE</h4>
+            <button
+              @click="goToVegetable"
+              class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
+            >
+              Shop now →
+            </button>
+          </div>
+        </div>
 
-    <!-- Card 2: FRUITS -->
-    <div
-      class="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-cover bg-center group"
-      style="background-image: url('https://source.unsplash.com/600x800/?fruits');"
-    >
-      <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
-
-      <div class="relative flex flex-col justify-between items-center h-full px-6 py-8">
-        <h4 class="text-2xl font-bold text-white text-center">FRUITS</h4>
-        <button
-          class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
+        <!-- FRUITS Card -->
+        <div
+          class="relative rounded-xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group"
+          style="background-image: url('images/OnlineMarket/Fruit_Card.png');"
         >
-          Shop now →
-        </button>
-      </div>
-    </div>
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
+          <div class="relative flex flex-col justify-between items-center h-full px-4 py-6">
+            <h4 class="text-xl sm:text-2xl font-bold text-white text-center">FRUITS</h4>
+            <button
+              @click="goToFruit"
+              class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
+            >
+              Shop now →
+            </button>
+          </div>
+        </div>
 
-    <!-- Card 3: POULTRY -->
-    <div
-      class="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-cover bg-center group"
-      style="background-image: url('https://source.unsplash.com/600x800/?poultry');"
-    >
-      <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
-
-      <div class="relative flex flex-col justify-between items-center h-full px-6 py-8">
-        <h4 class="text-2xl font-bold text-white text-center">POULTRY</h4>
-        <button
-          class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
+        <!-- POULTRY Card -->
+        <div
+          class="relative rounded-xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group"
+          style="background-image: url('images/OnlineMarket/Poultry_Card.png');"
         >
-          Shop now →
-        </button>
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
+          <div class="relative flex flex-col justify-between items-center h-full px-4 py-6">
+            <h4 class="text-xl sm:text-2xl font-bold text-white text-center">POULTRY</h4>
+            <button
+              @click="goToPoultry"
+              class="px-4 py-2 bg-maroon text-white rounded-full hover:bg-maroon/90"
+            >
+              Shop now →
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
-
+    </section>
 
     <SiteFooter />
   </div>
@@ -132,19 +150,19 @@ export default {
     return {
       slides: [
         {
-          image: '/images/OnlineMarket/carosel.png',
+          image: '/images/OnlineMarket/Carousel1.png',
           subtitle: 'WELCOME TO CEDU ONLINE MARKET!',
           title: 'Fresh & Healthy Organic Goods',
           description: 'Free shipping on all your order, we deliver, you enjoy',
         },
         {
-          image: '/images/OnlineMarket/carosel.png',
+          image: '/images/OnlineMarket/Carousel2.png',
           subtitle: 'JOIN THE HEALTHY CHOICE',
           title: 'Organic Fruits & Veggies Delivered',
           description: 'Shop seasonal picks and enjoy doorstep delivery.',
         },
         {
-          image: '/images/OnlineMarket/carosel.png',
+          image: '/images/OnlineMarket/Carousel3.png',
           subtitle: 'SUPPORT LOCAL FARMERS',
           title: 'Eat Fresh, Eat Local',
           description: 'Your trusted source for farm-to-table goodness.',
@@ -158,8 +176,25 @@ export default {
       this.currentSlide = (this.currentSlide + 1) % this.slides.length;
     },
     prevSlide() {
-      this.currentSlide =
-        (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+      this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+    },
+    handleShopNow() {
+      if (this.currentSlide === 0) {
+        this.goToVegetable();
+      } else if (this.currentSlide === 1) {
+        this.goToFruit();
+      } else if (this.currentSlide === 2) {
+        this.goToPoultry();
+      }
+    },
+    goToVegetable() {
+      this.$inertia.visit('/vegetable');
+    },
+    goToFruit() {
+      this.$inertia.visit('/fruit');
+    },
+    goToPoultry() {
+      this.$inertia.visit('/poultry');
     },
   },
 };
