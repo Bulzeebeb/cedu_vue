@@ -20,7 +20,12 @@
           />
         </div>
       </div>
-
+           <a
+        href="/generate_pos"
+        class="block text-center mt-6 w-full bg-maroon text-white py-2 rounded-full hover:bg-red-800"
+      >
+        View POS
+      </a>
       
     </div>
   </div>
