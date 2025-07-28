@@ -1,107 +1,99 @@
 <script setup>
-import { ref } from 'vue'
-import { router } from '@inertiajs/inertia'
-import { Link } from '@inertiajs/inertia-vue3' 
+import { router } from '@inertiajs/inertia-vue3'
+import { Link } from '@inertiajs/vue3';
+
+defineOptions({
+  name: 'uf_home'
+})
 
 function goToHostel() {
-  router.get('/use-of-facilities/hostel')
+  router.visit('/use-of-facilities/hostel')
 }
 
 const goToCommercial = () => {
-  router.get('/use-of-facilities/commercial') 
+  router.visit('/use-of-facilities/commercial') 
 }
 
 const goToRental = () => {
-  router.get('/use-of-facilities/rental') 
+  router.visit('/use-of-facilities/rental') 
 }
-
 </script>
 
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
     
     <!-- Header -->
-    <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <h1 class="text-lg font-bold text-white">CEDU <span class="text-yellow-300">iCentral</span></h1>
-      </div>
-      <nav class="flex gap-2">
-        <button class="text-white bg-transparent hover:underline">Back to Home</button>
-      </nav>
+    <header class="bg-maroon text-white py-4 px-6 shadow-md flex justify-between items-center">
+      <h1 class="text-lg font-bold">CEDU <span class="text-yellow-300">iCentral</span></h1>
+      <button class="hover:underline text-sm font-medium transition">Back to Home</button>
     </header>
 
-    <!-- Use-of-Facilities Section -->
-    <section class="mt-8 px-4">
-      <h2 class="text-3xl font-bold text-yellow-500 mb-4 pl-3 border-l-8 rounded-l bg-opacity-0 border-[#650000] ml-6">
-        Use-of-Facilities
-      </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Hero Banner -->
+     <section class="hero-banner relative h-[500px] bg-cover bg-center" style="background-image: url('/images/Faci_Images/intro.png');">
+      <div class="hero-overlay bg-black bg-opacity-50 h-full w-full flex flex-col justify-center items-center text-white text-center px-4">
+        <h2 class="hero-title text-4xl font-bold mb-4">Book Your Space Now</h2>
+        <p class="hero-subtitle text-lg">Flexible rooms, commercial stalls, and event facilities at USeP Tagum.</p>
+      </div>
+    </section>
+
+
+
+    <!-- Section Heading -->
+    <section class="mt-12 px-6 text-center">
+      <h2 class="section-title">Use-of-Facilities</h2>
+      <div class="section-divider"></div>
+      <p class="text-gray-600 mt-2">Choose from available services offered by the University of Southeastern Philippines.</p>
+    </section>
+
+    <!-- Facilities -->
+    <section class="mt-10 px-6">
+      <div class="card-container">
 
         <!-- Hostel Rooms -->
-        <div class="relative rounded-md overflow-hidden shadow-md ml-6 sm:ml-8">
-          <img src="/images/hostel.jpg" alt="Hostel Rooms" class="w-full h-120 object-cover">
-          <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
-            <h3 class="text-white text-3xl font-bold text-center mt-4">Hostel Rooms</h3>
-            <div class="text-center">
-              <button
-                class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4"
-                @click="goToHostel"
-              >
-                Book Now →
-              </button>
-            </div>
+        <Link href="/use-of-facilities/hostel" class="facility-card block">
+          <img src="/images/Faci_Images/hostel.png" alt="Hostel Rooms" class="card-img" />
+          <div class="card-overlay">
+            <h3 class="card-title">Hostel Rooms</h3>
+            <button class="card-btn">Book Now →</button>
           </div>
-        </div>
+        </Link>
 
         <!-- Commercial Space -->
-        <div class="relative rounded-md overflow-hidden shadow-md">
-        <img src="/images/commercial.svg" alt="Commercial Space" class="w-full h-120 object-cover">
-        <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
-            <h3 class="text-white text-3xl font-bold text-center mt-4">Commercial Space</h3>
-            <div class="text-center">
-            <button
-                class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4"
-                @click="goToCommercial"
-            >
-                Rent Now →
-            </button>
-            </div>
-        </div>
-        </div>
-
+        <Link href="/use-of-facilities/commercial" class="facility-card block">
+          <img src="/images/Faci_Images/commercial.png" alt="Commercial Space" class="card-img" />
+          <div class="card-overlay">
+            <h3 class="card-title">Commercial Space</h3>
+            <button class="card-btn">Rent Now →</button>
+          </div>
+        </Link>
 
         <!-- Rental Facilities -->
-        <div class="relative rounded-md overflow-hidden shadow-md mr-6 sm:mr-8">
-          <img src="/images/rental.jpg" alt="Rental Facilities" class="w-full h-120 object-cover">
-          <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
-            <h3 class="text-white text-3xl font-bold text-center mt-4">Rental Facilities</h3>
-            <div class="text-center">
-              <button class="bg-white text-green-600 font-semibold text-lg px-4 py-1 rounded-full mt-4 mb-4"                 
-              @click="goToRental"
-            >
-                Rent Now →
-              </button>
-            </div>
+        <Link href="/use-of-facilities/rental" class="facility-card block">
+          <img src="/images/Faci_Images/rental.png" alt="Rental Facilities" class="card-img" />
+          <div class="card-overlay">
+            <h3 class="card-title">Rental Facilities</h3>
+            <button class="card-btn">Rent Now →</button>
           </div>
-        </div>
+        </Link>
+
 
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-maroon text-white mt-10 py-6 px-4 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-      <div class="ml-6">
-        <h3 class="font-bold mb-1 text-yellow-500">Support</h3>
-        <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-        <p>osorio.jg@usep.edu.ph<br>+63915-8538-959</p>
+    <footer class="bg-maroon text-white mt-16 py-8 px-6 text-sm grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div>
+        <h3 class="footer-title">Support</h3>
+        <p>University of Southeastern Philippines<br />Tagum-Mabini Campus<br />Apokon, Tagum City</p>
+        <p class="mt-2">osorio.jg@usep.edu.ph<br />+63915-8538-959</p>
       </div>
       <div>
-        <h3 class="font-bold mb-1 text-yellow-500">Account</h3>
+        <h3 class="footer-title">Account</h3>
         <p>My Account</p>
         <p>Login / Register</p>
       </div>
       <div>
-        <h3 class="font-bold mb-1 text-yellow-500">Quick Link</h3>
+        <h3 class="footer-title">Quick Links</h3>
         <p>Privacy Policy</p>
         <p>Terms of Use</p>
         <p>FAQ</p>
@@ -111,21 +103,346 @@ const goToRental = () => {
   </div>
 </template>
 
-<script>
-export default {
-  name: 'UF_Home',
-}
-</script>
-
 <style scoped>
+/* Maroon Theme */
 .bg-maroon {
   background-color: #650000;
 }
-.nav-btn {
-  background: white;
-  color: black;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-weight: 500;
+
+/* Hero Banner */
+.hero-banner {
+  background-image: url('/images/facilities-banner.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  position: relative;
 }
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  font-weight: 400;
+}
+
+/* Section Title */
+.section-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #facc15;
+  margin-bottom: 0.25rem;
+}
+
+.section-divider {
+  width: 80px;
+  height: 4px;
+  margin: 0 auto;
+  background-color: #650000;
+  border-radius: 2px;
+}
+
+/* Cards */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 640px) {
+  .card-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.facility-card {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.facility-card:hover {
+  transform: scale(1.05);
+}
+
+.card-img {
+  width: 100%;
+  height: 18rem;
+  object-fit: cover;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+}
+
+.card-title {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.card-btn {
+  background-color: white;
+  color: #047857;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  transition: background-color 0.3s, color 0.3s;
+  border: none;
+}
+
+.card-btn:hover {
+  background-color: #047857;
+  color: white;
+}
+
+/* Footer */
+.footer-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #facc15;
+}
+
+/* Maroon Theme */
+.bg-maroon {
+  background-color: #650000;
+}
+
+/* Hero Banner */
+.hero-banner {
+  background-image: url('/images/facilities-banner.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  position: relative;
+  animation: zoomIn 3s ease-in-out forwards;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(1.05);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  animation: fadeDown 1s ease-out;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  font-weight: 400;
+  animation: fadeUp 1.2s ease-out;
+}
+
+@keyframes fadeDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+.section-divider:hover {
+  box-shadow: 0 0 16px #facc15, 0 0 6px #facc15;
+}
+
+/* Cards */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 640px) {
+  .card-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.facility-card {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.4s ease, box-shadow 0.3s;
+  cursor: pointer;
+  animation: slideUpFade 1s ease forwards;
+  opacity: 0;
+}
+
+.facility-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(255, 199, 44, 0.3);
+}
+
+@keyframes slideUpFade {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.card-img {
+  width: 100%;
+  height: 18rem;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.facility-card:hover .card-img {
+  transform: scale(1.05);
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  transition: background 0.4s;
+}
+
+.card-title {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.card-btn {
+  background-color: white;
+  color: #047857;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-btn::after {
+  content: "";
+  position: absolute;
+  background: rgba(4, 120, 87, 0.2);
+  border-radius: 50%;
+  width: 0;
+  height: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+  z-index: 0;
+}
+
+.card-btn:hover::after {
+  width: 200%;
+  height: 200%;
+}
+
+.card-btn:hover {
+  background-color: #047857;
+  color: white;
+  z-index: 1;
+}
+
+/* Header button animation */
+header button {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+header button::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: white;
+  width: 0%;
+  transition: width 0.3s;
+  margin-top: 2px;
+}
+
+header button:hover::after {
+  width: 100%;
+}
+
+/* Footer */
+.footer-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #facc15;
+}
+
 </style>
