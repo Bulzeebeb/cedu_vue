@@ -54,17 +54,20 @@ const login = async () => {
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('role', response.data.user.role);
 
-    // Example role-based navigation
-    if (response.data.user.role === 'superadmin') {
+    const role = response.data.user.role;
+    if (role === 'superadmin') {
       window.location.href = '/superadmin-dashboard';
+    } else if (role === 'staff') {
+      window.location.href = '/staff-dashboard';
     } else {
-      window.location.href = '/admin-dashboard';
+      window.location.href = '/client-dashboard';
     }
 
   } catch (error) {
     alert('Invalid credentials');
   }
 };
+
 </script>
 
 <style>

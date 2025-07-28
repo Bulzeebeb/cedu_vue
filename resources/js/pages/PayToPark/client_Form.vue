@@ -10,6 +10,7 @@ function deleteClient(index) {
     alert(`Client #${index + 1} will be deleted.`)
   }
 }
+
 </script>
 
 <template>

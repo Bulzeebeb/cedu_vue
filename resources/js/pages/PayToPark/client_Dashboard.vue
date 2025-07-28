@@ -12,27 +12,16 @@ function omLandingPage() {
 function goToFacilities() {
   router.visit('/facilities')
 }
+import Header from '@/pages/lp_header.vue'
+import Footer from '@/pages/footer.vue'
 </script>
+
 
 <template>
   <div class="min-h-screen bg-[#f9f9f9] font-sans text-gray-800">
     <!-- HEADER -->
-    <header class="bg-[#650000] text-white py-4 px-6 shadow-md">
-      <div class="max-w-7xl mx-auto flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-          <h1 class="text-xl font-semibold">CEDU <span class="text-yellow-400">iCentral</span></h1>
-        </div>
-        <nav class="space-x-4 text-sm">
-          <button class="nav-link">Pay-to-Park</button>
-          <button @click="omLandingPage" class="nav-link">Online Market</button>
-          <button @click="goToFacilities" class="nav-link">Use-of-Facilities</button>
-          <button class="nav-link">About</button>
-          <button class="nav-link">Contact</button>
-          <button class="nav-link">Account</button>
-        </nav>
-      </div>
-    </header>
+    
+<Header />
 
     <!-- HERO SECTION -->
     <section class="text-center py-14 bg-white shadow-sm">
@@ -66,26 +55,7 @@ function goToFacilities() {
 
   
 
-   <!-- Footer -->
-<footer class="bg-[#650000] text-white mt-20 py-10 px-6 sm:px-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm">
-  <div>
-    <h3 class="font-bold text-yellow-400 mb-2"> Support</h3>
-    <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-    <p class="mt-2">osorio.jg@usep.edu.ph<br>+63915-8538-959</p>
-  </div>
-  <div>
-    <h3 class="font-bold text-yellow-400 mb-2"> Account</h3>
-    <p class="cursor-pointer hover:text-yellow-300 transition">My Account</p>
-    <p class="cursor-pointer hover:text-yellow-300 transition">Login / Register</p>
-  </div>
-  <div>
-    <h3 class="font-bold text-yellow-400 mb-2"> Quick Links</h3>
-    <p class="cursor-pointer hover:text-yellow-300 transition">Privacy Policy</p>
-    <p class="cursor-pointer hover:text-yellow-300 transition">Terms of Use</p>
-    <p class="cursor-pointer hover:text-yellow-300 transition">FAQ</p>
-    <p class="cursor-pointer hover:text-yellow-300 transition">Contact</p>
-  </div>
-</footer>
+<Footer />
 
   </div>
 </template>

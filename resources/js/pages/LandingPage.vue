@@ -1,127 +1,145 @@
-<script setup>
-import { ref } from 'vue'
-import { Link } from '@inertiajs/inertia-vue3'
-</script>
-
 <template>
-  <div class="landing-page bg-white text-black min-h-screen font-sans">
-    <!-- Header -->
-    <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold text-white">CEDU  <span class="text-yellow-300">iCentral</span></h1>
-      </div>
-      <nav class="flex gap-2 ">
-        <button class="nav-btn">Pay-to-Park</button>
-        <button class="nav-btn">Online Market</button>
+  <div>
+    <!-- HEADER -->
+    <Header />
 
-       <button class="nav-btn" @click="goToFacilities">Use-of-Facilities</button>
-
-
-
-        <button class="nav-btn">About CEDU</button>
-        <button class="nav-btn">Contact Us</button>
-        <button class="nav-btn" @click="goToAccount">Account</button>
-      </nav>
-    </header>
-
-    <!-- Carousel -->
-    <section class="bg-black h-100 flex justify-between items-center text-white relative mt-4 mx-10 rounded overflow-hidden">
-      <button class="text-2xl absolute left-4">&#8592;</button>
-      <div class="mx-auto">[ Image Carousel Placeholder ]</div>
-      <button class="text-2xl absolute right-4">&#8594;</button>
-    </section>
-
-    <!-- Online Market Section -->
-    <section class="mt-6 px-4 mx-5.5">
-      <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Online Market's Best</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div v-for="item in marketItems" :key="item.name" class="text-center">
-          <img :src="item.image" alt="Product" class="w-full h-100 object-cover mb-z" />
-          <p>{{ item.name }}</p>
-          <p class="text-sm text-gray-600">₱{{ item.price }}</p>
+    <!-- SECTION 1: CEDU HIGHLIGHTS -->
+    <section class="relative bg-cover bg-center text-white py-24 px-8 text-center" style="background-image: url('/images/bg-campus.jpg')">
+      <div class="absolute inset-0 bg-[#650000]/80 backdrop-blur-sm"></div>
+      <div class="relative z-10 max-w-6xl mx-auto">
+        <h2 class="text-4xl font-bold mb-4 animate-fade-in">Welcome to <span class="text-yellow-400">CEDU iCentral</span></h2>
+        <p class="text-lg mb-12 max-w-2xl mx-auto animate-fade-in delay-200">Explore student-powered digital services designed for USeP Tagum-Mabini Campus.</p>
+        <div class="grid sm:grid-cols-3 gap-8 text-left">
+          <div class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
+            <img src="/images/market-icon.png" class="h-12 mb-4 mx-auto" />
+            <h3 class="text-xl font-bold mb-1 text-center">Online Market</h3>
+            <p class="text-center">Shop fruits, vegetables, and poultry grown by local farmers.</p>
+          </div>
+          <div class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
+            <img src="/images/parking-icon.png" class="h-12 mb-4 mx-auto" />
+            <h3 class="text-xl font-bold mb-1 text-center">Pay to Park</h3>
+            <p class="text-center">Affordable parking with digital convenience.</p>
+          </div>
+          <div class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
+            <img src="/images/facility-icon.png" class="h-12 mb-4 mx-auto" />
+            <h3 class="text-xl font-bold mb-1 text-center">Use of Facilities</h3>
+            <p class="text-center">Easily reserve available school facilities.</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Hostel Section -->
-    <section class="mt-8 px-4 mx-5.5">
-      <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Our Hostel</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div v-for="i in 4" :key="i" class="bg-black text-white flex justify-center items-center h-50 sm:h-100 text-xs sm:text-sm">
-          REPLACE PHOTO OF HOSTEL
+    <!-- SECTION 2: ONLINE MARKET -->
+    <section class="bg-[#fff3e6] py-20 px-8 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold text-[#650000] mb-4">Online Market</h2>
+        <p class="mb-10 text-gray-700 max-w-xl mx-auto">Fresh produce and poultry straight from the campus – accessible anytime.</p>
+        <div class="grid sm:grid-cols-3 gap-6">
+          <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition">
+            <img src="/images/fruits.jpg" class="h-40 w-full object-cover rounded mb-4" />
+            <h3 class="text-lg font-semibold text-[#650000]">Fruits</h3>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition">
+            <img src="/images/vegetables.jpg" class="h-40 w-full object-cover rounded mb-4" />
+            <h3 class="text-lg font-semibold text-[#650000]">Vegetables</h3>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition">
+            <img src="/images/poultry.jpg" class="h-40 w-full object-cover rounded mb-4" />
+            <h3 class="text-lg font-semibold text-[#650000]">Poultry</h3>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-maroon text-white mt-10 py-6 px-20 grid grid-cols-1 sm:grid-cols-3 gap-50 text-sm">
-      <div>
-        <h3 class="font-bold mb-1">Support</h3>
-        <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-        <p>cedu@usep.edu.ph<br>+63915-8538-959</p>
+    <!-- SECTION 3: PAY TO PARK -->
+    <section class="bg-white py-20 px-8 text-center">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold text-[#650000] mb-4">Pay to Park</h2>
+        <p class="mb-10 text-gray-700 max-w-2xl mx-auto">Take advantage of our spacious parking lots at affordable rates. Reserved slots and walk-in payments welcome.</p>
+        <img src="/images/parking-space.jpg" class="rounded-lg shadow-lg w-full h-80 object-cover hover:scale-105 transition" />
       </div>
-      <div>
-        <h3 class="font-bold mb-1">Account</h3>
-        <p>My Account</p>
-        <p>Login / Register</p>
+    </section>
+
+    <!-- SECTION 4: USE OF FACILITIES (CAROUSEL) -->
+    <section class="bg-[#f9f9f9] py-20 px-8 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold text-[#650000] mb-6">Use of Facilities</h2>
+        <p class="mb-10 text-gray-700 max-w-xl mx-auto">Book rooms, labs, and more for student-led activities, research, or events.</p>
+
+        <swiper
+          :slides-per-view="1.5"
+          :space-between="20"
+          :breakpoints="{
+            640: { slidesPerView: 2.5 },
+            1024: { slidesPerView: 4 }
+          }"
+          grabCursor
+          class="px-4"
+        >
+          <swiper-slide v-for="facility in facilities" :key="facility.name">
+  <div class="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
+    <img :src="facility.image" class="w-full h-44 object-cover group-hover:scale-110 transition-transform duration-300" />
+    <div class="absolute inset-0 bg-gradient-to-t from-[#650000]/80 via-transparent to-transparent group-hover:backdrop-blur-sm transition" />
+    <div class="absolute bottom-3 left-3 right-3 text-white font-semibold text-lg drop-shadow-md">
+      {{ facility.name }}
+    </div>
+  </div>
+</swiper-slide>
+
+        </swiper>
       </div>
-      <div>
-        <h3 class="font-bold mb-1">Quick Link</h3>
-        <p>Privacy Policy</p>
-        <p>Terms of Use</p>
-        <p>FAQ</p>
-        <p>Contact</p>
-      </div>
-    </footer>
+    </section>
+
+    <!-- FOOTER -->
+    <Footer />
   </div>
 </template>
 
 <script>
-import { router } from '@inertiajs/vue3'
+import Header from './lp_header.vue'
+import Footer from './footer.vue'
+
+// Swiper imports
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/swiper-bundle.css'
 
 export default {
-  name: 'LandingPage',
+  components: {
+    Header,
+    Footer,
+    swiper: Swiper,
+    swiperSlide: SwiperSlide
+  },
   data() {
     return {
-      marketItems: [
-        { name: 'Egg', price: 300, image: '/images/egg.jpg' },
-        { name: 'Watermelons', price: 500, image: '/images/watermelon.jpg' },
-        { name: 'Cucumber', price: 150, image: '/images/cucumber.jpg' },
-        { name: 'Mangoes', price: 250, image: '/images/mango.jpg' }
+      facilities: [
+        { name: 'Classroom', image: '/images/classroom.png' },
+        { name: 'Computer Lab', image: '/images/lab.png' },
+        { name: 'CEDU Hostel', image: '/images/hostel.png' },
+        { name: 'Audio Visual Room', image: '/images/avr.png' },
+        { name: 'CEDU Gymnasium', image: '/images/gym.png' },
+        { name: 'Board Room', image: '/images/boardroom.png' }
       ]
-    }
-  },
-  methods: {
-    goToOnlineMarket() {
-      router.visit('landingmarket');
-    },
-    goToFacilities() {
-      // Add your facilities route here
-      // router.visit('/facilities');
-      console.log('Navigate to facilities');
-    },
-    goToAccount() {
-      router.visit('/login');
     }
   }
 }
 </script>
 
 <style scoped>
-.bg-maroon {
-  background-color: #650000;
+.animate-fade-in {
+  animation: fadeIn 1s ease-in-out forwards;
 }
-.nav-btn {
-  color: white;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: color 0.3s ease;
-  cursor: pointer;
+.animate-fade-in.delay-200 {
+  animation-delay: 0.2s;
 }
-
-.nav-btn:hover {
-  color: #ffd700;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
