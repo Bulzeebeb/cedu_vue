@@ -1,9 +1,6 @@
 <script setup>
-import { router } from '@inertiajs/inertia-vue3'
-
-function gotoUfHome() {
-  router.get('/facilities')
-}
+import { ref } from 'vue'
+import { Link } from '@inertiajs/inertia-vue3'
 </script>
 
 <template>
@@ -17,10 +14,14 @@ function gotoUfHome() {
       <nav class="flex gap-2 ">
         <button class="nav-btn">Pay-to-Park</button>
         <button class="nav-btn">Online Market</button>
-        <button @click="gotoUfHome" class="nav-btn">Use-of-Facilities</button>
+
+       <button class="nav-btn" @click="goToFacilities">Use-of-Facilities</button>
+
+
+
         <button class="nav-btn">About CEDU</button>
         <button class="nav-btn">Contact Us</button>
-        <button class="nav-btn">Account</button>
+        <button class="nav-btn" @click="goToAccount">Account</button>
       </nav>
     </header>
 
@@ -33,7 +34,7 @@ function gotoUfHome() {
 
     <!-- Online Market Section -->
     <section class="mt-6 px-4 mx-5.5">
-      <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Online Market’s Best</h2>
+      <h2 class="text-lg font-semibold text-yellow-500 mb-2 border-l-4 border-maroon pl-2">Online Market's Best</h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div v-for="item in marketItems" :key="item.name" class="text-center">
           <img :src="item.image" alt="Product" class="w-full h-100 object-cover mb-z" />
@@ -77,6 +78,8 @@ function gotoUfHome() {
 </template>
 
 <script>
+import { router } from '@inertiajs/vue3'
+
 export default {
   name: 'LandingPage',
   data() {
@@ -87,6 +90,19 @@ export default {
         { name: 'Cucumber', price: 150, image: '/images/cucumber.jpg' },
         { name: 'Mangoes', price: 250, image: '/images/mango.jpg' }
       ]
+    }
+  },
+  methods: {
+    goToOnlineMarket() {
+      router.visit('landingmarket');
+    },
+    goToFacilities() {
+      // Add your facilities route here
+      // router.visit('/facilities');
+      console.log('Navigate to facilities');
+    },
+    goToAccount() {
+      router.visit('/login');
     }
   }
 }
@@ -102,11 +118,10 @@ export default {
   border-radius: 4px;
   font-weight: 500;
   transition: color 0.3s ease;
+  cursor: pointer;
 }
 
 .nav-btn:hover {
   color: #ffd700;
 }
-
-
 </style>
