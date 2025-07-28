@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div class="pt-24 px-4"></div>
     <SiteHeader :cart-count="cart.length" />
 
     <!-- Shop Page Content -->

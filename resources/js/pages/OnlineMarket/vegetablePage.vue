@@ -1,15 +1,14 @@
 <template>
   <div>
+    <div class="pt-24 px-4"></div>
     <SiteHeader :cart-count="cart.length" />
 
     <!-- Shop Page Content -->
     <section class="py-12 bg-gray-100">
       <div class="max-w-6xl mx-auto px-4 space-y-6">
         <!-- Rectangle Card with background image -->
-        <div
-          class="bg-cover bg-center rounded-xl shadow-md text-center relative overflow-hidden h-28 md:h-38"
-          style="background-image: url('images/OnlineMarket/vegetable_banner.png');"
-        >
+        <div class="bg-cover bg-center rounded-xl shadow-md text-center relative overflow-hidden h-28 md:h-38"
+          style="background-image: url('images/OnlineMarket/vegetable_banner.png');">
           <div class="absolute inset-0 bg-black/20"></div>
           <div class="relative flex items-center justify-start h-full p-8">
             <h2 class="text-6xl font-bold text-white text-left">VEGETABLES</h2>
@@ -38,20 +37,12 @@
 
         <!-- Product Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          <div
-            v-for="product in sortedProducts"
-            :key="product.id"
-            
-            class="bg-white rounded-2xl shadow-sm overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-          >
+          <div v-for="product in sortedProducts" :key="product.id"
+            class="bg-white rounded-2xl shadow-sm overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
             <!-- Image -->
-              <div  class="relative">
-              <img
-                :src="product.image"
-                @click="goToViewProduct(product.id)"
-                alt="Product Image"
-                class="w-full h-52 object-cover transition duration-500 transform hover:scale-105"
-              />
+            <div class="relative">
+              <img :src="product.image" @click="goToViewProduct(product.id)" alt="Product Image"
+                class="w-full h-52 object-cover transition duration-500 transform hover:scale-105" />
             </div>
 
             <div class="p-4">
@@ -66,10 +57,8 @@
                   <span v-if="product.metric">/ {{ product.metric }}</span>
                 </span>
 
-                <button
-                  @click="addToCart(product)"
-                  class="bg-yellow-500 text-maroon text-[10px] font-semibold px-2 py-1 rounded-full transition duration-300 hover:shadow-md hover:-translate-y-0.5"
-                >
+                <button @click="addToCart(product)"
+                  class="bg-yellow-500 text-maroon text-[10px] font-semibold px-2 py-1 rounded-full transition duration-300 hover:shadow-md hover:-translate-y-0.5">
                   Add to Cart
                 </button>
               </div>
@@ -81,19 +70,24 @@
         <nav aria-label="Page navigation" class="mt-8 flex justify-center">
           <ul class="flex space-x-1">
             <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&laquo;</a>
+              <a href="#"
+                class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&laquo;</a>
             </li>
             <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">1</a>
+              <a href="#"
+                class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">1</a>
             </li>
             <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">2</a>
+              <a href="#"
+                class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">2</a>
             </li>
             <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">3</a>
+              <a href="#"
+                class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">3</a>
             </li>
             <li>
-              <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&raquo;</a>
+              <a href="#"
+                class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&raquo;</a>
             </li>
           </ul>
         </nav>
@@ -108,6 +102,7 @@
 import SiteHeader from './header.vue'
 import SiteFooter from './footer.vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 
 export default {
   name: 'VegetablePage',
@@ -120,45 +115,36 @@ export default {
       sortBy: 'asc',
       itemsToShow: 10,
       cart: [],
-      products: [
-        { id: 1, title: 'Fresh Broccoli', quantity: 20, price: '99.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=800&q=80' },
-        { id: 2, title: 'Crisp Carrots', quantity: 15, price: '50.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1587049352841-4e60ec6dca1d?auto=format&fit=crop&w=800&q=80' },
-        { id: 3, title: 'Leafy Spinach', quantity: 10, price: '70.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1567273199143-4ec90d9271da?auto=format&fit=crop&w=800&q=80' },
-        { id: 4, title: 'Green Peas', quantity: 30, price: '40.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1603911586859-6397a2e6a0fc?auto=format&fit=crop&w=800&q=80' },
-        { id: 5, title: 'Organic Zucchini', quantity: 12, price: '75.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=800&q=80' },
-        { id: 6, title: 'Sweet Corn', quantity: 25, price: '65.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1603911586859-6397a2e6a0fc?auto=format&fit=crop&w=800&q=80' },
-        { id: 7, title: 'Red Tomatoes', quantity: 18, price: '55.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1587049352841-4e60ec6dca1d?auto=format&fit=crop&w=800&q=80' },
-        { id: 8, title: 'Eggplant', quantity: 22, price: '60.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1567273199143-4ec90d9271da?auto=format&fit=crop&w=800&q=80' },
-        { id: 9, title: 'Cabbage', quantity: 30, price: '45.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=800&q=80' },
-        { id: 10, title: 'Cauliflower', quantity: 16, price: '85.00', metric: 'kilo', image: 'https://images.unsplash.com/photo-1603911586859-6397a2e6a0fc?auto=format&fit=crop&w=800&q=80' },
-      ],
+      products: [],
     }
   },
-  computed: {
-    sortedProducts() {
-      return this.products
-        .slice()
-        .sort((a, b) => {
-          const priceA = parseFloat(a.price)
-          const priceB = parseFloat(b.price)
-          return this.sortBy === 'asc' ? priceA - priceB : priceB - priceA
-        })
-        .slice(0, this.itemsToShow)
-    },
+  created() {
+    this.fetchProducts()
   },
   methods: {
-    addToCart(product) {
-      const found = this.cart.find(item => item.id === product.id)
-      if (found) {
-        found.qty += 1
-      } else {
-        this.cart.push({ ...product, qty: 1 })
-      }
+    fetchProducts() {
+      axios.get('http://127.0.0.1:8000/api/products')
+        .then(response => {
+          this.products = response.data
+        })
+        .catch(error => {
+          console.error('Error fetching products:', error)
+        })
     },
-    goToViewProduct(id) {
-      router.visit(`/viewproduct/${id}`)
+    methods: {
+      addToCart(product) {
+        const found = this.cart.find(item => item.id === product.id)
+        if (found) {
+          found.qty += 1
+        } else {
+          this.cart.push({ ...product, qty: 1 })
+        }
+      },
+      goToViewProduct(id) {
+        router.visit(`/viewproduct/${id}`)
+      },
     },
-  },
+  }
 }
 </script>
 

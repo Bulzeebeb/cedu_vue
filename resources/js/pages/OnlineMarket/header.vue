@@ -42,7 +42,7 @@ function logout() {
 </script>
 
 <template>
-  <div class="w-full">
+  <div class="fixed top-0 left-0 w-full z-50">
     <!-- Top maroon bar -->
     <div class="w-full bg-maroon text-[10px] text-gray-200 flex justify-end items-center pr-4 py-2 border-b border-yellow-500">
       <a href="/" class="flex items-center gap-1 hover:underline">

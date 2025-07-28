@@ -14,6 +14,7 @@ function goToPoultry() {
 
 <template>
   <div>
+     <div class="pt-27 px-4"></div>
     <SiteHeader />
 
     <!-- Hero Carousel Section -->
