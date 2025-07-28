@@ -35,6 +35,10 @@ function goToPoultry() {
 function goCart() {
   router.visit('/cart')
 }
+
+function logout() {
+  router.post('/logout')
+}
 </script>
 
 <template>
@@ -48,8 +52,8 @@ function goCart() {
     </div>
 
     <!-- Main Navbar -->
-    <nav class="bg-white text-black">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-gray-200">
+    <nav class="bg-white text-black border-b border-gray-200 w-full">
+      <div class="px-4 sm:px-6 lg:px-10 w-full">
         <div class="flex items-center justify-between h-16">
           <!-- Logo + Brand -->
           <div class="flex items-center flex-shrink-0 gap-2">
@@ -133,7 +137,7 @@ function goCart() {
                 class="absolute right-0 mt-2 w-32 bg-white text-black rounded shadow-lg z-50"
               >
                 <a href="/profile" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
-                <a href="/signout" class="block px-4 py-2 hover:bg-gray-100">Sign Out</a>
+                <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Sign Out</button>
               </div>
             </div>
           </div>
@@ -192,10 +196,10 @@ function goCart() {
           Poultry
         </button>
 
-        <a href="/signout" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+        <button @click="logout" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
           <img src="/images/OnlineMarket/logout-icon.png" alt="Sign Out Icon" class="h-4 w-4" />
           Sign Out
-        </a>
+        </button>
       </div>
     </div>
   </div>
