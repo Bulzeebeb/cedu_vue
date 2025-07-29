@@ -32,11 +32,18 @@ const profile = ref({
   password: '********'
 })
 
+function admin_Dashboard() {
+  router.visit('/admin_Dashboard')
+}
+
 function admin_ManageParking() {
   router.visit('/admin_ManageParking')
 }
-function admin_Vehicle() {
+function admin_Account() {
   router.visit('/admin_Account')
+}
+function admin_Reports() {
+  router.visit('/admin_parking_reports')
 }
 </script>
 
@@ -60,37 +67,49 @@ function admin_Vehicle() {
       </div>
 
       <nav class="space-y-4">
-        <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+        <a href="#" @click="admin_Dashboard" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-chart-line"></i> Dashboard
         </a>
         <a href="#" @click="admin_ManageParking" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-parking"></i> Manage Parking
         </a>
-        <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+        <a href="#" @click="admin_Reports" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-file-invoice-dollar"></i> Reports
         </a>
-        <a href="#" @click="admin_Vehicle" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+        <a href="#" @click="admin_Account" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-user"></i> Account
         </a>
         <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-sign-out-alt"></i> Log out
+          <i class="fas fa-chart-bar"></i> Log out
         </a>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 md:ml-64 flex flex-col min-h-screen bg-white">
+    <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
+      <!-- Header -->
+      <header class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+          <button class="md:hidden text-2xl hover:text-[#FFA600]" @click="toggleSidebar">
+            <i class="fas fa-bars"></i>
+          </button>
+           <h1 class="text-4xl font-extrabold text-[#5F1213]">User Profile</h1>
+        </div>
+      </header>
+      <!-- Divider -->
+      <div class="h-1 w-full bg-gradient-to-r from-[#5F1213] via-[#FFA600] to-[#5F1213] rounded-full mb-6"></div>
+
       <!-- Profile Content -->
-      <main class="p-4 flex-1">
-        <div class="max-w-4xl mx-auto bg-white shadow p-6 rounded-lg">
-          <div class="flex flex-col items-center mb-6">
+      <main class="px-6 py-10 flex-1 flex justify-center items-start">
+        <div class="w-full max-w-5xl bg-white shadow-lg p-8 rounded-2xl">
+          <div class="flex flex-col items-center mb-8">
             <img src="https://i.pravatar.cc/100" class="rounded-full w-28 h-28 border-4 border-yellow-400 mb-4" />
-            <h2 class="text-2xl font-bold text-[#5F1213]">Admin</h2>
+            <h2 class="text-3xl font-bold text-[#5F1213]">Admin</h2>
             <p class="text-gray-500">System Administrator</p>
           </div>
 
           <!-- Display Fields -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div><label class="block text-sm font-semibold mb-1">First Name</label><input class="w-full border p-2 rounded" :value="profile.firstName" disabled /></div>
             <div><label class="block text-sm font-semibold mb-1">Last Name</label><input class="w-full border p-2 rounded" :value="profile.lastName" disabled /></div>
             <div><label class="block text-sm font-semibold mb-1">M.I.</label><input class="w-full border p-2 rounded" :value="profile.middleInitial" disabled /></div>
@@ -103,11 +122,12 @@ function admin_Vehicle() {
           </div>
 
           <!-- Edit Button -->
-          <div class="flex justify-end mt-6">
+          <div class="flex justify-end mt-8">
             <button @click="openModal" class="bg-[#5F1213] text-white px-6 py-2 rounded hover:bg-[#771A1B]">Edit Profile</button>
           </div>
         </div>
       </main>
+
     </div>
 
     <!-- Edit Modal -->

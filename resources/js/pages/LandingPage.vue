@@ -17,6 +17,7 @@
           </div>
           <div class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
             <img src="/images/park-icon.png" class="h-50 mb-4 mx-auto" />
+
             <h3 class="text-xl font-bold mb-1 text-center">Pay to Park</h3>
             <p class="text-center">Affordable parking with digital convenience.</p>
           </div>
@@ -117,6 +118,10 @@ export default {
         { name: 'Computer Lab', image: '/images/comlab.jpg' },
         { name: 'CEDU Hostel', image: '/images/hostel.jpg' },
         { name: 'Audio Visual Room', image: '/images/avr.jpg' },
+        { name: 'Classroom', image: '/images/classroom.png' },
+        { name: 'Computer Lab', image: '/images/lab.png' },
+        { name: 'CEDU Hostel', image: '/images/hostel.png' },
+        { name: 'Audio Visual Room', image: '/images/avr.png' },
         { name: 'CEDU Gymnasium', image: '/images/gym.png' },
         { name: 'Board Room', image: '/images/boardroom.png' }
       ]

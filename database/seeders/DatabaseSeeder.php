@@ -21,6 +21,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'superadmin'
         ]);
 
+{
+    $this->call([
+        ClientSeeder::class,
+        StaffSeeder::class,
+        UserSeeder::class,
+    ]);
+}
+
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',

@@ -2,205 +2,121 @@
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 
-// Navigation
+const sidebarOpen = ref(false)
+const isSaved = ref(true)
+
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+function handleSave() {
+  isSaved.value = true
+}
+function handleEdit() {
+  isSaved.value = false
+}
+function handleBack() {
+  router.visit('/admin_Dashboard')
+}
+function admin_Dashboard() {
+  router.visit('/admin_Dashboard')
+}
 function admin_ManageParking() {
   router.visit('/admin_ManageParking')
 }
 function admin_Account() {
   router.visit('/admin_Account')
 }
-
-// State
-const sidebarOpen = ref(false)
-const showEditModal = ref(false)
-
-// Button Handlers
-function toggleSidebar() {
-  sidebarOpen.value = !sidebarOpen.value
-}
-function handleSave() {
-  alert('Settings have been saved!')
-}
-function handleEdit() {
-  showEditModal.value = true
-}
-function handleBack() {
-  window.history.back()
+function admin_Reports() {
+  router.visit('/admin_parking_reports')
 }
 </script>
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
     <!-- Sidebar -->
-    <aside
-      :class="[
-        'bg-[#5F1213] text-white p-6 h-screen fixed top-0 z-40 transition-all duration-300',
-        sidebarOpen ? 'left-0 w-64' : '-left-64',
-        'md:left-0 md:w-64 md:block'
-      ]"
+   <aside
+      :class="[ 'bg-[#5F1213] text-white p-6 h-screen fixed top-0 z-40 transition-all duration-300',
+                sidebarOpen ? 'left-0 w-64' : '-left-64',
+                'md:left-0 md:w-64 md:block' ]"
     >
-      <!-- Close Icon (Mobile Only) -->
       <div class="flex justify-between items-center mb-10">
-        <h1 class="text-lg font-bold">
-          CEDU <span class="text-yellow-300">iCentral</span>
-        </h1>
+        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-300">iCentral</span></h1>
         <button class="md:hidden text-xl" @click="toggleSidebar">
           <i class="fas fa-times"></i>
         </button>
       </div>
 
-    <!-- Sidebar Menu -->
-    <nav class="space-y-4">
-        <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+      <nav class="space-y-4">
+        <a href="#" @click="admin_Dashboard" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-chart-line"></i> Dashboard
         </a>
         <a href="#" @click="admin_ManageParking" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-parking"></i> Manage Parking
         </a>
-        <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+        <a href="#" @click="admin_Reports" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-file-invoice-dollar"></i> Reports
         </a>
         <a href="#" @click="admin_Account" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-user"></i> Account
         </a>
         <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-chart-bar"></i> Log out
+          <i class="fas fa-sign-out-alt"></i> Log out
         </a>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 md:ml-64 flex flex-col min-h-screen bg-white">
+    <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
       <!-- Header -->
-      <header class="bg-white shadow px-4 py-4 flex items-center justify-between sticky top-0 z-30">
+      <header class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
-          <button class="md:hidden text-2xl" @click="toggleSidebar">
+          <button class="md:hidden text-2xl hover:text-[#FFA600]" @click="toggleSidebar">
             <i class="fas fa-bars"></i>
           </button>
-          <h1 class="text-xl font-bold">Manage Parking</h1>
-        </div>
-        <div class="flex items-center gap-4">
-          <button class="relative">
-            <i class="fas fa-bell text-xl"></i>
-            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
-            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-          <img src="https://i.pravatar.cc/40" class="rounded-full w-10 h-10 border-2 border-white" alt="Profile" />
+          <h1 class="text-4xl font-extrabold text-[#5F1213]">Manage Parking</h1>
         </div>
       </header>
 
-      <!-- Main Body -->
-      <main class="p-4 flex-1">
-        <div class="max-w-5xl mx-auto">
-          <!-- SET PARKING RATE -->
-          <div class="bg-gray-100 p-6 rounded mb-6">
-            <h3 class="text-lg font-semibold mb-4 text-gray-700">SET PARKING RATE</h3>
-            <div class="flex flex-wrap items-center gap-4">
-              <label class="flex items-center gap-2">
-                Time:
-                <input type="number" class="border p-1 w-16 rounded" placeholder="1" />
-                <select class="border p-1 rounded text-sm">
-                  <option>00</option>
-                  <option>30</option>
-                </select>
-                <select class="border p-1 rounded text-sm">
-                  <option>AM</option>
-                  <option>PM</option>
-                </select>
-              </label>
-              <label class="flex items-center gap-2">
-                Hourly Rate:
-                <input type="text" class="border p-1 rounded" placeholder="₱" />
-              </label>
-            </div>
-          </div>
+      <!-- Divider -->
+      <div class="h-1 w-full bg-gradient-to-r from-[#5F1213] via-[#FFA600] to-[#5F1213] rounded-full mb-6"></div>
 
-          <!-- SET PARKING PERIOD -->
-          <div class="bg-gray-100 p-6 rounded mb-6">
-            <h3 class="text-lg font-semibold mb-4 text-gray-700">SET PARKING PERIOD</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <label>
-                Max Parking Period:
-                <input type="text" class="border p-1 w-full rounded" placeholder="e.g., 8 hrs" />
-              </label>
-              <label>
-                Overtime Fee:
-                <input type="text" class="border p-1 w-full rounded" placeholder="₱" />
-                <span class="text-sm text-gray-600">per hour</span>
-              </label>
-              <label>
-                Overnight Fee:
-                <input type="text" class="border p-1 w-full rounded" placeholder="₱" />
-              </label>
-            </div>
+      <div class="space-y-10 bg-white shadow-2xl rounded-2xl p-10 border-t-8 border-[#5F1213]">
+        <!-- SET PARKING RATE -->
+        <section class="styled-section bg-[#FFF9F0] border-[#FFD580]">
+          <h3 class="section-title"> SET PARKING RATE</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="number" class="form-input" placeholder="1" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
+            <select class="form-input" :disabled="isSaved" :class="{ 'bg-gray-200': isSaved }"><option>00</option><option>30</option></select>
+            <select class="form-input" :disabled="isSaved" :class="{ 'bg-gray-200': isSaved }"><option>AM</option><option>PM</option></select>
+            <input type="text" class="form-input col-span-1 md:col-span-1" placeholder="₱" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
           </div>
+        </section>
 
-          <!-- OPERATING HOURS -->
-          <div class="bg-gray-100 p-6 rounded mb-6">
-            <h3 class="text-lg font-semibold mb-4 text-gray-700">OPERATING HOURS</h3>
-            <div class="flex flex-wrap gap-6">
-              <label class="flex items-center gap-2">
-                Opening Time:
-                <input type="number" class="border p-1 w-16 rounded" placeholder="1" />
-                <select class="border p-1 rounded text-sm">
-                  <option>00</option>
-                  <option>30</option>
-                </select>
-                <select class="border p-1 rounded text-sm">
-                  <option>AM</option>
-                  <option>PM</option>
-                </select>
-              </label>
-              <label class="flex items-center gap-2">
-                Closing Time:
-                <input type="number" class="border p-1 w-16 rounded" placeholder="10" />
-                <select class="border p-1 rounded text-sm">
-                  <option>00</option>
-                  <option>30</option>
-                </select>
-                <select class="border p-1 rounded text-sm">
-                  <option>AM</option>
-                  <option>PM</option>
-                </select>
-              </label>
-            </div>
+        <!-- SET PARKING PERIOD -->
+        <section class="styled-section bg-[#F3F4F6] border-gray-300">
+          <h3 class="section-title"> SET PARKING PERIOD</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="text" class="form-input" placeholder="e.g., 8 hrs" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
+            <input type="text" class="form-input" placeholder="₱ Overtime Fee" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
+            <input type="text" class="form-input" placeholder="₱ Overnight Fee" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
           </div>
+        </section>
 
-          <!-- Buttons -->
-          <div class="flex justify-end gap-4 mt-6">
-            <button @click="handleSave" class="bg-[#5F1213] text-white px-6 py-2 rounded">SAVE</button>
-            <button @click="handleEdit" class="bg-yellow-500 text-white px-6 py-2 rounded">EDIT</button>
-            <button @click="handleBack" class="border border-gray-400 px-6 py-2 rounded">BACK</button>
+        <!-- OPERATING HOURS -->
+        <section class="styled-section bg-[#EFF6FF] border-blue-200">
+          <h3 class="section-title"> OPERATING HOURS</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="number" class="form-input" placeholder="Opening Hour" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
+            <input type="number" class="form-input" placeholder="Closing Hour" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
           </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <div class="pt-6 flex justify-end space-x-4">
+          <button @click="handleEdit" class="btn-primary">Edit</button>
+          <button @click="handleSave" class="btn-success">Save</button>
+          <button @click="handleBack" class="btn-neutral">Back</button>
         </div>
-      </main>
-    </div>
-
-    <!-- Edit Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-        <h2 class="text-lg font-semibold mb-4">Edit Parking Settings</h2>
-        <div class="space-y-4">
-          <div>
-            <label class="block font-medium">Hourly Rate:</label>
-            <input type="text" class="w-full border p-2 rounded" placeholder="₱100">
-          </div>
-          <div>
-            <label class="block font-medium">Max Parking Period:</label>
-            <input type="text" class="w-full border p-2 rounded" placeholder="8 hrs">
-          </div>
-          <div>
-            <label class="block font-medium">Overtime Fee:</label>
-            <input type="text" class="w-full border p-2 rounded" placeholder="₱20/hr">
-          </div>
-        </div>
-        <div class="flex justify-end gap-4 mt-6">
-          <button @click="showEditModal = false" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
-          <button @click="showEditModal = false" class="bg-[#5F1213] text-white px-4 py-2 rounded">Update</button>
-        </div>
-        <button @click="showEditModal = false" class="absolute top-2 right-2 text-xl">
-          <i class="fas fa-times"></i>
-        </button>
       </div>
     </div>
   </div>
@@ -208,7 +124,82 @@ function handleBack() {
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-body {
-  font-family: 'Inter', sans-serif;
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background-color: #5F1213;
+  color: white;
 }
+.nav-link:hover {
+  background-color: #FFA600;
+  color: #5F1213;
+}
+
+.styled-section {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+  border: 1px solid;
+  background-color: #FDF9F8; 
+}
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #5F1213;
+  margin-bottom: 1rem;
+}
+
+.form-input {
+  border: 1px solid #d1d5db;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  transition: all 0.2s ease;
+  color: #1f2937;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #5F1213;
+  box-shadow: 0 0 0 2px rgba(95, 18, 19, 0.25);
+}
+
+.btn-primary {
+  background: #5F1213;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background-color: #FFA600;
+  color: #5F1213;
+}
+.btn-success {
+  background-color: #16a34a;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+.btn-success:hover {
+  background-color: #15803d;
+}
+.btn-neutral {
+  background-color: #9ca3af;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+.btn-neutral:hover {
+  background-color: #6b7280;
+}
+
 </style>
