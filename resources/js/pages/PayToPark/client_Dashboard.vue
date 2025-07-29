@@ -12,99 +12,96 @@ function omLandingPage() {
 function goToFacilities() {
   router.visit('/facilities')
 }
+import Header from '@/pages/lp_header.vue'
+import Footer from '@/pages/footer.vue'
 </script>
 
-<template>
-  <div class="landing-page bg-white text-black min-h-screen font-sans">
-    <!-- Header -->
-    <header class="bg-maroon text-white py-3 px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <div class="flex items-center gap-2">
-        <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-300">iCentral</span></h1>
-      </div>
-      <nav class="flex flex-wrap justify-center sm:justify-end gap-2">
-        <button class="nav-btn">Pay-to-Park</button>
-        <button @click="omLandingPage" class="nav-btn">Online Market</button>
-        <button @click="goToFacilities" class="nav-btn">Use-of-Facilities</button>
-        <button class="nav-btn">About CEDU</button>
-        <button class="nav-btn">Contact Us</button>
-        <button class="nav-btn">Account</button>
-      </nav>
-    </header>
 
-    <!-- Pay-to-Park Section -->
-    <section class="mt-8 px-4 sm:px-10">
-      <h2 class="text-lg font-semibold text-yellow-600 mb-4 border-l-4 border-maroon pl-2">Pay-to-Park</h2>
+<template>
+  <div class="min-h-screen bg-[#f9f9f9] font-sans text-gray-800">
+    <!-- HEADER -->
+    
+<Header />
+
+    <!-- HERO SECTION -->
+    <section class="text-center py-14 bg-white shadow-sm">
+      <h2 class="text-3xl font-bold text-[#650000] mb-2">Welcome to PAY-TO-PARK</h2>
+      <p class="text-gray-600">Experience fast, secure, and seamless campus parking services</p>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="py-12 px-6 sm:px-10 lg:px-20">
       <div class="max-w-6xl mx-auto">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <div class="p-4 bg-white rounded shadow-sm flex flex-col items-center text-center text-sm text-gray-700">
-            <div class="bg-gray-200 w-full aspect-square flex items-center justify-center border border-gray-400 rounded">
-              [ P2P Image Placeholder ]
-            </div>
-            <p class="mt-2 font-bold text-maroon">Affordable Parking Rates</p>
+        <h3 class="text-2xl font-semibold text-[#650000] mb-6 text-center">Why Use Pay-to-Park?</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <div class="card">
+            <img src="/images/PayToPark/Image1.png" alt="Rates" class="w-full h-auto object-contain mb-3 rounded-md" />
+            <h4 class="text-lg font-semibold text-[#650000]">Affordable Rates</h4>
+            <p class="text-sm text-gray-600">Budget-friendly parking for everyone</p>
           </div>
-          <div class="p-4 bg-white rounded shadow-sm flex flex-col items-center text-center text-sm text-gray-700">
-            <div class="bg-gray-200 w-full aspect-square flex items-center justify-center border border-gray-400 rounded">
-              [ Hostel Image Placeholder ]
-            </div>
-            <p class="mt-2 font-bold text-maroon">Easy Parking Access</p>
+          <div class="card">
+            <img src="/images/PayToPark/Image2.png" alt="Access" class="w-full h-auto object-contain mb-3 rounded-md" />
+            <h4 class="text-lg font-semibold text-[#650000]">QR Access</h4>
+            <p class="text-sm text-gray-600">Instant entry using secure QR code</p>
           </div>
-          <div class="p-4 bg-white rounded shadow-sm flex flex-col items-center text-center text-sm text-gray-700">
-            <div class="bg-gray-200 w-full aspect-square flex items-center justify-center border border-gray-400 rounded">
-              [ POS Image Placeholder ]
-            </div>
-            <p class="mt-2 font-bold text-maroon">Fast & Secure POS Transaction</p>
+          <div class="card">
+            <img src="/images/PayToPark/Image3.png" alt="Security" class="w-full h-auto object-contain mb-3 rounded-md" />
+            <h4 class="text-lg font-semibold text-[#650000]">Secure Area</h4>
+            <p class="text-sm text-gray-600">Monitored 24/7 for peace of mind</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-maroon text-white mt-10 py-6 px-4 sm:px-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-      <div>
-        <h3 class="font-bold mb-1">Support</h3>
-        <p>University of Southeastern Philippines<br>Tagum-Mabini Campus<br>Apokon, Tagum City</p>
-        <p>osorio.jg@usep.edu.ph<br>+63915-8538-959</p>
-      </div>
-      <div>
-        <h3 class="font-bold mb-1">Account</h3>
-        <p>My Account</p>
-        <p>Login / Register</p>
-      </div>
-      <div>
-        <h3 class="font-bold mb-1">Quick Link</h3>
-        <p>Privacy Policy</p>
-        <p>Terms of Use</p>
-        <p>FAQ</p>
-        <p>Contact</p>
-      </div>
-    </footer>
+  
+
+<Footer />
+
   </div>
 </template>
 
-<script>
-export default {
-  name: 'client_Dashboard',
-}
-</script>
-
 <style scoped>
-.bg-maroon {
-  background-color: #650000;
+.nav-link {
+  background-color: transparent;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
-.text-maroon {
+.nav-link:hover {
+  background-color: #ffcc00;
   color: #650000;
 }
-.nav-btn {
-  background: transparent;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.3s, color 0.3s;
-  white-space: nowrap;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
-.nav-btn:hover {
-  color: #facc15;
+
+.card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  animation: float 3s ease-in-out infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+.card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card img {
+  transition: transform 0.5s ease;
+}
+
+.card:hover img {
+  transform: rotate(-1deg) scale(1.05);
+}
+
+
 </style>
