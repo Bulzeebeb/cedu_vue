@@ -23,6 +23,7 @@ class UserClient extends Authenticatable
         'lastName',
         'middleName',
         'extension',
+        'image',
     ];
 
     public $timestamps = true;

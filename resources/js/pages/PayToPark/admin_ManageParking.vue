@@ -5,11 +5,30 @@ import { router } from '@inertiajs/vue3'
 const sidebarOpen = ref(false)
 const isSaved = ref(true)
 
+// Form data
+const rateHour = ref(3)           
+const rateMinute = ref('00')      
+const rateFee = ref('20')         
+
+const parkingPeriod = ref('8 hrs')
+const overtimeFee = ref('₱')
+const overnightFee = ref('₱')
+
+const openingHour = ref(6)
+const closingHour = ref(22)
+
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
 }
 function handleSave() {
   isSaved.value = true
+
+  // Replace this with an Inertia POST/PUT to backend when ready
+  console.log('Parking Rate:', `${rateHour.value}:${rateMinute.value} ${ratePeriod.value}`, 'Fee:', rateFee.value)
+  console.log('Parking Period:', parkingPeriod.value)
+  console.log('Overtime Fee:', overtimeFee.value)
+  console.log('Overnight Fee:', overnightFee.value)
+  console.log('Operating Hours:', `${openingHour.value} - ${closingHour.value}`)
 }
 function handleEdit() {
   isSaved.value = false
@@ -34,7 +53,7 @@ function admin_Reports() {
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
     <!-- Sidebar -->
-   <aside
+    <aside
       :class="[ 'bg-[#5F1213] text-white p-6 h-screen fixed top-0 z-40 transition-all duration-300',
                 sidebarOpen ? 'left-0 w-64' : '-left-64',
                 'md:left-0 md:w-64 md:block' ]"
@@ -80,36 +99,123 @@ function admin_Reports() {
       <!-- Divider -->
       <div class="h-1 w-full bg-gradient-to-r from-[#5F1213] via-[#FFA600] to-[#5F1213] rounded-full mb-6"></div>
 
+      <!-- Content Sections -->
       <div class="space-y-10 bg-white shadow-2xl rounded-2xl p-10 border-t-8 border-[#5F1213]">
-        <!-- SET PARKING RATE -->
-        <section class="styled-section bg-[#FFF9F0] border-[#FFD580]">
-          <h3 class="section-title"> SET PARKING RATE</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input type="number" class="form-input" placeholder="1" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
-            <select class="form-input" :disabled="isSaved" :class="{ 'bg-gray-200': isSaved }"><option>00</option><option>30</option></select>
-            <select class="form-input" :disabled="isSaved" :class="{ 'bg-gray-200': isSaved }"><option>AM</option><option>PM</option></select>
-            <input type="text" class="form-input col-span-1 md:col-span-1" placeholder="₱" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
+
+
+      <!-- SET PARKING RATE -->
+      <section class="styled-section bg-[#FFF9F0] border-[#FFD580]">
+        <h3 class="section-title">SET PARKING RATE</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium text-[#5F1213]">Hour</label>
+            <input
+              type="number"
+              class="form-input"
+              v-model="rateHour"
+              placeholder="3"
+              :readonly="isSaved"
+              :class="{ 'bg-gray-200': isSaved }"
+            />
           </div>
-        </section>
+          <div>
+            <label class="block mb-1 text-sm font-medium text-[#5F1213]">Minutes</label>
+            <select
+              class="form-input"
+              v-model="rateMinute"
+              :disabled="isSaved"
+              :class="{ 'bg-gray-200': isSaved }"
+            >
+              <option value="00">00</option>
+              <option value="30">30</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium text-[#5F1213]">Fee (₱)</label>
+            <input
+              type="text"
+              class="form-input"
+              v-model="rateFee"
+              placeholder="20"
+              :readonly="isSaved"
+              :class="{ 'bg-gray-200': isSaved }"
+            />
+          </div>
+        </div>
+      </section>
+
+
+
 
         <!-- SET PARKING PERIOD -->
         <section class="styled-section bg-[#F3F4F6] border-gray-300">
-          <h3 class="section-title"> SET PARKING PERIOD</h3>
+          <h3 class="section-title">SET PARKING PERIOD</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" class="form-input" placeholder="e.g., 8 hrs" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
-            <input type="text" class="form-input" placeholder="₱ Overtime Fee" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
-            <input type="text" class="form-input" placeholder="₱ Overnight Fee" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
+            <div>
+              <label class="block mb-1 text-sm font-medium text-[#5F1213]">Allowed Parking Duration</label>
+              <input
+                type="text"
+                class="form-input"
+                v-model="parkingPeriod"
+                placeholder="e.g., 8 hrs"
+                :readonly="isSaved"
+                :class="{ 'bg-gray-200': isSaved }"
+              />
+            </div>
+            <div>
+              <label class="block mb-1 text-sm font-medium text-[#5F1213]">Overtime Fee (₱)</label>
+              <input
+                type="text"
+                class="form-input"
+                v-model="overtimeFee"
+                placeholder="₱ Overtime Fee"
+                :readonly="isSaved"
+                :class="{ 'bg-gray-200': isSaved }"
+              />
+            </div>
+            <div>
+              <label class="block mb-1 text-sm font-medium text-[#5F1213]">Overnight Fee (₱)</label>
+              <input
+                type="text"
+                class="form-input"
+                v-model="overnightFee"
+                placeholder="₱ Overnight Fee"
+                :readonly="isSaved"
+                :class="{ 'bg-gray-200': isSaved }"
+              />
+            </div>
           </div>
         </section>
 
-        <!-- OPERATING HOURS -->
+
+       <!-- OPERATING HOURS -->
         <section class="styled-section bg-[#EFF6FF] border-blue-200">
-          <h3 class="section-title"> OPERATING HOURS</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="number" class="form-input" placeholder="Opening Hour" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
-            <input type="number" class="form-input" placeholder="Closing Hour" :readonly="isSaved" :class="{ 'bg-gray-200': isSaved }" />
-          </div>
-        </section>
+            <h3 class="section-title"> OPERATING HOURS</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-1 text-sm font-medium text-[#5F1213]">Opening Time</label>
+                <input
+                  type="time"
+                  class="form-input"
+                  v-model="openingHour"
+                  :readonly="isSaved"
+                  :class="{ 'bg-gray-200': isSaved }"
+                />
+              </div>
+              <div>
+                <label class="block mb-1 text-sm font-medium text-[#5F1213]">Closing Time</label>
+                <input
+                  type="time"
+                  class="form-input"
+                  v-model="closingHour"
+                  :readonly="isSaved"
+                  :class="{ 'bg-gray-200': isSaved }"
+                />
+              </div>
+            </div>
+          </section>
+
+
 
         <!-- Action Buttons -->
         <div class="pt-6 flex justify-end space-x-4">
@@ -201,5 +307,4 @@ function admin_Reports() {
 .btn-neutral:hover {
   background-color: #6b7280;
 }
-
 </style>

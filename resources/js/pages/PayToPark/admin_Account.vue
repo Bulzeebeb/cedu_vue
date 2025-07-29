@@ -80,7 +80,7 @@ function admin_Reports() {
           <i class="fas fa-user"></i> Account
         </a>
         <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-chart-bar"></i> Log out
+          <i class="fas fa-sign-out-alt"></i> Log out
         </a>
       </nav>
     </aside>

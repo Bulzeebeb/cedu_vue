@@ -123,7 +123,7 @@
           </div>
 
           <div class="mt-4 text-left">
-            <router-link to="/change-password" class="text-yellow-600 text-sm hover:underline">Change Password?</router-link>
+            <Link href="/change-password" class="text-yellow-600 text-sm hover:underline">Change Password?</Link>
           </div>
 
           <div class="mt-6 text-right">
@@ -140,14 +140,16 @@
 </template>
 
 <script setup>
+import { Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import SiteFooter from './footer.vue'
 
 const isOpen = ref(false)
+const imageFile = ref(null)
 
 const navItems = [
-  { name: 'Home', href: '/' },
+  { name: '← Back', href: '/clientSetting' },
 ]
 
 const props = defineProps({
@@ -168,13 +170,31 @@ const form = ref({
 })
 
 function saveProfile() {
-  alert('Profile saved (demo only)')
-  console.log('Form data:', form.value)
+  const formData = new FormData()
+  for (const key in form.value) {
+    formData.append(key, form.value[key])
+  }
+
+  if (imageFile.value) {
+    formData.append('image', imageFile.value)
+  }
+
+  router.post('/client/setting', formData, {
+    forceFormData: true,
+    onSuccess: () => {
+      alert('Profile updated successfully.')
+    },
+    onError: (errors) => {
+      console.error(errors)
+      alert('There were validation errors.')
+    }
+  })
 }
 
 function handleImageUpload(e) {
   const file = e.target.files[0]
   if (file) {
+    imageFile.value = file
     previewImage.value = URL.createObjectURL(file)
   }
 }

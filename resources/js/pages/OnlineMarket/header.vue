@@ -136,7 +136,7 @@ function logout() {
                 v-if="isDropdownOpen"
                 class="absolute right-0 mt-2 w-32 bg-white text-black rounded shadow-lg z-50"
               >
-                <a href="/profile" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                <a href="/clientProfile" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
                 <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Sign Out</button>
               </div>
             </div>
@@ -163,7 +163,7 @@ function logout() {
         </div>
 
         <!-- Links with icons -->
-        <a href="/profilePage.vue" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
+        <a href="/clientSetting" class="mobile-link flex items-center gap-2 text-maroon font-medium hover:text-yellow-500 hover:underline">
           <img src="/images/OnlineMarket/icons8-profile-50.png" alt="Profile Icon" class="h-4 w-4" />
           Profile
         </a>
