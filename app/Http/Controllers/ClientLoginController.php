@@ -39,11 +39,13 @@ class ClientLoginController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('userclient')->logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/signin');
     }
+
 
     public function profile()
     {
@@ -57,4 +59,18 @@ class ClientLoginController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function setting()
+    {
+        $user = Auth::guard('userclient')->user();
+
+        if (!$user) {
+            return redirect('/signin');
+        }
+
+        return Inertia::render('Client/clientSetting', [
+            'client' => $user,
+        ]);
+    }
+
 }
