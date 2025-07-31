@@ -103,7 +103,7 @@ function submitOtp() {
       })
 
       setTimeout(() => {
-        router.visit('/signin')
+        router.visit('/signmain')
       }, 3000)
     }
   })

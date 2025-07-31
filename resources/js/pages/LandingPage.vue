@@ -4,8 +4,9 @@
     <Header />
 
     <!-- SECTION 1: CEDU HIGHLIGHTS -->
-    <section class="relative bg-cover bg-center text-white py-24 px-8 text-center" style="background-image: url('/images/bg-campus.jpg')">
-      <div class="absolute inset-0 bg-[#650000]/80 backdrop-blur-sm"></div>
+     
+    <section class="relative bg-cover bg-center text-white py-24 px-8 text-center" style="background-image: url('/images/eagle.jpg')">
+            <div class="absolute inset-0 bg-[#650000]/5 backdrop-blur-[4px] animate-zoom-bg"></div>
       <div class="relative z-10 max-w-6xl mx-auto">
         <h2 class="text-4xl font-bold mb-4 animate-fade-in">Welcome to <span class="text-yellow-400">CEDU iCentral</span></h2>
         <p class="text-lg mb-12 max-w-2xl mx-auto animate-fade-in delay-200">Explore student-powered digital services designed for USeP Tagum-Mabini Campus.</p>

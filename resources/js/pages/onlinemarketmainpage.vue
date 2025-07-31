@@ -1,6 +1,7 @@
 <script setup>
+import Header from './header.vue'
+import Footer from './footer.vue'
 import { router } from '@inertiajs/vue3'
-
 
 function goToVegetable() {
   router.visit('/vegetable')
@@ -15,12 +16,13 @@ function goToPoultry() {
 
 <template>
   <div>
-    <div class="pt-20 px-4"></div>
     <SiteHeader />
 
     <!-- HERO SECTION -->
-    <section class="relative bg-cover bg-center text-white py-32 px-8 text-center overflow-hidden"
-      style="background-image: url('/images/OnlineMarket/bg-market.jpg')">
+    <section
+      class="relative bg-cover bg-center text-white py-32 px-8 text-center overflow-hidden"
+      style="background-image: url('/images/OnlineMarket/bg-market.jpg')"
+    >
       <div class="absolute inset-0 bg-[#650000]/5 backdrop-blur-[4px] animate-zoom-bg"></div>
 
       <div class="relative z-10 max-w-4xl mx-auto">
@@ -30,8 +32,10 @@ function goToPoultry() {
         <p class="text-xl mb-8 max-w-2xl mx-auto animate-fade-in delay-200 text-gray-100">
           Fresh produce and poultry straight from the campus – supporting local farmers and student-led initiatives.
         </p>
-        <button @click="goToVegetable"
-          class="bg-yellow-400 text-[#5F1213] font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-yellow-300 transition duration-300">
+        <button
+          @click="goToVegetable"
+          class="bg-yellow-400 text-[#5F1213] font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-yellow-300 transition duration-300"
+        >
           Shop Now
         </button>
       </div>
@@ -50,11 +54,14 @@ function goToPoultry() {
           <!-- VEGETABLE Card -->
           <div
             class="relative rounded-2xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group transition-transform duration-300 transform hover:scale-105"
-            style="background-image: url('/images/OnlineMarket/Vegetable_Card.png');">
+            style="background-image: url('/images/OnlineMarket/Vegetable_Card.png');"
+          >
             <div class="relative z-10 flex flex-col justify-between items-center h-full px-4 py-10">
               <h4 class="text-2xl sm:text-3xl font-bold text-white text-center">VEGETABLE</h4>
-              <button @click="goToVegetable"
-                class="px-6 py-2 bg-yellow-400 text-[#5F1213] font-semibold rounded-full shadow-md hover:bg-yellow-300 transition duration-300">
+              <button
+                @click="goToVegetable"
+                class="px-6 py-2 bg-yellow-400 text-[#5F1213] font-semibold rounded-full shadow-md hover:bg-yellow-300 transition duration-300"
+              >
                 Shop Now →
               </button>
             </div>
@@ -63,11 +70,14 @@ function goToPoultry() {
           <!-- FRUITS Card -->
           <div
             class="relative rounded-2xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group transition-transform duration-300 transform hover:scale-105"
-            style="background-image: url('/images/OnlineMarket/Fruit_Card.png');">
+            style="background-image: url('/images/OnlineMarket/Fruit_Card.png');"
+          >
             <div class="relative z-10 flex flex-col justify-between items-center h-full px-4 py-10">
               <h4 class="text-2xl sm:text-3xl font-bold text-white text-center">FRUITS</h4>
-              <button @click="goToFruit"
-                class="px-6 py-2 bg-yellow-400 text-[#5F1213] font-semibold rounded-full shadow-md hover:bg-yellow-300 transition duration-300">
+              <button
+                @click="goToFruit"
+                class="px-6 py-2 bg-yellow-400 text-[#5F1213] font-semibold rounded-full shadow-md hover:bg-yellow-300 transition duration-300"
+              >
                 Shop Now →
               </button>
             </div>
@@ -76,11 +86,14 @@ function goToPoultry() {
           <!-- POULTRY Card -->
           <div
             class="relative rounded-2xl overflow-hidden shadow-lg h-[250px] sm:h-[300px] md:h-[350px] bg-cover bg-center group transition-transform duration-300 transform hover:scale-105"
-            style="background-image: url('/images/OnlineMarket/Poultry_Card.png');">
+            style="background-image: url('/images/OnlineMarket/Poultry_Card.png');"
+          >
             <div class="relative z-10 flex flex-col justify-between items-center h-full px-4 py-10">
               <h4 class="text-2xl sm:text-3xl font-bold text-white text-center">POULTRY</h4>
-              <button @click="goToPoultry"
-                class="px-6 py-2 bg-yellow-400 text-[#5F1213] font-semibold rounded-full shadow-md hover:bg-yellow-300 transition duration-300">
+              <button
+                @click="goToPoultry"
+                class="px-6 py-2 bg-yellow-400 text-[#5F1213] font-semibold rounded-full shadow-md hover:bg-yellow-300 transition duration-300"
+              >
                 Shop Now →
               </button>
             </div>
@@ -99,71 +112,48 @@ import SiteHeader from './header.vue';
 import SiteFooter from './footer.vue';
 
 export default {
-  name: 'omLandingPage',
+  name: 'CEDUOnlineMarketLanding',
   components: {
     SiteHeader,
     SiteFooter,
-  },
-  data() {
-    return {
-      slides: [
-        {
-          image: '/images/OnlineMarket/Carousel1.png',
-          subtitle: 'WELCOME TO CEDU ONLINE MARKET!',
-          title: 'Fresh & Healthy Organic Goods',
-          description: 'Free shipping on all your order, we deliver, you enjoy',
-        },
-        {
-          image: '/images/OnlineMarket/Carousel2.png',
-          subtitle: 'JOIN THE HEALTHY CHOICE',
-          title: 'Organic Fruits & Veggies Delivered',
-          description: 'Shop seasonal picks and enjoy doorstep delivery.',
-        },
-        {
-          image: '/images/OnlineMarket/Carousel3.png',
-          subtitle: 'SUPPORT LOCAL FARMERS',
-          title: 'Eat Fresh, Eat Local',
-          description: 'Your trusted source for farm-to-table goodness.',
-        },
-      ],
-      currentSlide: 0,
-    };
-  },
-  methods: {
-    nextSlide() {
-      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-    },
-    prevSlide() {
-      this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-    },
-    handleShopNow() {
-      if (this.currentSlide === 0) {
-        this.goToVegetable();
-      } else if (this.currentSlide === 1) {
-        this.goToFruit();
-      } else if (this.currentSlide === 2) {
-        this.goToPoultry();
-      }
-    },
-    goToVegetable() {
-      this.$inertia.visit('/vegetable');
-    },
-    goToFruit() {
-      this.$inertia.visit('/fruit');
-    },
-    goToPoultry() {
-      this.$inertia.visit('/poultry');
-    },
   },
 };
 </script>
 
 <style scoped>
-.bg-maroon {
-  background-color: #651818;
+/* Fade-in animation */
+.animate-fade-in {
+  animation: fadeIn 1s ease-in-out forwards;
+}
+.animate-fade-in.delay-200 {
+  animation-delay: 0.2s;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-button {
-  cursor: pointer;
+/* Zoom effect for background */
+.animate-zoom-bg {
+  animation: zoomBg 20s ease-in-out infinite alternate;
+}
+@keyframes zoomBg {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Maroon button override */
+.bg-maroon {
+  background-color: #5F1213;
 }
 </style>

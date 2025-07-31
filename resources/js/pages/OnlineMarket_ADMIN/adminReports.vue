@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex font-sans bg-gray-100">
     <!-- Sidebar -->
-    <Sidebar />
+    <AdminSidebar />
 
     <!-- Main Dashboard -->
     <main class="ml-64 flex-1 p-6 text-[#5F1213]">
@@ -144,7 +144,7 @@
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import Chart from 'chart.js/auto'
-import Sidebar from './adminSidebar.vue'
+import AdminSidebar from './adminSidebar.vue'
 
 const lineChartFilter = ref('monthly')
 const pieChartFilter = ref('monthly')

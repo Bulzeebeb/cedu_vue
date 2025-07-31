@@ -7,7 +7,7 @@
           <div class="max-w-7xl mx-auto space-y-6">
             <!-- Title Section -->
             <div class="flex items-center justify-between">
-              <h2 class="text-3xl font-bold text-[#5F1213] tracking-wide">Pay-to-Park Reports</h2>
+              <h2 class="text-3xl font-bold text-[#5F1213] tracking-wide">Use-of-Facilities Reports</h2>
             </div>
 
             <!-- Search & Filter Card -->

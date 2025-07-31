@@ -45,6 +45,6 @@ class User extends Authenticatable
             return "{$account->first_name}{$middle} {$account->last_name}";
         }
 
-        return $this->username;
+        return $this->username ?: $this->email;
     }
 }

@@ -114,8 +114,9 @@
 
 <script setup>
 import { reactive, watch } from 'vue'
+import { useForm } from '@inertiajs/vue3'
 
-const form = reactive({
+const form = useForm({
   image: null,
   name: '',
   branch: '',
@@ -152,7 +153,12 @@ watch([() => form.category, () => form.name], ([category, name]) => {
 })
 
 function handleSubmit() {
-  console.log('Submitted Product:', form)
-  // You can emit or send data to backend here
+  form.post('/admins/products', {
+    forceFormData: true,
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset() // optional: reset the form after submission
+    }
+  })
 }
 </script>

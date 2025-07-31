@@ -1,9 +1,8 @@
 <template>
   <div class="min-h-screen flex font-sans bg-gray-100">
-    <Sidebar />
+    <AdminSidebar />
 
     <main class="ml-64 flex-1 p-6 text-[#5F1213]">
-      <SiteHeader />
 
       <!-- Page Header -->
       <div class="bg-white rounded-xl p-6 mb-2 shadow border flex items-center space-x-4">
@@ -63,8 +62,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import SiteHeader from './adminHeaderbar.vue'
 import Sidebar from './adminSidebar.vue'
+import AdminSidebar from './adminSidebar.vue'
 
 const products = ref([
   {

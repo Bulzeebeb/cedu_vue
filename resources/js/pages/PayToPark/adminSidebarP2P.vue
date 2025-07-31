@@ -1,32 +1,58 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 
+const sidebarOpen = ref(false)
+const mainContent = ref(null)
 const showNotif = ref(false)
 
 function toggleNotif(event) {
   event.stopPropagation()
   showNotif.value = !showNotif.value
 }
-function goToDashboard() {
-  router.visit('/dashboardOnlineMarketAdmin')
-}
-function goToInventory() {
-  router.visit('/inventoryOnlineMarketAdmin')
-}
-function goToProducts() {
-  router.visit('/productsOnlineMarketAdmin')
-}
-function goToProfile() {
-  router.visit('/profileOnlineMarketAdmin')
-}
-function goToReports() {
-  router.visit('/reportsOnlineMarketAdmin')
-}
 onMounted(() => {
   window.addEventListener('click', () => {
     showNotif.value = false
   })
+})
+
+const months = ref([
+  { name: 'Jan', height: '40%', revenue: '1,200' },
+  { name: 'Feb', height: '60%', revenue: '2,100' },
+  { name: 'Mar', height: '30%', revenue: '900' },
+  { name: 'Apr', height: '50%', revenue: '1,800' },
+  { name: 'May', height: '70%', revenue: '2,500' },
+  { name: 'Jun', height: '55%', revenue: '2,000' }
+])
+
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value
+}
+function goToHome() {
+  router.visit('/landingpage')
+}
+function goToDashboard() {
+  router.visit('/adminDashboardPayToPark')
+}
+function goToManageParking() {
+  router.visit('/adminManageParkingPayToPark')
+}
+function goToReports() {
+  router.visit('/reportsPayToPark')
+}
+function goToAccounts() {
+  router.visit('/adminAccountPayToPark')
+}
+function goToLogs() {
+  router.visit('/adminlogsPayToPark')
+}
+
+onMounted(() => {
+  setTimeout(() => {
+    if (mainContent.value) {
+      mainContent.value.classList.remove('opacity-0', 'translate-y-6')
+    }
+  }, 100)
 })
 </script>
 
@@ -39,27 +65,23 @@ onMounted(() => {
       </div>
       <nav class="space-y-4">
         <a href="#" @click="goToDashboard"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
+          class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-home"></i> Dashboard
         </a>
-        <a href="#" @click="goToProducts"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-box"></i> Products
-        </a>
-        <a href="#" @click="goToInventory"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-warehouse"></i> Inventory
+        <a href="#" @click="goToManageParking"
+          class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+          <i class="fas fa-parking"></i> Manage Parking
         </a>
         <a href="#" @click="goToReports"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-chart-bar"></i> Reports
+          class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+          <i class="fas fa-file-invoice-dollar"></i> Reports
         </a>
-        <a href="#" @click="goToProfile"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-user-circle"></i> Accounts
+        <a href="#" @click="goToAccounts"
+          class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
+          <i class="fas fa-user"></i> Account
         </a>
         <a href="#" @click="goToLogs"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
+          class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-file-alt"></i> Logs
         </a>
       </nav>
@@ -112,7 +134,7 @@ onMounted(() => {
       <div class="border-t border-[#FFA600]/40 my-3"></div>
 
       <!-- Logout -->
-      <a href="#" class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2">
+      <a href="#" @click="goToHome" class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2">
         <i class="fas fa-power-off text-lg"></i> Log Out
       </a>
     </div>
@@ -121,4 +143,8 @@ onMounted(() => {
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
 </style>

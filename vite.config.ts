@@ -26,4 +26,10 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    server: {
+        proxy: {
+            '/api': 'http://localhost:8000',
+        },
+    },
+
 });

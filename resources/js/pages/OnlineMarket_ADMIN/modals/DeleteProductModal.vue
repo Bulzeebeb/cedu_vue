@@ -46,20 +46,34 @@
 </template>
 
 <script setup>
+import axios from 'axios'
+import Swal from 'sweetalert2'
+
 const props = defineProps({
   isBulk: Boolean,
   product: Object,
+  selectedIds: Array,
   selectedCount: Number
 })
 
-const emit = defineEmits(['close', 'delete', 'bulk-delete'])
+const emit = defineEmits(['close', 'deleted'])
 
-function confirmDelete() {
-  if (props.isBulk) {
-    emit('bulk-delete')
-  } else {
-    emit('delete', props.product?.id)
+async function confirmDelete() {
+  try {
+    if (props.isBulk) {
+      await axios.post('/admins/products/bulk-delete', {
+        ids: props.selectedIds
+      })
+      Swal.fire('Deleted!', 'Selected products deleted.', 'success')
+    } else {
+      await axios.delete(`/admins/products/${props.product.id}`)
+      Swal.fire('Deleted!', `${props.product.name} has been deleted.`, 'success')
+    }
+
+    emit('deleted') // Parent will refresh the product list
+    emit('close')
+  } catch (error) {
+    Swal.fire('Error', 'Something went wrong while deleting.', 'error')
   }
-  emit('close')
 }
 </script>

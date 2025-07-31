@@ -1,3 +1,4 @@
+@ -0,0 +1,56 @@
 <template>
   <!-- Footer -->
   <footer class="bg-maroon text-white">

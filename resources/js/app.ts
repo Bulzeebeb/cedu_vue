@@ -8,29 +8,45 @@ import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import axios from 'axios'; // ✅ Added
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
-        resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
-    setup({ el, App, props, plugin }) {
-        // ✅ Axios global config
-        axios.defaults.baseURL = 'http://localhost:8000/api';
+  title: (title) => (title ? `${title} - ${appName}` : appName),
+  resolve: (name) =>
+    resolvePageComponent(
+      `./pages/${name}.vue`,
+      import.meta.glob<DefineComponent>('./pages/**/*.vue')
+    ),
+  setup({ el, App, props, plugin }) {
+    // ✅ Remove baseURL so Axios uses Laravel web.php routes
+    // axios.defaults.baseURL = 'http://localhost:8000/api' ← Removed
 
-        const token = localStorage.getItem('token');
-        if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
+    // ✅ Add CSRF token for POST/PUT/DELETE requests to web.php
+    const csrfToken = document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute('content')
 
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(ZiggyVue)
-            .mount(el);
-    },
-    progress: {
-        color: '#4B5563',
-    },
-});
+    if (csrfToken) {
+      axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
+    } else {
+      console.warn('CSRF token not found in meta tag.')
+    }
 
-initializeTheme(); // Light/Dark mode setup
+    // Optional: If you're using auth tokens stored in localStorage
+    const token = localStorage.getItem('token')
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
+
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .use(ZiggyVue)
+      .mount(el)
+  },
+  progress: {
+    color: '#4B5563',
+  },
+})
+
+initializeTheme()

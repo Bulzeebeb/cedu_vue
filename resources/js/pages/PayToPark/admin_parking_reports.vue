@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
+import AdminSidebarP2P from './adminSidebarP2P.vue'
 
 // Sidebar toggle
 const sidebarOpen = ref(false)
@@ -78,41 +79,7 @@ function downloadPOS(log) {
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213] relative">
-    <!-- Sidebar -->
-    <aside
-      :class="[
-        'bg-[#5F1213] text-white p-6 h-screen fixed top-0 z-40 transition-all duration-300',
-        sidebarOpen ? 'left-0 w-64' : '-left-64',
-        'md:left-0 md:w-64 md:block'
-      ]"
-    >
-      <div class="flex justify-between items-center mb-10">
-        <h1 class="text-lg font-bold">
-          CEDU <span class="text-yellow-300">iCentral</span>
-        </h1>
-        <button class="md:hidden text-xl" @click="toggleSidebar">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-
-      <nav class="space-y-4">
-        <a href="#" @click.prevent="admin_Dashboard" class="nav-link">
-          <i class="fas fa-chart-line"></i> Dashboard
-        </a>
-        <a href="#" @click.prevent="admin_ManageParking" class="nav-link">
-          <i class="fas fa-parking"></i> Manage Parking
-        </a>
-        <a href="#" @click.prevent="admin_Reports" class="nav-link">
-          <i class="fas fa-file-invoice-dollar"></i> Reports
-        </a>
-        <a href="#" @click.prevent="admin_Account" class="nav-link">
-          <i class="fas fa-user"></i> Account
-        </a>
-        <a href="#" class="nav-link">
-          <i class="fas fa-sign-out-alt"></i> Log out
-        </a>
-      </nav>
-    </aside>
+    <AdminSidebarP2P />
 
     <!-- Main Content -->
     <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-6 overflow-x-hidden">
@@ -149,7 +116,8 @@ function downloadPOS(log) {
       <!-- Responsive Table Wrapper -->
       <div class="bg-white shadow rounded-lg overflow-x-auto">
         <table class="min-w-[900px] w-full text-sm text-left text-gray-800 border border-gray-200">
-          <thead class="bg-gradient-to-r from-[#5F1213] via-[#7A2E2F] to-[#5F1213] text-white text-sm uppercase tracking-wide">
+          <thead
+            class="bg-gradient-to-r from-[#5F1213] via-[#7A2E2F] to-[#5F1213] text-white text-sm uppercase tracking-wide">
             <tr>
               <th class="p-4 border-b">#</th>
               <th class="p-4 border-b">Name</th>
@@ -172,10 +140,12 @@ function downloadPOS(log) {
               <td class="p-3">{{ log.hours }}</td>
               <td class="p-3 font-semibold text-[#5F1213]">{{ log.amount }}</td>
               <td class="p-3">
-                <img :src="log.qr" class="w-10 h-10 object-cover cursor-pointer hover:scale-110 transition-transform rounded" alt="QR" />
+                <img :src="log.qr"
+                  class="w-10 h-10 object-cover cursor-pointer hover:scale-110 transition-transform rounded" alt="QR" />
               </td>
               <td class="p-3 text-center">
-                <button @click="downloadPOS(log)" class="relative group text-[#5F1213] hover:text-[#3C0C0C] transition text-lg">
+                <button @click="downloadPOS(log)"
+                  class="relative group text-[#5F1213] hover:text-[#3C0C0C] transition text-lg">
                   <i class="fas fa-download"></i>
                 </button>
               </td>
@@ -193,10 +163,173 @@ function downloadPOS(log) {
 
       <!-- Pagination -->
       <div class="flex justify-center mt-6 gap-2 text-sm">
-        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn" :class="currentPage === 1 ? 'disabled-btn' : 'hover:bg-yellow-400'">&lt;</button>
-        <button v-for="page in visiblePages" :key="page" @click="changePage(page)" :class="['page-btn', currentPage === page ? 'bg-yellow-400 text-white' : 'hover:bg-yellow-200']">{{ page }}</button>
-        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="page-btn" :class="currentPage === totalPages ? 'disabled-btn' : 'hover:bg-yellow-400'">&gt;</button>
+        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn"
+          :class="currentPage === 1 ? 'disabled-btn' : 'hover:bg-yellow-400'">&lt;</button>
+        <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
+          :class="['page-btn', currentPage === page ? 'bg-yellow-400 text-white' : 'hover:bg-yellow-200']">{{ page
+          }}</button>
+        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="page-btn"
+          :class="currentPage === totalPages ? 'disabled-btn' : 'hover:bg-yellow-400'">&gt;</button>
       </div>
+      
+      
+      //MODAAAAAL
+
+
+
+      <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div
+          class="bg-white text-black rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 lg:p-8 relative border border-gray-300 mx-4">
+
+          <!-- Header Title and Close -->
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-1 h-6 bg-maroon rounded-sm"></div>
+            <h2 class="text-xl font-semibold text-yellow-600">GENERATED POS</h2>
+            <button @click="close" class="absolute top-4 right-4 text-xl font-bold text-gray-600 hover:text-red-500">
+              &times;
+            </button>
+          </div>
+
+          <!-- POS FORM CONTENT START -->
+          <div class="pos-form border border-gray-400 rounded-lg p-4 sm:p-6 shadow-sm">
+
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-stretch mb-6 gap-4">
+              <div class="w-full sm:w-1/5 flex items-center justify-center">
+                <img src="/logo.png" alt="Logo" class="h-full max-h-[120px] object-contain" />
+              </div>
+              <div class="w-full sm:w-4/5 flex flex-col justify-center text-center px-4">
+                <h1 class="text-base">Republic of the Philippines</h1>
+                <h2 class="text-xl font-bold">University of Southeastern Philippines</h2>
+                <h3 class="text-sm italic">Resource Management Division (RMD)</h3><br>
+                <h2 class="text-2xl font-bold tracking-wide mt-1">ORDER OF PAYMENT</h2>
+              </div>
+            </div>
+
+            <!-- Basic Info (with border) -->
+            <div class="border border-gray-300 rounded-md p-4 text-sm mb-6 space-y-2 shadow-sm">
+              <div class="flex justify-between">
+                <div></div>
+                <div><span class="font-semibold">Control No.:</span> 001</div>
+              </div>
+              <div class="flex justify-between">
+                <div><span class="font-semibold">Name:</span> Shannen Ann C. Boliros</div>
+              </div>
+              <div><span class="font-semibold">Organization:</span> BSIT</div>
+              <div class="flex justify-between">
+                <div><span class="font-semibold">Date Applied:</span> July 8, 2025</div>
+              </div>
+              <div><span class="font-semibold">Validity Period:</span> July 8–10, 2025</div>
+            </div>
+
+            <!-- Facility to Use -->
+            <h3 class="text-lg font-semibold mb-2">Facility to Use</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm border border-gray-300 mb-6">
+                <thead>
+                  <tr class="bg-gray-200">
+                    <th class="text-left p-2 border-b border-gray-300">Select</th>
+                    <th class="text-left p-2 border-b border-gray-300">Facility</th>
+                    <th class="text-right p-2 border-b border-gray-300">Cost (Php)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(cost, name) in facilities" :key="name" class="even:bg-gray-50">
+                    <td class="p-2 border-b border-gray-200">
+                      <input type="checkbox" v-model="selectedFacilities" :value="name" />
+                    </td>
+                    <td class="p-2 border-b border-gray-200">
+                      <template v-if="name === 'Other (Specify)'">
+                        <input v-if="selectedFacilities.includes(name)" type="text" v-model="otherFacilityName"
+                          placeholder="Specify other facility" class="border px-2 py-1 rounded w-full" />
+                        <span v-else>{{ name }}</span>
+                      </template>
+                      <template v-else>{{ name }}</template>
+                    </td>
+                    <td class="p-2 text-right border-b border-gray-200">
+                      <input type="number" v-model.number="facilities[name]"
+                        class="border px-2 py-1 rounded text-right w-24" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Additional Payments -->
+            <h3 class="text-lg font-semibold mb-2">Additional Payment For:</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm border border-gray-300 mb-6">
+                <thead>
+                  <tr class="bg-gray-200">
+                    <th class="text-left p-2 border-b border-gray-300">Select</th>
+                    <th class="text-left p-2 border-b border-gray-300">Payment</th>
+                    <th class="text-right p-2 border-b border-gray-300">Cost (Php)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(cost, name) in additionalPayments" :key="name" class="even:bg-gray-50">
+                    <td class="p-2 border-b border-gray-200">
+                      <input type="checkbox" v-model="selectedAdditionalPayments" :value="name" />
+                    </td>
+                    <td class="p-2 border-b border-gray-200">
+                      <template v-if="name === 'Other (Specify)'">
+                        <input v-if="selectedAdditionalPayments.includes(name)" type="text" v-model="otherPaymentName"
+                          placeholder="Specify other payment" class="border px-2 py-1 rounded w-full" />
+                        <span v-else>{{ name }}</span>
+                      </template>
+                      <template v-else>{{ name }}</template>
+                    </td>
+                    <td class="p-2 text-right border-b border-gray-200">
+                      <input type="number" v-model.number="additionalPayments[name]"
+                        class="border px-2 py-1 rounded text-right w-24" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Total Cost -->
+            <div class="text-right font-semibold text-xl mt-4 mb-8 border-t pt-3">
+              Total Cost: Php {{ totalCost.toFixed(2) }}
+            </div>
+
+            <!-- Signatures -->
+            <div class="flex flex-col sm:flex-row justify-between mt-8 text-sm gap-8">
+              <div class="text-center">
+                <span class="block mb-6">By: Staff</span>
+                <div class="border-t border-gray-400 w-40 mx-auto"></div>
+              </div>
+              <div class="text-center">
+                <span class="block mb-6">Noted by: CEDU Head / RMD Director</span>
+                <div class="border-t border-gray-400 w-60 mx-auto"></div>
+              </div>
+            </div>
+          </div>
+          <!-- POS FORM CONTENT END -->
+
+          <!-- Buttons -->
+          <div class="mt-10 flex justify-center gap-4">
+            <button @click="downloadPOS"
+              class="w-full bg-maroon text-white py-2 rounded-full hover:bg-red-800 font-medium">
+              Download POS
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </div>
   </div>
 </template>
@@ -207,6 +340,7 @@ function downloadPOS(log) {
 body {
   font-family: 'Inter', sans-serif;
 }
+
 .nav-link {
   display: flex;
   align-items: center;
@@ -217,16 +351,19 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: background 0.3s, color 0.3s;
 }
+
 .nav-link:hover {
   background-color: #FFA600;
   color: #5F1213;
 }
+
 .input-style {
   padding: 0.5rem 1rem 0.5rem 2.5rem;
   border: 1px solid #ccc;
   border-radius: 0.375rem;
   width: 100%;
 }
+
 .search-icon {
   position: absolute;
   top: 50%;
@@ -234,11 +371,13 @@ body {
   transform: translateY(-50%);
   color: #888;
 }
+
 .select-style {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 0.375rem;
 }
+
 .download-btn {
   background-color: #5F1213;
   color: white;
@@ -250,14 +389,17 @@ body {
   gap: 0.5rem;
   transition: background 0.3s;
 }
+
 .download-btn:hover {
   background-color: #731a1c;
 }
+
 .page-btn {
   padding: 0.25rem 0.75rem;
   border: 1px solid #ccc;
   border-radius: 9999px;
 }
+
 .disabled-btn {
   color: #aaa;
   cursor: not-allowed;

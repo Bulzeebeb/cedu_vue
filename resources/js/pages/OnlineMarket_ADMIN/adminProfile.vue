@@ -1,5 +1,6 @@
 <template>
   <main class="w-full p-12 text-[#5F1213] bg-gray-100 min-h-screen">
+    <AdminSidebar />
     <div class="max-w-6xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-200 relative overflow-hidden">
       <div class="absolute top-0 right-0 bg-[#FFA600] text-white px-4 py-1 rounded-bl-xl text-xs font-bold shadow">
         Admin Profile
@@ -154,6 +155,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import AdminSidebar from './adminSidebar.vue'
 
 const showModal = ref(false)
 const showPassword = ref(false)

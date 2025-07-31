@@ -21,7 +21,7 @@ function handleSearch() {
 }
 
 function goHome() {
-  router.visit('/')
+  router.visit('/onlinemarketlandingpageclient')
 }
 function goToFruit() {
   router.visit('/fruit')
@@ -45,10 +45,7 @@ function logout() {
   <div class="fixed top-0 left-0 w-full z-50">
     <!-- Top maroon bar -->
     <div class="w-full bg-maroon text-[10px] text-gray-200 flex justify-end items-center pr-4 py-2 border-b border-yellow-500">
-      <a href="/" class="flex items-center gap-1 hover:underline">
-        <img src="/images/OnlineMarket/back.png" alt="Back" class="h-3 w-3 invert" />
-        Back to main
-      </a>
+
     </div>
 
     <!-- Main Navbar -->
@@ -211,7 +208,7 @@ export default {
   data() {
     return {
       navItems: [
-        { name: "Home", href: "/" },
+        { name: "Home", href: "/onlinemarketlandingpageclient" },
         { name: "Fruits", href: "/fruit" },
         { name: "Vegetables", href: "/vegetable" },
         { name: "Poultry", href: "/poultry" },

@@ -1,9 +1,8 @@
 <template>
   <div class="min-h-screen flex font-sans bg-gray-100">
-    <Sidebar />
+    <AdminSidebar />
 
     <main class="ml-64 flex-1 p-6 text-[#5F1213]">
-      <SiteHeader />
 
       <!-- Page Header -->
       <div class="bg-white rounded-xl p-6 mb-2 shadow border flex items-center space-x-4">
@@ -83,47 +82,53 @@
     </main>
 
     <!-- Modals -->
-    <AddProductModal v-if="showAddModal" @close="showAddModal = false" @add="addProduct" />
+    <AddProductModal v-if="showAddModal" @close="showAddModal = false" @add="fetchProducts" />
     <EditProductModal v-if="showEditModal" :product="selectedProduct" @close="showEditModal = false" @save="saveEdit" />
     <DeleteProductModal v-if="showDeleteModal" :product="selectedProduct" :selected-ids="selectedIds" @close="showDeleteModal = false" @delete="deleteProduct" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import SiteHeader from './adminHeaderbar.vue'
-import Sidebar from './adminSidebar.vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import AddProductModal from './modals/AddProductModal.vue'
 import EditProductModal from './modals/EditProductModal.vue'
 import DeleteProductModal from './modals/DeleteProductModal.vue'
+import AdminSidebar from './adminSidebar.vue'
 
+// Modal state
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 
+// Data state
 const selectedProduct = ref(null)
 const selectedIds = ref([])
+const products = ref([])
 
-const products = ref([
-  { id: 'P001', name: 'Tomatoes', branch: 'Tagum', category: 'Vegetables', price: 120, stock: 34, status: 'Available', unit: '/kilo', image: '/images/vegetables/tomatoes.jpg' },
-  { id: 'P002', name: 'Egg Tray', branch: 'Mabini', category: 'Poultry', price: 160, stock: 12, status: 'Out of Stock', unit: '/tray', image: '/images/poultry/eggs.jpg' },
-  { id: 'P003', name: 'Apple', branch: 'Tagum', category: 'Fruits', price: 95, stock: 53, status: 'Available', unit: '/kilo', image: '/images/fruits/apple.jpg' },
-  { id: 'P004', name: 'Chicken Dung', branch: 'Mabini', category: 'Poultry', price: 70, stock: 40, status: 'Available', unit: '/sack', image: '/images/poultry/chicken_dung.jpg' },
-  { id: 'P005', name: 'Culled Chicken', branch: 'Tagum', category: 'Poultry', price: 220, stock: 18, status: 'Out of Stock', unit: '/pc', image: '/images/poultry/culled_chicken.jpg' }
-])
+// Fetch products from backend
+const fetchProducts = async () => {
+  try {
+    const response = await axios.get('/admins/products') // Update URL if needed
+    products.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch products:', error)
+  }
+}
+onMounted(fetchProducts)
 
-// Bulk selection
+// Selection logic
 const allSelected = computed(() => selectedIds.value.length === products.value.length)
 const toggleSelectAll = () => {
   selectedIds.value = allSelected.value ? [] : products.value.map(p => p.id)
 }
 
-// Pagination
+// Pagination logic
 const currentPage = ref(1)
-const perPage = 3
+const perPage = 5
 const totalPages = computed(() => Math.ceil(products.value.length / perPage))
 
-// Sorting
+// Sorting logic
 const sortKey = ref('')
 const sortAsc = ref(true)
 
@@ -148,7 +153,7 @@ const sortedProducts = computed(() => {
     const bVal = b[sortKey.value]
     return typeof aVal === 'number'
       ? (sortAsc.value ? aVal - bVal : bVal - aVal)
-      : (sortAsc.value ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal))
+      : (sortAsc.value ? String(aVal).localeCompare(bVal) : String(bVal).localeCompare(aVal))
   })
 })
 
@@ -157,22 +162,15 @@ const paginatedProducts = computed(() => {
   return sortedProducts.value.slice(start, start + perPage)
 })
 
-// Modal logic
-const addProduct = (newProduct) => {
-  const id = 'P' + String(products.value.length + 1).padStart(3, '0')
-  products.value.push({ ...newProduct, id })
-  showAddModal.value = false
-}
-
+// CRUD functions
 const editProduct = (product) => {
   selectedProduct.value = { ...product }
   showEditModal.value = true
 }
 
-const saveEdit = (updatedProduct) => {
-  const index = products.value.findIndex(p => p.id === updatedProduct.id)
-  if (index !== -1) products.value[index] = { ...updatedProduct }
+const saveEdit = () => {
   showEditModal.value = false
+  fetchProducts()
 }
 
 const confirmDelete = (product) => {
@@ -185,9 +183,14 @@ const prepareDeleteSelected = () => {
   showDeleteModal.value = true
 }
 
-const deleteProduct = (idsToDelete) => {
-  products.value = products.value.filter(p => !idsToDelete.includes(p.id))
-  selectedIds.value = []
-  showDeleteModal.value = false
+const deleteProduct = async (idsToDelete) => {
+  try {
+    await axios.post('/admins/products/bulk-delete', { ids: idsToDelete }) // Update route as needed
+    fetchProducts()
+    selectedIds.value = []
+    showDeleteModal.value = false
+  } catch (error) {
+    console.error('Delete failed:', error)
+  }
 }
 </script>

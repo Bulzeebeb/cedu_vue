@@ -1,61 +1,7 @@
 <template>
   <div class="min-h-screen flex font-sans">
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#5F1213] text-white h-screen p-6 fixed top-0 left-0">
-      <div class="mb-10">
-        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-500">iCentral</span></h1>
-      </div>
-      <nav class="space-y-4">
-        <Link href="/admin/dashboard" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-home"></i> Dashboard
-        </Link>
-        <div class="group">
-          <a href="#" class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3">
-              <i class="fas fa-arrows-rotate"></i> Update
-            </span>
-            <i class="fas fa-caret-down"></i>
-          </a>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <!-- Reports-PTP -->
-            <Link href="/admin/update/paytopark" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Pay-to-Park</Link>
-            <Link href="/admin/update/onlinemarket" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Online Market</Link>
-            <Link href="/admin/update/useoffacilities" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Use-of-Facilities</Link>
-          </div>
-        </div>
-        <div class="group">
-          <a href="#" class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3">
-              <i class="fas fa-chart-bar"></i> Reports
-            </span>
-            <i class="fas fa-caret-down"></i>
-          </a>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <Link href="/admin/report/paytopark" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Pay-to-Park</Link>
-            <Link href="/admin/report/onlinemarket" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Online Market</Link>
-            <Link href="/admin/report/useoffacilities" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Use-of-Facilities</Link>
-          </div>
-        </div>
-        <div class="group">
-          <a href="#" class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3">
-              <i class="fas fa-user-circle"></i> Account
-            </span>
-            <i class="fas fa-caret-down"></i>
-          </a>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <Link href="/admin/prfile" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#FFA600] text-[#5F1213] font-bold shadow transition"> Profile</Link>
-            <Link href="/admin/account" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Manage Account</Link>
-          </div>
-        </div>
-        <Link href="/admin/logs" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition">
-          <i class="fas fa-file-alt"></i> Logs</Link>
-        <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-red-400 font-medium shadow hover:bg-red-600 hover:text-white transition duration-200">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-      </nav>
-    </aside>
-
+    <Sidebar />
     <!-- Main content -->
     <main class="ml-64 w-full p-12 text-[#5F1213] bg-gray-100 min-h-screen">
       <div class="max-w-6xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-200 relative overflow-hidden">
@@ -240,6 +186,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import Sidebar from './sidebar.vue'
 
 const updateMenuOpen = ref(false)
 const reportsMenuOpen = ref(false)

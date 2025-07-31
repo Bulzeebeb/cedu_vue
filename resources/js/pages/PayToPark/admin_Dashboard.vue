@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+import AdminSidebarP2P from './adminSidebarP2P.vue'
 
 const sidebarOpen = ref(false)
 const mainContent = ref(null)
@@ -42,41 +43,7 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
-    <!-- Sidebar -->
-    <aside
-      :class="[
-        'bg-[#5F1213] text-white p-6 h-screen fixed top-0 z-40 transition-all duration-300',
-        sidebarOpen ? 'left-0 w-64' : '-left-64',
-        'md:left-0 md:w-64 md:block'
-      ]"
-    >
-      <div class="flex justify-between items-center mb-10">
-        <h1 class="text-lg font-bold">
-          CEDU <span class="text-yellow-300">iCentral</span>
-        </h1>
-        <button class="md:hidden text-xl" @click="toggleSidebar">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-
-      <nav class="space-y-4">
-        <a href="#" @click="admin_Dashboard" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-chart-line"></i> Dashboard
-        </a>
-        <a href="#" @click="admin_ManageParking" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-parking"></i> Manage Parking
-        </a>
-        <a href="#" @click="admin_Reports" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-file-invoice-dollar"></i> Reports
-        </a>
-        <a href="#" @click="admin_Account" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-user"></i> Account
-        </a>
-        <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-sign-out-alt"></i> Log out
-        </a>
-      </nav>
-    </aside>
+    <AdminSidebarP2P />
 
     <!-- Main Content -->
     <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
@@ -88,14 +55,7 @@ onMounted(() => {
           </button>
           <h1 class="text-4xl font-extrabold text-[#5F1213]">Dashboard</h1>
         </div>
-        <div class="flex items-center gap-4">
-          <button class="relative">
-            <i class="fas fa-bell text-xl"></i>
-            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
-            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-          <img src="https://i.pravatar.cc/40" class="rounded-full w-10 h-10 border-2 border-white" alt="Profile" />
-        </div>
+        
       </header>
 
       <!-- Divider -->

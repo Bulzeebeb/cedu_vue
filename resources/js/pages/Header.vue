@@ -4,14 +4,17 @@ import { router } from '@inertiajs/vue3'
 function goToSignIn() {
   router.visit('/signmain')
 }
+function goToHome() {
+  router.visit('/landingpage')
+}
 function goToOnlineMarket() {
-  router.visit('/onlinemarketlandingpage')
+  router.visit('/onlinemarket')
 }
 function goToPayToPark() {
-  router.visit('/paytoparklandingpage')
+  router.visit('/paytopark')
 }
 function goToRental() {
-  router.visit('/')
+  router.visit('/rentalfacility')
 }
 function goToAboutUs() {
   router.visit('/aboutus')
@@ -36,7 +39,7 @@ function goToAboutUs() {
 
             <!-- Desktop Nav -->
             <nav class="hidden md:flex space-x-6 font-medium">
-                <button @click="active = 'lp'" :class="linkClass('lp')">Home</button>
+                <button @click="goToHome" :class="linkClass('landingpage')">Home</button>
                 <button @click="goToOnlineMarket" :class="linkClass('market')">Online Market</button>
                 <button @click="goToPayToPark" :class="linkClass('park')">Pay to Park</button>
                 <button @click="goToRental" :class="linkClass('facilities')">Use of Facilities</button>
@@ -77,14 +80,14 @@ function goToAboutUs() {
                         </svg>
                         <span class="text-sm">Help & FAQs</span>
                     </a>
-                    <Link href="/signmain"
-                        class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15 12h.01M12 15h.01M9 12h.01M12 9h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
-                    </svg>
-                    <span class="text-sm">Sign In</span>
-                    </Link>
+                    <button @click="goToSignIn"
+                        class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 12h.01M12 15h.01M9 12h.01M12 9h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                        </svg>
+                        <span class="text-sm">Sign In</span>
+                    </button>
 
 
                 </div>
@@ -95,11 +98,11 @@ function goToAboutUs() {
         <!-- Mobile Nav -->
         <div v-if="isMobileMenuOpen" class="md:hidden px-6 pb-4 text-white space-y-2">
             <!-- Nav Buttons -->
-            <button @click="activateTab('home')" :class="mobileLinkClass('home')">Home</button>
-            <button @click="goToOnlineMarket" :class="linkClass('market')">Online Market</button>
-            <button @click="activateTab('park')" :class="mobileLinkClass('park')">Pay to Park</button>
-            <button @click="activateTab('facilities')" :class="mobileLinkClass('facilities')">Use of Facilities</button>
-            <button @click="activateTab('about')" :class="mobileLinkClass('about')">About Us</button>
+            <button @click="goToHome" :class="mobileLinkClass('home')">Home</button>
+            <button @click="goToOnlineMarket" :class="mobileLinkClass('market')">Online Market</button>
+            <button @click="goToPayToPark" :class="mobileLinkClass('park')">Pay to Park</button>
+            <button @click="goToRental" :class="mobileLinkClass('facilities')">Use of Facilities</button>
+            <button @click="goToAboutUs" :class="mobileLinkClass('about')">About Us</button>
 
             <!-- Profile Section -->
             <div class="pt-6 border-t border-white/20">
@@ -110,7 +113,7 @@ function goToAboutUs() {
                 </div>
                 <div class="space-y-1 pl-12 text-sm">
                     <a href="#" class="block hover:underline">Hello, User</a>
-                    <a href="#" class="block hover:underline">Hello, User</a>
+                    <button @click="goToSignIn" class="block hover:underline w-full text-left">Sign In</button>
                     <a href="#" class="block hover:underline">Log Out</a>
                 </div>
             </div>
@@ -119,7 +122,6 @@ function goToAboutUs() {
 </template>
 
 <script>
-import { Link } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 
 export default {
@@ -147,15 +149,31 @@ export default {
       this.isMobileMenuOpen = false;
 
       // Navigation on mobile
-      if (tab === 'market') router.visit('/onlinemarketlandingpage');
-      if (tab === 'park') router.visit('/paytoparklandingpage');
-      if (tab === 'facilities') router.visit('/facilities');
+      if (tab === 'home' || tab === 'landingpage') router.visit('/landingpage');
+      if (tab === 'market') router.visit('/onlinemarketmainpage');
+      if (tab === 'park') router.visit('/paytoparkmainpage');
+      if (tab === 'facilities') router.visit('/rentalfacilitymainpage');
       if (tab === 'about') router.visit('/about');
-      if (tab === 'home' || tab === 'lp') router.visit('/');
+      if (tab === 'home' || tab === 'landingpage') router.visit('/');
+    },
+    goToHome() {
+      this.active = 'home';
+      router.visit('/landingpage');
     },
     goToOnlineMarket() {
       this.active = 'market';
-      router.visit('/onlinemarketlandingpage');
+      router.visit('/onlinemarketmainpage');
+    },
+    goToPayToPark() {
+      this.active = 'park';
+      router.visit('/paytoparkmainpage');
+    },
+    goToRental() {
+      this.active = 'facilities';
+      router.visit('/rentalfacilitymainpage');
+    },
+    goToSignIn() {
+      router.visit('/signmain');
     },
     handleOutsideClick(e) {
       const dropdown = this.$el.querySelector(".relative");

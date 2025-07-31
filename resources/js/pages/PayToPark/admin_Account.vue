@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+import AdminSidebarP2P from './adminSidebarP2P.vue'
 
 const sidebarOpen = ref(false)
 const isModalOpen = ref(false)
@@ -49,42 +50,7 @@ function admin_Reports() {
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
-    <!-- Sidebar -->
-    <aside
-      :class="[
-        'bg-[#5F1213] text-white p-6 h-screen fixed top-0 z-40 transition-all duration-300',
-        sidebarOpen ? 'left-0 w-64' : '-left-64',
-        'md:left-0 md:w-64 md:block'
-      ]"
-    >
-      <div class="flex justify-between items-center mb-10">
-        <h1 class="text-lg font-bold">
-          CEDU <span class="text-yellow-300">iCentral</span>
-        </h1>
-        <button class="md:hidden text-xl" @click="toggleSidebar">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-
-      <nav class="space-y-4">
-        <a href="#" @click="admin_Dashboard" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-chart-line"></i> Dashboard
-        </a>
-        <a href="#" @click="admin_ManageParking" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-parking"></i> Manage Parking
-        </a>
-        <a href="#" @click="admin_Reports" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-file-invoice-dollar"></i> Reports
-        </a>
-        <a href="#" @click="admin_Account" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-user"></i> Account
-        </a>
-        <a href="#" class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-sign-out-alt"></i> Log out
-        </a>
-      </nav>
-    </aside>
-
+    <AdminSidebarP2P />
     <!-- Main Content -->
     <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
       <!-- Header -->
@@ -131,10 +97,13 @@ function admin_Reports() {
     </div>
 
     <!-- Edit Modal -->
-    <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg w-full max-w-2xl shadow-xl">
-        <h2 class="text-xl font-bold mb-4 text-[#5F1213]">Edit Profile</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+     <div v-if="isModalOpen" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl border border-[#FFA600]/30 w-full max-w-5xl animate-fade-in relative">
+          <button @click="isModalOpen = false" class="absolute top-3 right-4 text-gray-500 hover:text-red-600 text-xl font-bold">&times;</button>
+          <h2 class="text-2xl font-bold mb-6 text-[#5F1213] flex items-center gap-3">
+            <i class="fas fa-edit text-[#FFA600] text-xl"></i> Edit Profile
+          </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><label class="block text-sm font-semibold mb-1">First Name</label><input v-model="profile.firstName" class="w-full border p-2 rounded" /></div>
           <div><label class="block text-sm font-semibold mb-1">Last Name</label><input v-model="profile.lastName" class="w-full border p-2 rounded" /></div>
           <div><label class="block text-sm font-semibold mb-1">M.I.</label><input v-model="profile.middleInitial" class="w-full border p-2 rounded" /></div>

@@ -125,28 +125,32 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { reactive, watch } from 'vue'
+import Swal from 'sweetalert2'
+
+const props = defineProps({ product: Object })
+const emit = defineEmits(['close'])
 
 const form = reactive({
+  id: props.product.id,
   image: null,
-  name: '',
-  branch: '',
-  category: '',
-  price: null,
-  stock: null,
-  status: 'Available',
-  unit: ''
+  name: props.product.name,
+  branch: props.product.branch,
+  category: props.product.category,
+  price: props.product.price,
+  stock: props.product.stock,
+  status: props.product.status,
+  unit: props.product.unit
 })
 
 function handleImageUpload(event) {
   const file = event.target.files[0]
-  if (file) {
-    form.image = file
-  }
+  if (file) form.image = file
 }
 
 watch([() => form.category, () => form.name], ([category, name]) => {
-  const lowerName = name.toLowerCase()
+  const lowerName = name?.toLowerCase() || ''
   if (category === 'Vegetables' || category === 'Fruits') {
     form.unit = '/kilo'
   } else if (category === 'Poultry') {
@@ -164,8 +168,32 @@ watch([() => form.category, () => form.name], ([category, name]) => {
   }
 })
 
-function handleSubmit() {
-  console.log('Updated Product:', form)
-  // Perform API call or emit here
+async function handleSubmit() {
+  const formData = new FormData()
+  formData.append('name', form.name)
+  formData.append('branch', form.branch)
+  formData.append('category', form.category)
+  formData.append('price', form.price)
+  formData.append('stock', form.stock)
+  formData.append('status', form.status)
+  formData.append('unit', form.unit)
+  if (form.image) formData.append('image', form.image)
+
+  try {
+    const res = await axios.put(`/admins/products/${form.id}`, formData)
+    Swal.fire({
+      icon: 'success',
+      title: 'Updated!',
+      text: res.data.message || 'Product updated successfully.'
+    })
+    emit('updated')
+    emit('close')
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Update Failed',
+      text: err.response?.data?.message || 'Something went wrong.'
+    })
+  }
 }
 </script>
