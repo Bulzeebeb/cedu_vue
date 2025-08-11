@@ -46,34 +46,54 @@
 </template>
 
 <script setup>
-import axios from 'axios'
+import { router } from '@inertiajs/vue3'
 import Swal from 'sweetalert2'
 
 const props = defineProps({
   isBulk: Boolean,
   product: Object,
-  selectedIds: Array,
-  selectedCount: Number
+  selectedIds: {
+    type: Array,
+    default: () => []
+  },
+  selectedCount: {
+    type: Number,
+    default: 0
+  }
 })
 
 const emit = defineEmits(['close', 'deleted'])
 
-async function confirmDelete() {
-  try {
-    if (props.isBulk) {
-      await axios.post('/admins/products/bulk-delete', {
-        ids: props.selectedIds
-      })
-      Swal.fire('Deleted!', 'Selected products deleted.', 'success')
-    } else {
-      await axios.delete(`/admins/products/${props.product.id}`)
-      Swal.fire('Deleted!', `${props.product.name} has been deleted.`, 'success')
-    }
-
-    emit('deleted') // Parent will refresh the product list
-    emit('close')
-  } catch (error) {
-    Swal.fire('Error', 'Something went wrong while deleting.', 'error')
+function confirmDelete() {
+  if (props.isBulk && props.selectedIds.length > 0) {
+    // Bulk delete logic
+    router.post('/admins/products/bulk-delete', { ids: props.selectedIds }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        Swal.fire('Deleted!', 'Selected products deleted.', 'success')
+        emit('deleted')
+        emit('close')
+      },
+      onError: () => {
+        Swal.fire('Error', 'Something went wrong while deleting.', 'error')
+      }
+    })
+  } else if (props.product?.id) {
+    // Single delete logic
+    router.delete(`/admins/products/${props.product.id}`, {
+      preserveScroll: true,
+      onSuccess: () => {
+        Swal.fire('Deleted!', `${props.product.name} has been deleted.`, 'success')
+        emit('deleted')
+        emit('close')
+      },
+      onError: () => {
+        Swal.fire('Error', 'Something went wrong while deleting.', 'error')
+      }
+    })
+  } else {
+    // Fallback if no action is available
+    Swal.fire('Warning', 'No product selected for deletion.', 'warning')
   }
 }
 </script>

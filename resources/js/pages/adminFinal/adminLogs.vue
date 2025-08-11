@@ -2,7 +2,6 @@
   <div class="min-h-screen flex font-sans">
     <Sidebar />
 
-    <!-- Main Content -->
     <main class="ml-64 flex-1 bg-gradient-to-br from-gray-50 to-gray-200 p-10">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-[#5F1213] flex items-center gap-2">
@@ -43,8 +42,8 @@
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-for="(log, index) in paginatedLogs" :key="index" class="hover:bg-yellow-50">
-              <td class="px-6 py-3 font-medium">{{ log.date }}</td>
-              <td class="px-6 py-3">{{ log.time }}</td>
+              <td class="px-6 py-3 font-medium">{{ new Date(log.created_at).toLocaleDateString() }}</td>
+              <td class="px-6 py-3">{{ new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</td>
               <td class="px-6 py-3 font-semibold">{{ log.name }}</td>
               <td class="px-6 py-3">
                 <span :class="log.role === 'Admin' ? 'bg-green-600' : 'bg-blue-500'" class="text-white text-xs px-3 py-1 rounded-full font-semibold">
@@ -77,26 +76,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import Sidebar from './sidebar.vue'
 
-const logs = ref([
-  { date: '2025-07-15', time: '10:45 AM', name: 'Juan Dela Cruz', role: 'Admin', action: 'Updated profile picture' },
-  { date: '2025-07-15', time: '11:10 AM', name: 'Maria Santos', role: 'Staff', action: 'Added new Pay-to-Park entry' },
-  { date: '2025-07-16', time: '08:30 AM', name: 'Carlo Reyes', role: 'Admin', action: 'Removed old user account' },
-  { date: '2025-07-16', time: '09:00 AM', name: 'Jen Cruz', role: 'Staff', action: 'Generated monthly report' },
-  // Add more logs here...
-])
+const logs = ref([])
 
 const searchName = ref('')
 const selectedDate = ref('')
 const currentPage = ref(1)
 const logsPerPage = 10
 
+onMounted(async () => {
+  try {
+    const response = await axios.get('/api/logs')
+    logs.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch logs', error)
+  }
+})
+
 const filteredLogs = computed(() => {
   return logs.value.filter(log => {
-    const matchDate = selectedDate.value ? log.date === selectedDate.value : true
+    const matchDate = selectedDate.value ? log.created_at.slice(0, 10) === selectedDate.value : true
     const matchName = searchName.value ? log.name.toLowerCase().includes(searchName.value.toLowerCase()) : true
     return matchDate && matchName
   })
@@ -114,6 +116,7 @@ const resetFilters = () => {
   searchName.value = ''
   currentPage.value = 1
 }
+
 </script>
 
 <style scoped>

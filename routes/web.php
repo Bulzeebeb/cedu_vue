@@ -5,17 +5,26 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ClientRegisterController;
 use App\Http\Controllers\ClientLoginController;
-use Illuminate\Http\Request;
-use Laravel\Sanctum\HasApiTokens;
-use App\Models\User;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminAccountController;
 use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\BuyHistoryController;
+use App\Http\Controllers\OnlineMarketInventoryController;
+use App\Http\Controllers\OnlineMarketOrdersController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AdminUserClientController;
 
 // ======================
 // MAIN LANDING PAGE ROUTES
 // ======================
+
+Route::get('/sample', function () {
+    return Inertia::render('sample');
+})->name('sample');
 
 Route::get('/landingpage', function () {
     return Inertia::render('LandingPage');
@@ -33,12 +42,16 @@ Route::get('/rentalfacility', function () {
     return Inertia::render('rentalfacilitymainpage');
 })->name('rentalfacility');
 
+Route::get('/aboutus', function () {
+    return Inertia::render('AboutUs'); 
+})->name('aboutus');
+
 Route::get('/adminchoice', function () {
-    return Inertia::render('AdminChoice'); // Assuming you have an AdminChoice component
+    return Inertia::render('AdminChoice'); 
 })->name('adminchoice');
 
 Route::get('/clientchoice', function () {
-    return Inertia::render('ClientChoice'); // Assuming you have an AdminChoice component
+    return Inertia::render('ClientChoice'); 
 })->name('clientchoice');
 
 /*
@@ -66,9 +79,6 @@ Route::post('/login', function() {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-
-
 Route::put('/admins/products/{id}', [ProductController::class, 'update']);
 
 
@@ -140,6 +150,9 @@ Route::get('/sidebar', function () {
 //Route::post('/signin', [ClientLoginController::class, 'login'])->name('login.attempt');
 //Route::post('/logout', [ClientLoginController::class, 'logout'])->name('logout');
 
+
+
+
 // ======================
 // 🔐 ONLINE MARKET ADMIN ROUTES
 // ======================
@@ -147,17 +160,17 @@ Route::get('/sidebarOnlineMarketAdmin', function () {
     return Inertia::render('OnlineMarket_ADMIN/adminSidebar');
 })->name('sidebarOnlineMarketAdmin');
 
-Route::get('/dashboardOnlineMarketAdmin', function () {
+Route::get('/admin/dashboard', function () {
     return Inertia::render('OnlineMarket_ADMIN/adminDashboard');
-})->name('dashboardOnlineMarketAdmin');
+})->name('admin.dashboard');
 
-Route::get('/inventoryOnlineMarketAdmin', function () {
+Route::get('/admins/inventory', function () {
     return Inertia::render('OnlineMarket_ADMIN/adminInventory');
-})->name('inventoryOnlineMarketAdmin');
+})->name('admins.inventory');
 
-Route::get('/productsOnlineMarketAdmin', function () {
+Route::get('/admins/products', function () {
     return Inertia::render('OnlineMarket_ADMIN/adminProducts');
-})->name('productsOnlineMarketAdmin');
+})->name('admins.products');
 
 Route::get('/profileOnlineMarketAdmin', function () {
     return Inertia::render('OnlineMarket_ADMIN/adminProfile');
@@ -167,15 +180,53 @@ Route::get('/reportsOnlineMarketAdmin', function () {
     return Inertia::render('OnlineMarket_ADMIN/adminReports');
 })->name('reportsOnlineMarketAdmin');
 
+Route::prefix('admins/products')->group(function () {
+    Route::get('/', [ProductController::class, 'adminIndex'])->name('admin.products.index');
+    Route::post('/', [ProductController::class, 'store'])->name('admin.products.store');
+    Route::post('/bulk-delete', [ProductController::class, 'bulkDelete'])->name('admin.products.bulk-delete');
+    Route::put('/{id}', [ProductController::class, 'update'])->name('admin.products.update');
+    Route::delete('/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+});
+
+Route::prefix('admins/inventory')->group(function () {
+    Route::get('/', [OnlineMarketInventoryController::class, 'adminIndex'])->name('admin.inventory.index');
+    Route::post('/', [OnlineMarketInventoryController::class, 'store'])->name('admin.inventory.store');
+    Route::post('/bulk-delete', [OnlineMarketInventoryController::class, 'bulkDelete'])->name('admin.inventory.bulk-delete');
+    Route::put('/{id}', [OnlineMarketInventoryController::class, 'update'])->name('admin.inventory.update');
+    Route::delete('/{id}', [OnlineMarketInventoryController::class, 'destroy'])->name('admin.inventory.destroy');
+});
+
+Route::prefix('admins/orders')->group(function () {
+    Route::get('/', [OnlineMarketOrdersController::class, 'adminIndex'])->name('admin.orders.index');
+    Route::post('/', [OnlineMarketOrdersController::class, 'store'])->name('admin.orders.store');
+    Route::post('/bulk-delete', [OnlineMarketOrdersController::class, 'bulkDelete'])->name('admin.orders.bulk-delete');
+    Route::put('/{id}', [OnlineMarketOrdersController::class, 'update'])->name('admin.orders.update');
+    Route::delete('/{id}', [OnlineMarketOrdersController::class, 'destroy'])->name('admin.orders.destroy');
+});
+
+
+// Actual dashboard data
+Route::get('/admin/dashboard/data', [DashboardController::class, 'index'])->name('admin.dashboard.data');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+    Route::put('/orders/{order}/mark-paid', [OrderController::class, 'markAsPaid'])->name('admin.orders.mark-paid');
+    Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/userclients', [AdminUserClientController::class, 'index']);
+    Route::delete('/userclients/{id}', [AdminUserClientController::class, 'destroy']);
+});
+
 
 
 // ======================
 // ONLINE MARKET ROUTES CLIENT
 // ======================
 
-Route::get('/omd', function () {
-    return Inertia::render('OnlineMarket/adminDashboard');
-})->name('omd');
 
 Route::get('/omu', function () {
     return Inertia::render('OnlineMarket/useoffac');
@@ -191,21 +242,6 @@ Route::get('/onlinemarketlandingpageclient', function () {
     return Inertia::render('OnlineMarket/omLandingPage');
 })->name('onlinemarketlandingpageclient');
 
-// Vegetable page
-Route::get('/vegetable', function () {
-    return Inertia::render('OnlineMarket/vegetablePage');
-})->name('vegetable');
-
-//  Fruit page
-Route::get('/fruit', function () {
-    return Inertia::render('OnlineMarket/fruitPage'); // Make sure this matches the actual Vue file/component name
-})->name('fruit');
-
-//  Poultry page
-Route::get('/poultry', function () {
-    return Inertia::render('OnlineMarket/poultryPage');
-})->name('poultry');
-
 //  Add To Cart Page
 Route::get('/cart', function () {
     return Inertia::render('OnlineMarket/addtocartPage');
@@ -219,10 +255,18 @@ Route::get('/viewproduct/{id}', function ($id) {
 })->name('viewproduct');
 
 
-//  Checkout confirmation page
-Route::get('/checkout', function () {
-    return Inertia::render('OnlineMarket/checkoutPage');
-})->name('checkout');
+// Product Routes
+    Route::get('/fruit', [ProductController::class, 'showFruits'])->name('fruits.index');
+    Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry.index');
+    Route::get('/vegetable', [ProductController::class, 'showVegetables'])->name('vegetables.index');
+
+
+
+
+
+
+
+
 
 
 // ======================
@@ -290,11 +334,6 @@ Route::get('/edithistoryPayToPark', function () {
 Route::get('/generatePOSPayToPark', function () {
     return Inertia::render('PayToPark/generate_pos');
 })->name('generatePOSPayToPark');
-
-
-Route::get('/onlinemarketPOS', function () {
-    return Inertia::render('PayToPark/onlineMart_pos');
-})->name('onlinemarketPOS');
 
 
 Route::get('/generateQRPayToPark', function () {
@@ -367,10 +406,13 @@ Route::post('/signin', [ClientLoginController::class, 'login'])->name('client.lo
 Route::post('/client-logout', [ClientLoginController::class, 'logout'])->name('client.logout');
 Route::get('/client.landing', fn () => Inertia::render('ClientChoice'))->name('client.landing');
 
+
+Route::get('/pos', [CheckoutController::class, 'displayPOS'])->name('pos.display');
+
 Route::middleware('auth:userclient')->group(function () {
     Route::get('/clientProfile', [ClientLoginController::class, 'profile'])->name('Profile');
 
-    Route::get('/clientchoice', fn () => Inertia::render('ClientChoice', [
+    Route::get('/om-landing', fn () => Inertia::render('ClientChoice', [
         'user' => Auth::guard('userclient')->user(),
     ]))->name('client.landing');
 
@@ -386,16 +428,50 @@ Route::middleware('auth:userclient')->group(function () {
     Route::get('/change-password', [ClientProfileController::class, 'showChangePasswordForm']);
     Route::post('/change-password', [ClientProfileController::class, 'updatePassword']);
     Route::post('/send-password-otp', [ClientProfileController::class, 'sendPasswordOtp']);
+
+    // Product Routes
+    Route::get('/fruits', [ProductController::class, 'showFruits'])->name('fruits.index');
+    Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry.index');
+    Route::get('/vegetables', [ProductController::class, 'showVegetables'])->name('vegetables.index');
+
+    // Cart Routes
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
+    // Checkout Routes
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    // Buy History Routes
+    Route::get('/buy-history', [BuyHistoryController::class, 'index'])->name('buy.history');
+    Route::post('/orders/{orderId}/cancel', [BuyHistoryController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::post('/cart/reorder', [BuyHistoryController::class, 'reorder'])->name('cart.reorder');
+    Route::get('/orders/{orderId}', [BuyHistoryController::class, 'show'])->name('orders.show');
+    Route::get('/api/order-stats', [BuyHistoryController::class, 'getOrderStats'])->name('api.order.stats');
+
+    // Order History (Optional - for future implementation)
+    // Route::get('/orders', [CheckoutController::class, 'orderHistory'])->name('orders.history');
+    // Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
 });
 
-//ADMIN PRODUCTS
-Route::post('/admins/products', [ProductController::class, 'store']);
 
-Route::get('/admins/products', [ProductController::class, 'index']);
-Route::post('/admins/products', [ProductController::class, 'store']);
-Route::put('/admins/products/{product}', [ProductController::class, 'update']);
-Route::delete('/admins/products/{id}', [ProductController::class, 'destroy']);
-Route::post('/admins/products/bulk-delete', [ProductController::class, 'bulkDelete']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

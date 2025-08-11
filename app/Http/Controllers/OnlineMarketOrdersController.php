@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
 use App\Models\Product;
 use Inertia\Inertia;
 
-class ProductController extends Controller
+class OnlineMarketOrdersController extends Controller
 {
     public function adminIndex()
     {
-        $products = Product::all();
+        $orders = Order::with('orderItems.product')->get();
 
-        return Inertia::render('OnlineMarket_ADMIN/adminProducts', [
-            'products' => $products
+        return Inertia::render('OnlineMarket_ADMIN/adminOrders', [
+            'orders' => $orders
         ]);
     }
 
@@ -32,7 +33,7 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $imageName = time().'_'.$request->file('image')->getClientOriginalName();
+            $imageName = time() . '_' . $request->file('image')->getClientOriginalName();
             $imagePath = $request->file('image')->storeAs('products', $imageName, 'public');
             $validated['image'] = Storage::url($imagePath);
         }
@@ -50,6 +51,50 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Product added successfully!');
     }
+
+    /**
+     * Show order details
+     */
+    public function show(Order $order)
+    {
+        $order->load('orderItems');
+
+        return response()->json([
+            'order' => $order,
+            'items' => $order->orderItems
+        ]);
+    }
+
+    /**
+     * Get all orders for admin
+     */
+    public function index()
+    {
+        $orders = Order::with('orderItems')->latest()->paginate(20);
+
+        return inertia('Admin/Orders', [
+            'orders' => $orders
+        ]);
+    }
+
+    /**
+     * Update order status
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,paid,cancelled,completed'
+        ]);
+
+        try {
+            $order->update(['status' => $request->status]);
+
+            return redirect()->back()->with('success', 'Order status updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update order status.');
+        }
+    }
+
 
     public function update(Request $request, $id)
     {
@@ -80,20 +125,6 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Product updated successfully!');
     }
 
-    public function destroy($id)
-    {
-        $product = Product::findOrFail($id);
-
-        if ($product->image) {
-            $path = str_replace('/storage/', 'public/', $product->image);
-            Storage::delete($path);
-        }
-
-        $product->delete();
-
-        return redirect()->back()->with('success', 'Product deleted successfully!');
-    }
-
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('ids', []);
@@ -119,8 +150,8 @@ class ProductController extends Controller
     {
         // Option 2: Hide out of stock products (your preference)
         $products = Product::where('category', 'Fruits')
-                         ->where('stock', '>', 0)
-                         ->get();
+            ->where('stock', '>', 0)
+            ->get();
 
         $cartCount = $this->getCartCount();
 
@@ -134,8 +165,8 @@ class ProductController extends Controller
     {
         // Option 2: Hide out of stock products (your preference)
         $products = Product::where('category', 'Poultry')
-                         ->where('stock', '>', 0)
-                         ->get();
+            ->where('stock', '>', 0)
+            ->get();
 
         $cartCount = $this->getCartCount();
 
@@ -149,8 +180,8 @@ class ProductController extends Controller
     {
         // Option 2: Hide out of stock products (your preference)
         $products = Product::where('category', 'Vegetables')
-                         ->where('stock', '>', 0)
-                         ->get();
+            ->where('stock', '>', 0)
+            ->get();
 
         $cartCount = $this->getCartCount();
 

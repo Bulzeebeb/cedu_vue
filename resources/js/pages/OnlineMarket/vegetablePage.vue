@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="pt-24 px-4"></div>
-    <SiteHeader :cart-count="cart.length" />
+    <SiteHeader :cart-count="cartCount" />
 
     <!-- Shop Page Content -->
     <section class="py-12 bg-gray-100">
@@ -36,38 +36,57 @@
         </div>
 
         <!-- Product Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div v-if="sortedProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           <div v-for="product in sortedProducts" :key="product.id"
-            class="bg-white rounded-2xl shadow-sm overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
+            class="bg-white rounded-2xl shadow-sm overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+            @click="goToViewProduct(product.id)">
             <!-- Image -->
             <div class="relative">
-              <img :src="product.image" @click="goToViewProduct(product.id)" alt="Product Image"
-                class="w-full h-52 object-cover transition duration-500 transform hover:scale-105" />
+              <img
+                :src="product.image"
+                :alt="product.name"
+                class="w-full h-52 object-cover transition duration-500 transform hover:scale-105"
+                @error="handleImageError"
+              />
             </div>
 
             <div class="p-4">
-              <h5 class="text-sm font-bold mb-1 text-gray-800">{{ product.title }}</h5>
+              <h5 class="text-sm font-bold mb-1 text-gray-800">{{ product.name }}</h5>
               <p class="text-gray-500 text-[10px] mb-1">
-                Available: {{ product.quantity }}
-                <span v-if="product.metric">{{ product.metric }}</span>
+                Available: {{ product.stock }} {{ product.unit }}
               </p>
+              <p class="text-xs text-gray-600 mb-2">Branch: {{ product.branch }}</p>
               <div class="flex justify-between items-center">
                 <span class="text-xs font-semibold text-gray-700">
-                  ₱{{ product.price }}
-                  <span v-if="product.metric">/ {{ product.metric }}</span>
+                  ₱{{ parseFloat(product.price).toFixed(2) }} / {{ product.unit }}
                 </span>
 
-                <button @click="addToCart(product)"
-                  class="bg-yellow-500 text-maroon text-[10px] font-semibold px-2 py-1 rounded-full transition duration-300 hover:shadow-md hover:-translate-y-0.5">
-                  Add to Cart
-                </button>
+                <form @submit.prevent="addToCart(product.id)" class="inline">
+                  <button
+                    type="submit"
+                    :disabled="product.status === 'Out of Stock'"
+                    :class="[
+                      'text-maroon text-[10px] font-semibold px-2 py-1 rounded-full transition duration-300',
+                      product.status === 'Out of Stock'
+                        ? 'bg-gray-300 cursor-not-allowed'
+                        : 'bg-yellow-500 hover:shadow-md hover:-translate-y-0.5'
+                    ]"
+                  >
+                    {{ product.status === 'Out of Stock' ? 'Out of Stock' : 'Add to Cart' }}
+                  </button>
+                </form>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- No products message -->
+        <div v-else class="text-center py-12">
+          <p class="text-gray-500 text-lg">No vegetables available at the moment.</p>
+        </div>
+
         <!-- Pagination -->
-        <nav aria-label="Page navigation" class="mt-8 flex justify-center">
+        <nav v-if="sortedProducts.length > 0" aria-label="Page navigation" class="mt-8 flex justify-center">
           <ul class="flex space-x-1">
             <li>
               <a href="#"
@@ -98,56 +117,54 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import SiteHeader from './header.vue'
 import SiteFooter from './footer.vue'
 import { router } from '@inertiajs/vue3'
-import axios from 'axios'
+import { ref, computed } from 'vue'
 
-export default {
-  name: 'VegetablePage',
-  components: {
-    SiteHeader,
-    SiteFooter,
+// Receive props from Laravel controller
+const props = defineProps({
+  products: {
+    type: Array,
+    default: () => []
   },
-  data() {
-    return {
-      sortBy: 'asc',
-      itemsToShow: 10,
-      cart: [],
-      products: [],
-    }
-  },
-  created() {
-    this.fetchProducts()
-  },
-  methods: {
-    fetchProducts() {
-      axios.get('http://127.0.0.1:8000/api/products')
-        .then(response => {
-          this.products = response.data
-        })
-        .catch(error => {
-          console.error('Error fetching products:', error)
-        })
-    },
-    methods: {
-      addToCart(product) {
-        const found = this.cart.find(item => item.id === product.id)
-        if (found) {
-          found.qty += 1
-        } else {
-          this.cart.push({ ...product, qty: 1 })
-        }
-      },
-      goToViewProduct(id) {
-        router.visit(`/viewproduct/${id}`)
-      },
-    },
+  cartCount: {
+    type: Number,
+    default: 0
   }
+})
+
+const sortBy = ref('asc')
+const itemsToShow = ref(10)
+
+// Use the products from Laravel instead of API calls
+const sortedProducts = computed(() => {
+  return props.products
+    .slice()
+    .sort((a, b) => {
+      const priceA = parseFloat(a.price)
+      const priceB = parseFloat(b.price)
+      return sortBy.value === 'asc' ? priceA - priceB : priceB - priceA
+    })
+    .slice(0, itemsToShow.value)
+})
+
+function addToCart(productId) {
+  router.post('/cart/add', {
+    product_id: productId
+  })
+}
+
+function goToViewProduct(id) {
+  router.visit(`/viewproduct/${id}`)
+}
+
+function handleImageError(event) {
+  // Fallback image if product image fails to load
+  event.target.src = 'https://via.placeholder.com/400x300?text=No+Image'
 }
 </script>
-
 
 <style scoped>
 .text-maroon {

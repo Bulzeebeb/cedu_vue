@@ -178,15 +178,15 @@ async function handleSubmit() {
   formData.append('status', form.status)
   formData.append('unit', form.unit)
   if (form.image) formData.append('image', form.image)
+  formData.append('_method', 'PUT')
 
   try {
-    const res = await axios.put(`/admins/products/${form.id}`, formData)
+    const res = await axios.post(`/admins/products/${form.id}`, formData)
     Swal.fire({
       icon: 'success',
       title: 'Updated!',
-      text: res.data.message || 'Product updated successfully.'
+      text: res.data.message
     })
-    emit('updated')
     emit('close')
   } catch (err) {
     Swal.fire({

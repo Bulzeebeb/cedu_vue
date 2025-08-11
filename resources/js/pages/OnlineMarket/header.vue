@@ -37,7 +37,11 @@ function goCart() {
 }
 
 function logout() {
-  router.post('/logout')
+  router.post('/logout', {}, {
+    onSuccess: () => {
+      router.visit('/login')
+    }
+  })
 }
 </script>
 
@@ -45,7 +49,7 @@ function logout() {
   <div class="fixed top-0 left-0 w-full z-50">
     <!-- Top maroon bar -->
     <div class="w-full bg-maroon text-[10px] text-gray-200 flex justify-end items-center pr-4 py-2 border-b border-yellow-500">
-
+      
     </div>
 
     <!-- Main Navbar -->
@@ -133,7 +137,7 @@ function logout() {
                 v-if="isDropdownOpen"
                 class="absolute right-0 mt-2 w-32 bg-white text-black rounded shadow-lg z-50"
               >
-                <a href="/clientProfile" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                <a href="/clientSetting" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
                 <button @click="logout" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Sign Out</button>
               </div>
             </div>

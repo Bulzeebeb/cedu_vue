@@ -9,19 +9,25 @@ function toggleNotif(event) {
   showNotif.value = !showNotif.value
 }
 function goToDashboard() {
-  router.visit('/dashboardOnlineMarketAdmin')
+  router.visit('/admin/dashboard')
 }
 function goToInventory() {
-  router.visit('/inventoryOnlineMarketAdmin')
+  router.visit('/admins/inventory')
 }
 function goToProducts() {
-  router.visit('/productsOnlineMarketAdmin')
+  router.visit('/admins/products')
+}
+function goToOrders() {
+  router.visit('/admins/orders')
 }
 function goToProfile() {
   router.visit('/profileOnlineMarketAdmin')
 }
 function goToReports() {
   router.visit('/reportsOnlineMarketAdmin')
+}
+function goToHome() {
+  router.visit('/landingpage')
 }
 onMounted(() => {
   window.addEventListener('click', () => {
@@ -46,6 +52,10 @@ onMounted(() => {
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-box"></i> Products
         </a>
+        <a href="#" @click="goToOrders"
+          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
+          <i class="fas fa-cart-shopping"></i> Orders
+        </a>
         <a href="#" @click="goToInventory"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-warehouse"></i> Inventory
@@ -61,6 +71,10 @@ onMounted(() => {
         <a href="#" @click="goToLogs"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-file-alt"></i> Logs
+        </a>
+        <a href="#" @click="goToEditStore"
+          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
+          <i class="fas fa-store"></i> Online Market
         </a>
       </nav>
     </div>
@@ -112,9 +126,9 @@ onMounted(() => {
       <div class="border-t border-[#FFA600]/40 my-3"></div>
 
       <!-- Logout -->
-      <a href="#" class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2">
+      <button @click="goToHome" type="button" class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2 w-full">
         <i class="fas fa-power-off text-lg"></i> Log Out
-      </a>
+      </button>
     </div>
   </aside>
 </template>

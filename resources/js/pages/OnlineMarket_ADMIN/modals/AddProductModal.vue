@@ -80,7 +80,7 @@
           />
         </div>
 
-        <!-- Unit -->
+        <!-- Unit (auto-filled) -->
         <div class="mb-6">
           <label class="block text-sm text-gray-700 font-medium mb-1">Unit</label>
           <input
@@ -115,7 +115,9 @@
 <script setup>
 import { reactive, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 
+// Form definition
 const form = useForm({
   image: null,
   name: '',
@@ -126,6 +128,7 @@ const form = useForm({
   unit: ''
 })
 
+// Image upload handler
 function handleImageUpload(event) {
   const file = event.target.files[0]
   if (file) {
@@ -133,11 +136,14 @@ function handleImageUpload(event) {
   }
 }
 
+// Auto-unit handler based on category and name
 watch([() => form.category, () => form.name], ([category, name]) => {
-  const lowerName = name.toLowerCase()
-  if (category === 'Vegetables' || category === 'Fruits') {
+  const cat = category?.toLowerCase() ?? ''
+  const lowerName = name?.toLowerCase() ?? ''
+
+  if (cat === 'vegetables' || cat === 'fruits') {
     form.unit = '/kilo'
-  } else if (category === 'Poultry') {
+  } else if (cat === 'poultry') {
     if (lowerName.includes('egg')) {
       form.unit = '/tray'
     } else if (lowerName.includes('dung')) {
@@ -145,19 +151,34 @@ watch([() => form.category, () => form.name], ([category, name]) => {
     } else if (lowerName.includes('culled') || lowerName.includes('chicken')) {
       form.unit = '/pc'
     } else {
-      form.unit = ''
+      form.unit = '/kilo'
     }
   } else {
     form.unit = ''
   }
 })
 
+// Submit handler
 function handleSubmit() {
   form.post('/admins/products', {
     forceFormData: true,
     preserveScroll: true,
     onSuccess: () => {
-      form.reset() // optional: reset the form after submission
+      Swal.fire({
+        title: 'Success!',
+        text: 'Product added successfully.',
+        icon: 'success',
+        confirmButtonColor: '#5F1213'
+      })
+      form.reset()
+    },
+    onError: () => {
+      Swal.fire({
+        title: 'Error',
+        text: 'There was an error adding the product.',
+        icon: 'error',
+        confirmButtonColor: '#5F1213'
+      })
     }
   })
 }

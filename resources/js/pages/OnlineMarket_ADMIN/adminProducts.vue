@@ -52,7 +52,7 @@
               </td>
               <td class="py-2 px-2">{{ product.id }}</td>
               <td class="py-2 px-2">
-                <img :src="product.image" class="w-10 h-10 object-cover rounded" />
+                <img :src="getProductImage(product.image)" class="w-10 h-10 object-cover rounded" />
               </td>
               <td class="py-2 px-2">{{ product.name }}</td>
               <td class="py-2 px-2">{{ product.branch }}</td>
@@ -83,52 +83,47 @@
 
     <!-- Modals -->
     <AddProductModal v-if="showAddModal" @close="showAddModal = false" @add="fetchProducts" />
+    <AddProductModal v-if="showAddModal" @close="showAddModal = false" @add="handleAddProduct" />
     <EditProductModal v-if="showEditModal" :product="selectedProduct" @close="showEditModal = false" @save="saveEdit" />
-    <DeleteProductModal v-if="showDeleteModal" :product="selectedProduct" :selected-ids="selectedIds" @close="showDeleteModal = false" @delete="deleteProduct" />
+    <DeleteProductModal
+        v-if="showDeleteModal"
+        :product="selectedProduct"
+        :selected-ids="selectedIds.value"
+        @close="showDeleteModal = false"
+        @delete="deleteProduct"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import AddProductModal from './modals/AddProductModal.vue'
 import EditProductModal from './modals/EditProductModal.vue'
 import DeleteProductModal from './modals/DeleteProductModal.vue'
 import AdminSidebar from './adminSidebar.vue'
 
-// Modal state
+const props = defineProps({
+  products: Array
+})
+
+const selectedIds = ref([])
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 
-// Data state
 const selectedProduct = ref(null)
-const selectedIds = ref([])
-const products = ref([])
-
-// Fetch products from backend
-const fetchProducts = async () => {
-  try {
-    const response = await axios.get('/admins/products') // Update URL if needed
-    products.value = response.data
-  } catch (error) {
-    console.error('Failed to fetch products:', error)
-  }
-}
-onMounted(fetchProducts)
-
-// Selection logic
-const allSelected = computed(() => selectedIds.value.length === products.value.length)
-const toggleSelectAll = () => {
-  selectedIds.value = allSelected.value ? [] : products.value.map(p => p.id)
-}
-
-// Pagination logic
 const currentPage = ref(1)
 const perPage = 5
-const totalPages = computed(() => Math.ceil(products.value.length / perPage))
 
-// Sorting logic
+const allSelected = computed(() => selectedIds.value.length === props.products.length)
+const toggleSelectAll = () => {
+  selectedIds.value = allSelected.value ? [] : props.products.map(p => p.id)
+}
+
+const totalPages = computed(() => Math.ceil(props.products.length / perPage))
+
 const sortKey = ref('')
 const sortAsc = ref(true)
 
@@ -147,8 +142,9 @@ const getSortIcon = (key) => {
 }
 
 const sortedProducts = computed(() => {
-  if (!sortKey.value) return [...products.value]
-  return [...products.value].sort((a, b) => {
+  const list = [...props.products]
+  if (!sortKey.value) return list
+  return list.sort((a, b) => {
     const aVal = a[sortKey.value]
     const bVal = b[sortKey.value]
     return typeof aVal === 'number'
@@ -162,7 +158,7 @@ const paginatedProducts = computed(() => {
   return sortedProducts.value.slice(start, start + perPage)
 })
 
-// CRUD functions
+// CRUD Actions
 const editProduct = (product) => {
   selectedProduct.value = { ...product }
   showEditModal.value = true
@@ -170,8 +166,9 @@ const editProduct = (product) => {
 
 const saveEdit = () => {
   showEditModal.value = false
-  fetchProducts()
+  reloadProducts()
 }
+
 
 const confirmDelete = (product) => {
   selectedProduct.value = product
@@ -183,14 +180,44 @@ const prepareDeleteSelected = () => {
   showDeleteModal.value = true
 }
 
-const deleteProduct = async (idsToDelete) => {
-  try {
-    await axios.post('/admins/products/bulk-delete', { ids: idsToDelete }) // Update route as needed
-    fetchProducts()
-    selectedIds.value = []
-    showDeleteModal.value = false
-  } catch (error) {
-    console.error('Delete failed:', error)
-  }
+const deleteProduct = (idsToDelete) => {
+  router.post('/admins/products/bulk-delete', {
+    ids: idsToDelete
+  }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      showDeleteModal.value = false
+      selectedIds.value = []
+      reloadProducts()
+    },
+    onError: (e) => {
+      console.error('Delete failed:', e)
+    }
+  })
 }
+
+const reloadProducts = () => {
+  router.reload({
+    only: ['products'],
+    onSuccess: () => {
+      products.value = [...usePage().props.products]
+    }
+  })
+// ...existing code...
+}
+const handleAddProduct = () => {
+  showAddModal.value = false
+  reloadProducts()
+}
+
+function getProductImage(image) {
+  if (!image) return '/images/no-image.png'
+  // If image is a full URL or Laravel Storage::url output
+  if (image.startsWith('http') || image.startsWith('/storage/')) return image
+  // If image is a relative path like './storage/products/...'
+  if (image.startsWith('./storage/')) return image.replace('./', '/')
+  // Otherwise, fallback to default
+  return '/images/no-image.png'
+}
+
 </script>

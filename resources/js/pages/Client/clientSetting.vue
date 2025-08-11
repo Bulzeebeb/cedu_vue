@@ -1,44 +1,3 @@
-<script setup>
-import { router, usePage } from '@inertiajs/vue3'
-import { onMounted } from 'vue'
-import SiteHeader from './header.vue'
-import SiteFooter from './footer.vue'
-
-// Props from backend
-const props = defineProps({
-  client: Object
-})
-
-// Protect route: redirect to /signin if not authenticated
-onMounted(() => {
-  if (!props.client) {
-    router.visit('/signin')
-  }
-})
-
-// Go to Edit Profile
-const goToEditProfile = () => {
-  router.get('/clientProfile')
-}
-
-// Placeholder for Buy History
-const goToBuyHistory = () => {
-  alert('Go to Buy History')
-}
-
-// Logout and redirect to /signin
-const handleSignOut = () => {
-  router.post('/logout', {}, {
-    onSuccess: () => router.visit('/signin')
-  })
-}
-
-// Back to market
-const goBack = () => {
-  router.get('/om-landing')
-}
-</script>
-
 <template>
   <div class="flex flex-col min-h-screen bg-gray-100">
     <SiteHeader />
@@ -62,7 +21,7 @@ const goBack = () => {
         <div class="flex items-center space-x-10 mb-12 mt-6">
           <div class="w-30 h-30 rounded-full overflow-hidden border-4 border-yellow-500 shadow">
             <img
-              src="/images/Client/default_profile.png"
+              :src="client.image ? '/storage/' + client.image : '/images/Client/default_profile.png'"
               alt="Profile Picture"
               class="w-full h-full object-cover"
             />
@@ -107,6 +66,47 @@ const goBack = () => {
     <SiteFooter />
   </div>
 </template>
+
+<script setup>
+import { router, usePage } from '@inertiajs/vue3'
+import { onMounted } from 'vue'
+import SiteHeader from './header.vue'
+import SiteFooter from './footer.vue'
+
+// Props from backend
+const props = defineProps({
+  client: Object
+})
+
+// Protect route: redirect to /signin if not authenticated
+onMounted(() => {
+  if (!props.client) {
+    router.visit('/signin')
+  }
+})
+
+// Go to Edit Profile
+const goToEditProfile = () => {
+  router.get('/clientProfile')
+}
+
+// Navigate to Buy History page
+const goToBuyHistory = () => {
+  router.get('/buy-history')
+}
+
+// Logout and redirect to /signin
+const handleSignOut = () => {
+  router.post('/logout', {}, {
+    onSuccess: () => router.visit('/signin')
+  })
+}
+
+// Back to market
+const goBack = () => {
+  router.get('/om-landing')
+}
+</script>
 
 <style scoped>
 .bg-maroon {

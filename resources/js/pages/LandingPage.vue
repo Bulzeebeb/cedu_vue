@@ -4,7 +4,6 @@
     <Header />
 
     <!-- SECTION 1: CEDU HIGHLIGHTS -->
-     
     <section class="relative bg-cover bg-center text-white py-24 px-8 text-center" style="background-image: url('/images/eagle.jpg')">
             <div class="absolute inset-0 bg-[#650000]/5 backdrop-blur-[4px] animate-zoom-bg"></div>
       <div class="relative z-10 max-w-6xl mx-auto">
@@ -36,20 +35,70 @@
       <div class="max-w-6xl mx-auto">
         <h2 class="text-3xl font-bold text-[#650000] mb-4">Online Market</h2>
         <p class="mb-10 text-gray-700 max-w-xl mx-auto">Fresh produce and poultry straight from the campus – accessible anytime.</p>
-        <div class="grid sm:grid-cols-3 gap-6">
-          <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition">
-            <img src="/images/fruit.png" class="h-40 w-full object-cover rounded mb-4" />
-            <h3 class="text-lg font-semibold text-[#650000]">Fruits</h3>
-          </div>
-          <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition">
-            <img src="/images/vegetables.png" class="h-40 w-full object-cover rounded mb-4" />
-            <h3 class="text-lg font-semibold text-[#650000]">Vegetables</h3>
-          </div>
-          <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition">
-            <img src="/images/poultry.png" class="h-40 w-full object-cover rounded mb-4" />
-            <h3 class="text-lg font-semibold text-[#650000]">Poultry</h3>
-          </div>
-        </div>
+
+        <swiper
+          :slides-per-view="1.2"
+          :space-between="16"
+          :breakpoints="{
+            640: { slidesPerView: 2 },
+            768: { slidesPerView: 3 },
+            1024: { slidesPerView: 4 }
+          }"
+          grabCursor
+          class="px-4"
+        >
+          <swiper-slide>
+            <router-link to="/fruit">
+              <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition cursor-pointer">
+                <img src="/images/fruit.png" class="h-40 w-full object-cover rounded mb-4" />
+                <h3 class="text-lg font-semibold text-[#650000]">Fruits</h3>
+              </div>
+            </router-link>
+          </swiper-slide>
+
+          <swiper-slide>
+            <router-link to="/vegetable">
+              <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition cursor-pointer">
+                <img src="/images/vegetables.png" class="h-40 w-full object-cover rounded mb-4" />
+                <h3 class="text-lg font-semibold text-[#650000]">Vegetables</h3>
+              </div>
+            </router-link>
+          </swiper-slide>
+
+          <swiper-slide>
+            <router-link to="/poultry">
+              <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition cursor-pointer">
+                <img src="/images/poultry.png" class="h-40 w-full object-cover rounded mb-4" />
+                <h3 class="text-lg font-semibold text-[#650000]">Poultry</h3>
+              </div>
+            </router-link>
+          </swiper-slide>
+
+          <swiper-slide>
+            <router-link to="/fruit">
+              <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition cursor-pointer">
+                <img src="/images/fruits.jpg" class="h-40 w-full object-cover rounded mb-4" />
+                <h3 class="text-lg font-semibold text-[#650000]">Others</h3>
+              </div>
+            </router-link>
+          </swiper-slide>
+          <swiper-slide>
+            <router-link to="/fruit">
+              <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition cursor-pointer">
+                <img src="/images/fruits.jpg" class="h-40 w-full object-cover rounded mb-4" />
+                <h3 class="text-lg font-semibold text-[#650000]">Others</h3>
+              </div>
+            </router-link>
+          </swiper-slide>
+          <swiper-slide>
+            <router-link to="/fruit">
+              <div class="bg-white rounded-lg shadow p-6 hover:scale-105 transition cursor-pointer">
+                <img src="/images/fruits.jpg" class="h-40 w-full object-cover rounded mb-4" />
+                <h3 class="text-lg font-semibold text-[#650000]">Others</h3>
+              </div>
+            </router-link>
+          </swiper-slide>
+        </swiper>
       </div>
     </section>
 

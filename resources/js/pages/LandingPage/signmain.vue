@@ -1,5 +1,6 @@
+
 <template>
-  <div class="flex h-screen bg-gradient-to-r from-[#650000] via-[#650000] to-yellow-300 text-white">
+  <div class="relative z-0 flex h-screen bg-gradient-to-r from-[#650000] via-[#650000] to-yellow-300 text-white">
     <!-- Left Side: Form -->
     <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-8">
       <h2 class="text-4xl font-bold mb-4 animate-fade-in">
@@ -31,9 +32,14 @@
         </button>
 
         <p class="text-gray-400 text-center mt-4">
-          New here? <a href="/signup/step1"  class="text-blue-400">Create Account</a>
+          New here? <button type="button" @click="openSignupModal" class="text-blue-400 underline">Create Account</button>
         </p>
       </form>
+
+      <!-- Signup Modals -->
+      <Signup1Modal v-if="showSignup1" @next="openSignup2" @close="closeAllModals" />
+      <Signup2Modal v-if="showSignup2" :formData="signup1Data" @next="openVerifyOtp" @close="closeAllModals" />
+      <VerifyOtpModal v-if="showVerifyOtp" @close="closeAllModals" />
     </div>
 
     <!-- Right Side: Image Preview -->
@@ -41,16 +47,43 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
+import Signup1Modal from '../Client/Signup1.vue'
+import Signup2Modal from '../Client/Signup2.vue'
+import VerifyOtpModal from '../Client/VerifyOtp.vue'
 
 const showPassword = ref(false)
-
 const form = useForm({
   email: '',
   password: ''
 })
+
+// Modal state
+const showSignup1 = ref(false)
+const showSignup2 = ref(false)
+const showVerifyOtp = ref(false)
+const signup1Data = ref({})
+
+function openSignupModal() {
+  showSignup1.value = true
+}
+function openSignup2(data) {
+  signup1Data.value = data
+  showSignup1.value = false
+  showSignup2.value = true
+}
+function openVerifyOtp() {
+  showSignup2.value = false
+  showVerifyOtp.value = true
+}
+function closeAllModals() {
+  showSignup1.value = false
+  showSignup2.value = false
+  showVerifyOtp.value = false
+}
 </script>
 
 <style>

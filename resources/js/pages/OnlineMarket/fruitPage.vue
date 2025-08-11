@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="pt-24 px-4"></div>
-    <SiteHeader :cart-count="cart.length" />
+    <SiteHeader :cart-count="cartCount" />
 
     <!-- Shop Page Content -->
     <section class="py-12 bg-gray-100">
@@ -37,7 +37,7 @@
         </div>
 
         <!-- Products -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div v-if="sortedProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           <div
             v-for="product in sortedProducts"
             :key="product.id"
@@ -47,31 +47,46 @@
             <div class="relative">
               <img
                 :src="product.image"
-                alt="Product Image"
+                :alt="product.name"
                 class="w-full h-52 object-cover transition duration-500 transform hover:scale-105"
+                @error="handleImageError"
               />
             </div>
 
             <div class="p-4">
-              <h5 class="text-sm font-bold mb-1 text-gray-800">{{ product.title }}</h5>
-              <p class="text-gray-500 text-[10px] mb-1">Available: {{ product.quantity }}</p>
+              <h5 class="text-sm font-bold mb-1 text-gray-800">{{ product.name }}</h5>
+              <p class="text-gray-500 text-[10px] mb-1">Available: {{ product.stock }} {{ product.unit }}</p>
+              <p class="text-xs text-gray-600 mb-2">Branch: {{ product.branch }}</p>
               <div class="flex justify-between items-center">
                 <span class="text-xs font-semibold text-gray-700">
-                  ₱{{ product.price }} / kilo
+                  ₱{{ parseFloat(product.price).toFixed(2) }} / {{ product.unit }}
                 </span>
-                <button
-                  @click.stop="addToCart(product)"
-                  class="bg-yellow-500 text-maroon text-[10px] font-semibold px-2 py-1 rounded-full transition duration-300 hover:shadow-md hover:-translate-y-0.5"
-                >
-                  Add to Cart
-                </button>
+                <form @submit.prevent="addToCart(product.id)" class="inline">
+                  <button
+                    type="submit"
+                    :disabled="product.status === 'Out of Stock'"
+                    :class="[
+                      'text-maroon text-[10px] font-semibold px-2 py-1 rounded-full transition duration-300',
+                      product.status === 'Out of Stock'
+                        ? 'bg-gray-300 cursor-not-allowed'
+                        : 'bg-yellow-500 hover:shadow-md hover:-translate-y-0.5'
+                    ]"
+                  >
+                    {{ product.status === 'Out of Stock' ? 'Out of Stock' : 'Add to Cart' }}
+                  </button>
+                </form>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Pagination (static) -->
-        <nav aria-label="Page navigation" class="mt-8 flex justify-center">
+        <!-- No products message -->
+        <div v-else class="text-center py-12">
+          <p class="text-gray-500 text-lg">No fruits available at the moment.</p>
+        </div>
+
+        <!-- Pagination -->
+        <nav v-if="sortedProducts.length > 0" aria-label="Page navigation" class="mt-8 flex justify-center">
           <ul class="flex space-x-1">
             <li>
               <a href="#" class="w-6 h-6 flex items-center justify-center bg-[#651818] text-white text-[10px] rounded-full hover:bg-[#4d1212] transition">&laquo;</a>
@@ -103,25 +118,24 @@ import SiteFooter from './footer.vue'
 import { router } from '@inertiajs/vue3'
 import { ref, computed } from 'vue'
 
+// Receive props from Laravel controller
+const props = defineProps({
+  products: {
+    type: Array,
+    default: () => []
+  },
+  cartCount: {
+    type: Number,
+    default: 0
+  }
+})
+
 const sortBy = ref('asc')
 const itemsToShow = ref(10)
-const cart = ref([])
 
-const products = ref([
-  { id: 1, title: 'Fresh Apples', quantity: 25, price: '120.00', image: 'https://source.unsplash.com/800x600/?apples' },
-  { id: 2, title: 'Sweet Mangoes', quantity: 20, price: '150.00', image: 'https://source.unsplash.com/800x600/?mangoes' },
-  { id: 3, title: 'Juicy Oranges', quantity: 30, price: '90.00', image: 'https://source.unsplash.com/800x600/?oranges' },
-  { id: 4, title: 'Ripe Bananas', quantity: 40, price: '60.00', image: 'https://source.unsplash.com/800x600/?bananas' },
-  { id: 5, title: 'Red Strawberries', quantity: 18, price: '200.00', image: 'https://source.unsplash.com/800x600/?strawberries' },
-  { id: 6, title: 'Watermelons', quantity: 12, price: '180.00', image: 'https://source.unsplash.com/800x600/?watermelon' },
-  { id: 7, title: 'Fresh Grapes', quantity: 22, price: '160.00', image: 'https://source.unsplash.com/800x600/?grapes' },
-  { id: 8, title: 'Pineapples', quantity: 10, price: '140.00', image: 'https://source.unsplash.com/800x600/?pineapple' },
-  { id: 9, title: 'Blueberries', quantity: 15, price: '220.00', image: 'https://source.unsplash.com/800x600/?blueberries' },
-  { id: 10, title: 'Cherries', quantity: 12, price: '250.00', image: 'https://source.unsplash.com/800x600/?cherries' },
-])
-
+// Use the products from Laravel instead of hardcoded data
 const sortedProducts = computed(() => {
-  return products.value
+  return props.products
     .slice()
     .sort((a, b) => {
       const priceA = parseFloat(a.price)
@@ -131,17 +145,19 @@ const sortedProducts = computed(() => {
     .slice(0, itemsToShow.value)
 })
 
-function addToCart(product) {
-  const found = cart.value.find(item => item.id === product.id)
-  if (found) {
-    found.qty += 1
-  } else {
-    cart.value.push({ ...product, qty: 1 })
-  }
+function addToCart(productId) {
+  router.post('/cart/add', {
+    product_id: productId
+  })
 }
 
 function viewProduct(id) {
   router.visit(`/viewproduct/${id}`)
+}
+
+function handleImageError(event) {
+  // Fallback image if product image fails to load
+  event.target.src = 'https://via.placeholder.com/400x300?text=No+Image'
 }
 </script>
 

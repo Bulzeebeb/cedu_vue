@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SiteHeader :cart-count="orderItems.length" />
+    <SiteHeader :cart-count="cartCount" />
 
     <section class="py-12 bg-gray-100">
       <div class="max-w-3xl mx-auto px-4">
@@ -13,90 +13,136 @@
           Please review your order and fill out your details before placing your order.
         </p>
 
-        <!-- Billing Info -->
+        <!-- User Information Display -->
         <div class="bg-white shadow rounded-lg p-5 mb-6 border border-gray-200">
-          <h2 class="text-lg font-semibold text-maroon mb-3">Billing Information</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <h2 class="text-lg font-semibold text-maroon mb-3">Account Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">First Name</label>
-              <input
-                v-model="billing.firstName"
-                type="text"
-                placeholder="First name"
-                class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800"
-              />
+              <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <p class="text-sm text-gray-800 bg-gray-50 p-2 rounded">{{ user.email }}</p>
             </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Last Name</label>
-              <input
-                v-model="billing.lastName"
-                type="text"
-                placeholder="Last name"
-                class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800"
-              />
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Contact Number</label>
-            <input
-              v-model="billing.contact"
-              type="text"
-              placeholder="09xxxxxxxxx"
-              class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800"
-            />
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">Order Date</label>
-            <input
-              v-model="billing.date"
-              type="date"
-              class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800"
-            />
           </div>
         </div>
+
+        <!-- Billing Info -->
+        <form @submit.prevent="placeOrder">
+          <div class="bg-white shadow rounded-lg p-5 mb-6 border border-gray-200">
+            <h2 class="text-lg font-semibold text-maroon mb-3">Billing Information</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">First Name *</label>
+                <input
+                  v-model="billing.firstName"
+                  type="text"
+                  placeholder="First name"
+                  required
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Last Name *</label>
+                <input
+                  v-model="billing.lastName"
+                  type="text"
+                  placeholder="Last name"
+                  required
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="block text-xs font-medium text-gray-700 mb-1">Contact Number *</label>
+              <input
+                v-model="billing.contact"
+                type="text"
+                placeholder="09xxxxxxxxx"
+                pattern="[0-9]{11}"
+                required
+                class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              />
+              <p class="text-xs text-gray-500 mt-1">Format: 09123456789</p>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-xs font-medium text-gray-700 mb-1">Preferred Order Date *</label>
+              <input
+                v-model="billing.date"
+                type="date"
+                :min="todayDate"
+                required
+                class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              />
+            </div>
+          </div>
 
         <!-- Order Summary -->
         <div class="bg-white shadow rounded-lg p-5 mb-6 border border-gray-200">
           <h2 class="text-lg font-semibold text-maroon mb-3">Order Summary</h2>
 
-          <ul class="divide-y">
+          <div v-if="orderItems.length === 0" class="text-center py-8 text-gray-500">
+            Your cart is empty.
+          </div>
+
+          <ul v-else class="divide-y">
             <li
               v-for="item in orderItems"
               :key="item.id"
-              class="flex justify-between py-2 text-sm text-gray-800"
+              class="flex justify-between py-3 text-sm text-gray-800"
             >
-              <span>{{ item.title }} {{ item.qty }} {{ item.metric }}</span>
+              <div class="flex items-center gap-3">
+                <img
+                  v-if="item.image"
+                  :src="item.image"
+                  :alt="item.title"
+                  class="h-10 w-10 object-cover rounded"
+                />
+                <div>
+                  <span class="font-medium">{{ item.title }}</span>
+                  <div class="text-xs text-gray-500">
+                    {{ item.qty }} {{ item.metric }} × ₱{{ parseFloat(item.price).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
               <span class="font-semibold text-maroon">
                 ₱{{ (item.qty * parseFloat(item.price)).toFixed(2) }}
               </span>
             </li>
           </ul>
 
-          <div class="mt-4 border-t pt-4 flex justify-between font-bold text-maroon text-base">
-            <span>Total:</span>
-            <span>₱{{ totalPrice }}</span>
+          <div v-if="orderItems.length > 0" class="mt-4 border-t pt-4">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-600">Subtotal:</span>
+              <span class="text-sm">₱{{ totalPrice }}</span>
+            </div>
+            <div class="flex justify-between items-center mt-2 font-bold text-maroon text-lg">
+              <span>Total:</span>
+              <span>₱{{ totalPrice }}</span>
+            </div>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="flex flex-col md:flex-row justify-center md:justify-end gap-3">
           <button
+            type="button"
             @click="goBackToCart"
-            class="bg-gray-200 text-gray-700 font-semibold px-5 py-2 rounded hover:bg-gray-300 text-xs md:text-sm"
+            class="bg-gray-200 text-gray-700 font-semibold px-5 py-2 rounded hover:bg-gray-300 transition-colors text-xs md:text-sm"
           >
             Back to Cart
           </button>
 
           <button
-            @click="placeOrder"
-            class="bg-yellow-500 text-maroon font-bold px-5 py-2 rounded hover:brightness-90 text-xs md:text-sm"
+            type="submit"
+            :disabled="isPlacingOrder || orderItems.length === 0"
+            class="bg-yellow-500 text-maroon font-bold px-5 py-2 rounded hover:brightness-90 transition-all text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Place Order
+            <span v-if="isPlacingOrder">Placing Order...</span>
+            <span v-else>Place Order</span>
           </button>
         </div>
+        </form>
       </div>
     </section>
 
@@ -105,20 +151,35 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import SiteHeader from './header.vue'
 import SiteFooter from './footer.vue'
 import { router } from '@inertiajs/vue3'
 
-// ✅ Example cart
-const orderItems = ref([
-  { id: 1, title: 'Apple', qty: 2, price: '120.00', metric: 'kilo' },
-  { id: 2, title: 'Pewee Eggs', qty: 1, price: '140.00', metric: 'tray' },
-  { id: 3, title: 'Chicken Dung', qty: 1, price: '50.00', metric: 'sack' },
-  { id: 4, title: 'Culled Chicken', qty: 2, price: '180.00', metric: 'pc (live)' }
-])
+// Props from Laravel
+const props = defineProps({
+  orderItems: {
+    type: Array,
+    default: () => []
+  },
+  totalPrice: {
+    type: String,
+    default: '0.00'
+  },
+  user: {
+    type: Object,
+    required: true
+  },
+  cartCount: {
+    type: Number,
+    default: 0
+  }
+})
 
-// ✅ Billing details
+// State
+const isPlacingOrder = ref(false)
+
+// Billing details with user info pre-filled where appropriate
 const billing = ref({
   firstName: '',
   lastName: '',
@@ -126,12 +187,12 @@ const billing = ref({
   date: new Date().toISOString().substr(0, 10)
 })
 
-// ✅ Total
-const totalPrice = computed(() =>
-  orderItems.value.reduce((sum, item) => sum + item.qty * parseFloat(item.price), 0).toFixed(2)
-)
+// Get today's date for minimum date validation
+const todayDate = computed(() => {
+  return new Date().toISOString().substr(0, 10)
+})
 
-// ✅ Navigation
+// Navigation functions
 function goBackToCart() {
   router.visit('/cart')
 }
@@ -142,11 +203,63 @@ function placeOrder() {
     return
   }
 
-  alert(
-    `Order Placed!\nName: ${billing.value.firstName} ${billing.value.lastName}\nContact: ${billing.value.contact}\nDate: ${billing.value.date}\nTotal: ₱${totalPrice.value}`
-  )
-  router.visit('/')
+  // Validate contact number format
+  const contactPattern = /^09\d{9}$/
+  if (!contactPattern.test(billing.value.contact)) {
+    alert('Please enter a valid contact number (09xxxxxxxxx)')
+    return
+  }
+
+  if (props.orderItems.length === 0) {
+    alert('Your cart is empty.')
+    return
+  }
+
+  isPlacingOrder.value = true
+
+  // Submit the order
+  router.post('/checkout', {
+    firstName: billing.value.firstName,
+    lastName: billing.value.lastName,
+    contact: billing.value.contact,
+    date: billing.value.date
+  }, {
+    onSuccess: () => {
+      // The controller will handle redirecting to POS page
+      // No need to manually redirect here
+    },
+    onFinish: () => {
+      isPlacingOrder.value = false
+    },
+    onError: (errors) => {
+      console.error('Order placement failed:', errors)
+      isPlacingOrder.value = false
+      alert('Order placement failed. Please try again.')
+    }
+  })
 }
+
+// Initialize with current date and user data
+onMounted(() => {
+  billing.value.date = todayDate.value
+
+  // Pre-fill user information if available
+  if (props.user) {
+    // Split full name if available
+    if (props.user.full_name) {
+      const nameParts = props.user.full_name.trim().split(' ')
+      billing.value.firstName = nameParts[0] || ''
+      billing.value.lastName = nameParts.slice(1).join(' ') || ''
+    } else {
+      // Try individual fields
+      billing.value.firstName = props.user.first_name || props.user.firstName || ''
+      billing.value.lastName = props.user.last_name || props.user.lastName || ''
+    }
+
+    // Pre-fill contact number
+    billing.value.contact = props.user.contact || props.user.phone || props.user.contact_number || ''
+  }
+})
 </script>
 
 <style scoped>

@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Session;
 use App\Models\Product;
 use Inertia\Inertia;
 
-class ProductController extends Controller
+class OnlineMarketInventoryController extends Controller
 {
     public function adminIndex()
     {
         $products = Product::all();
 
-        return Inertia::render('OnlineMarket_ADMIN/adminProducts', [
+        return Inertia::render('OnlineMarket_ADMIN/adminInventory', [
             'products' => $products
         ]);
     }

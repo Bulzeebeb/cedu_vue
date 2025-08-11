@@ -142,7 +142,7 @@ function goToHome() {
   router.visit('/landingpage')
 }
 function goToOnlineMarketAdmin() {
-  router.visit('/dashboardOnlineMarketAdmin')
+  router.visit('/admin/dashboard')
 }
 function goToPayToParkAdmin() {
   router.visit('/adminDashboardPayToPark')
