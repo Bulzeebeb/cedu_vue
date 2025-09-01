@@ -32,19 +32,17 @@ function goToHome() {
   router.visit('/landingpage')
 }
 function goToDashboard() {
-  router.visit('/adminDashboardPayToPark')
+  router.visit('/dashboard')
 }
 function goToManageParking() {
-  router.visit('/adminManageParkingPayToPark')
+  router.visit('/managep2p')
 }
 function goToReports() {
-  router.visit('/reportsPayToPark')
+  router.visit('/reports')
 }
-function goToAccounts() {
-  router.visit('/adminAccountPayToPark')
-}
+
 function goToLogs() {
-  router.visit('/adminlogsPayToPark')
+  router.visit('/logs')
 }
 
 onMounted(() => {
@@ -75,10 +73,6 @@ onMounted(() => {
         <a href="#" @click="goToReports"
           class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
           <i class="fas fa-file-invoice-dollar"></i> Reports
-        </a>
-        <a href="#" @click="goToAccounts"
-          class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">
-          <i class="fas fa-user"></i> Account
         </a>
         <a href="#" @click="goToLogs"
           class="px-4 py-2 rounded-lg font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] flex items-center gap-3">

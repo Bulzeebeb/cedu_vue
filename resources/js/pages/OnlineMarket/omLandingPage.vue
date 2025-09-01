@@ -20,7 +20,7 @@ function goToPoultry() {
 
     <!-- HERO SECTION -->
     <section class="relative bg-cover bg-center text-white py-32 px-8 text-center overflow-hidden"
-      style="background-image: url('/images/OnlineMarket/bg-market.jpg')">
+      style="background-image: url('/images/image.png')">
       <div class="absolute inset-0 bg-[#650000]/5 backdrop-blur-[4px] animate-zoom-bg"></div>
 
       <div class="relative z-10 max-w-4xl mx-auto">

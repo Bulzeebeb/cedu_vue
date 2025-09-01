@@ -13,9 +13,10 @@ class OnlineMarketInventoryController extends Controller
     public function adminIndex()
     {
         $products = Product::all();
-
+        $admin = auth()->guard('admin')->user();
         return Inertia::render('OnlineMarket_ADMIN/adminInventory', [
-            'products' => $products
+            'products' => $products,
+            'admin' => $admin
         ]);
     }
 

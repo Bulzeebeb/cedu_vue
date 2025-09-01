@@ -56,7 +56,8 @@ class ClientRegisterController extends Controller
         // Send OTP
         Mail::to($validated['email'])->send(new OtpVerificationMail($otp));
 
-        return Inertia::location('/signup/verify-otp');
+    session()->flash('showVerifyOtp', true);
+    return back();
     }
 
     // Show OTP verification view
@@ -105,7 +106,7 @@ class ClientRegisterController extends Controller
         // Clear session
         session()->forget(['otp_code', 'otp_created_at', 'user_data']);
 
-        return redirect('/signin')->with('success', 'Your account has been verified and created.');
+        return redirect('/signmain')->with('success', 'Your account has been verified and created.');
     }
 
     // Resend OTP (with session check)

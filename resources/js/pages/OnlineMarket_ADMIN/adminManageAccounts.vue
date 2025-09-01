@@ -44,7 +44,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(user, index) in users" :key="user.id" class="border-b hover:bg-yellow-50">
+            <tr v-for="(user, userclients) in users" :key="user.id" class="border-b hover:bg-yellow-50">
               <td class="py-2 px-2">
                 <img :src="getUserImage(user.image)" class="w-10 h-10 object-cover rounded mb-1" />
               </td>
@@ -91,8 +91,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-gray-800">
             <div class="bg-gray-50 rounded-lg p-3 shadow-sm">
               <p class="text-gray-500 text-xs">Full Name</p>
-              <p class="font-semibold">{{ viewedUser.firstName }} {{ viewedUser.middleName }} {{
-                viewedUser.lastName }}</p>
+              <p class="font-semibold">{{ viewedUser.firstName }} {{ viewedUser.middleName }} {{viewedUser.lastName }}</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-3 shadow-sm">
               <p class="text-gray-500 text-xs">Email</p>
@@ -133,8 +132,7 @@
             <i class="fas fa-exclamation-triangle"></i> Confirm Delete
           </h2>
           <p class="mb-6 text-gray-700">
-            Are you sure you want to delete <strong>{{ userToDelete?.firstName }} {{ userToDelete?.lastName
-            }}</strong>?
+            Are you sure you want to delete <strong>{{ userToDelete?.firstName }} {{ userToDelete?.lastName}}</strong>?
             This action cannot be undone.
           </p>
           <div class="flex justify-end gap-3">
@@ -153,44 +151,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { ref, onMounted, watch } from 'vue'
 import Sidebar from './adminSidebar.vue'
 import axios from 'axios'
 
-// Reactive data
 const users = ref([])
-const newUser = ref({
-  firstName: '',
-  lastName: '',
-  middleName: '',
-  address: '',
-  contactNum: '',
-  gender: '',
-  age: '',
-  email: ''
-})
-
 const viewedUser = ref({})
 const userToDelete = ref(null)
 
-// Modal states
 const showViewModal = ref(false)
 const showDeleteModal = ref(false)
 
-// Form states
 const loading = ref(false)
 const submitting = ref(false)
 const validationErrors = ref({})
 const successMessage = ref('')
 const errorMessage = ref('')
 
-// Functions
 const fetchUsers = async () => {
   try {
     loading.value = true
-    const response = await axios.get('/auth:sanctum')
+    const response = await axios.get('/userclients') // Updated to correct endpoint
+
     users.value = response.data
+
   } catch (error) {
     console.error('Error fetching users:', error)
     errorMessage.value = 'Failed to load users.'
@@ -198,6 +182,14 @@ const fetchUsers = async () => {
     loading.value = false
   }
 }
+
+const getUserImage = (imagePath) => {
+  return imagePath
+    ? `/storage/${imagePath}`
+    : 'https://via.placeholder.com/100?text=No+Image';
+};
+
+
 
 const viewUser = (user) => {
   viewedUser.value = { ...user }
@@ -212,14 +204,11 @@ const confirmDelete = (user) => {
 const deleteUser = async () => {
   try {
     submitting.value = true
-
     await axios.delete(`/api/userclients/${userToDelete.value.id}`)
-
     successMessage.value = 'Account deleted successfully!'
     showDeleteModal.value = false
     userToDelete.value = null
     await fetchUsers()
-
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Failed to delete account.'
   } finally {
@@ -227,7 +216,6 @@ const deleteUser = async () => {
   }
 }
 
-// Clear messages after 5 seconds
 const clearMessages = () => {
   setTimeout(() => {
     successMessage.value = ''
@@ -235,21 +223,15 @@ const clearMessages = () => {
   }, 5000)
 }
 
-// Watch for messages and auto-clear them
-const watchMessages = () => {
+watch([successMessage, errorMessage], () => {
   if (successMessage.value || errorMessage.value) {
     clearMessages()
   }
-}
-
-// Lifecycle
-onMounted(() => {
-  fetchUsers()
 })
 
-// Watch for message changes
-watchMessages()
+onMounted(fetchUsers)
 </script>
+
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');

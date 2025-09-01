@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 class AdminUserClientController extends Controller
 {
-
     public function index()
     {
         // Fetch all user client accounts

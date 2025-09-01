@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Order;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -17,7 +19,7 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('contact', 20);
-            $table->date('order_date');
+            $table->date('order_date')->default(now());
             $table->decimal('total_amount', 10, 2);
             $table->enum('status', ['pending', 'processing', 'ready', 'completed', 'cancelled'])->default('pending');
             $table->timestamps();
@@ -27,6 +29,10 @@ return new class extends Migration
             $table->index(['user_id', 'status']);
             $table->index('order_date');
         });
+
+        Order::whereNull('order_date')
+     ->update(['order_date' => DB::raw('created_at')]);
+
     }
 
     /**

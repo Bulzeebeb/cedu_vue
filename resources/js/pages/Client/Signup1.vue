@@ -1,11 +1,8 @@
 <template>
-  <div class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4">
-    <div class="bg-white text-black font-sans flex flex-col">
-
-      <section class="w-full bg-cover bg-center" style="background-image: url('/images/banner.jpg')"></section>
-
-      <div class="flex-grow flex items-center justify-center py-8">
-        <div class="border border-gray-300 p-6 rounded-md w-full max-w-2xl shadow-md">
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto flex-col overflow-hidden p-0 m-0">
+  <div class="bg-white rounded-xl shadow-lg text-black font-sans flex flex-col overflow-hidden p-0 m-0">
+    <div class="flex-grow flex items-center justify-center py-0 m-0">
+      <div class="border border-gray-300 p-6 rounded-md w-full max-w-2xl shadow-md m-0">
           <h2 class="text-center text-2xl font-bold mb-6">Create Account - Step 1 of 2</h2>
           <p class="text-center text-gray-600 mb-6">Personal Information</p>
 
@@ -47,8 +44,18 @@
             <!-- Contact Number, Gender, Age -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <input type="tel" placeholder="Contact Number" v-model="form.contactNum" required
-                  class="w-full px-4 py-2 border border-gray-300 rounded" />
+                <div class="flex items-center">
+                  <span class="inline-block px-2 py-2 bg-gray-100 border border-gray-300 rounded-l text-gray-700 select-none">+63</span>
+                  <input
+                    type="tel"
+                    placeholder="Contact Number"
+                    v-model="form.contactNum"
+                    required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-r focus:outline-none"
+                    maxlength="11"
+                    @input="onContactInput"
+                  />
+                </div>
                 <p v-if="form.errors.contactNum" class="text-red-500 text-sm mt-1">{{ form.errors.contactNum }}</p>
               </div>
               <div>
@@ -98,6 +105,7 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3'
 import { defineEmits } from 'vue'
+import Swal from 'sweetalert2'
 
 const emit = defineEmits(['next', 'close'])
 const form = useForm({
@@ -111,14 +119,31 @@ const form = useForm({
   age: '',
 })
 
+function onContactInput(e) {
+  // Only allow numbers, max 11 digits
+  let val = e.target.value.replace(/\D/g, '').slice(0, 10)
+  form.contactNum = val
+}
+
 function handleNext() {
   // Validate required fields
   if (!form.firstName || !form.lastName || !form.address || !form.contactNum || !form.gender || !form.age) {
     form.setError('message', 'Please fill in all required fields.')
     return
   }
+  // Show SweetAlert2 loading
+  Swal.fire({
+    title: 'Saving...',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   // Emit form data to parent to open Signup2 modal
-  emit('next', { ...form })
+  setTimeout(() => {
+    Swal.close();
+    emit('next', { ...form })
+  }, 800); // simulate a short delay for effect
 }
 </script>
 

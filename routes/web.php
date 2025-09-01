@@ -17,6 +17,19 @@ use App\Http\Controllers\OnlineMarketOrdersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminUserClientController;
+use App\Models\UserClient;
+use App\Http\Controllers\AdminReportsController;
+use App\Http\Controllers\LogController;
+use App\Models\Log;
+
+use App\Http\Controllers\PayPark\PayParkAdminReportController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\PayPark\PayParkClientController;
+use App\Http\Controllers\PayPark\PayParkTransactionController;
+use App\Http\Controllers\PayPark\PayParkHistoryController;
+
+
+Route::post('/admin/account/store', [AdminAccountController::class, 'store']);
 
 // ======================
 // MAIN LANDING PAGE ROUTES
@@ -25,6 +38,10 @@ use App\Http\Controllers\AdminUserClientController;
 Route::get('/sample', function () {
     return Inertia::render('sample');
 })->name('sample');
+
+Route::get('/', function () {
+    return Inertia::render('LandingPage');
+})->name('landingpage');
 
 Route::get('/landingpage', function () {
     return Inertia::render('LandingPage');
@@ -43,15 +60,19 @@ Route::get('/rentalfacility', function () {
 })->name('rentalfacility');
 
 Route::get('/aboutus', function () {
-    return Inertia::render('AboutUs'); 
+    return Inertia::render('AboutUs');
 })->name('aboutus');
 
+use App\Models\Admin;
 Route::get('/adminchoice', function () {
-    return Inertia::render('AdminChoice'); 
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('AdminChoice', [
+        'admin' => $admin
+    ]);
 })->name('adminchoice');
 
 Route::get('/clientchoice', function () {
-    return Inertia::render('ClientChoice'); 
+    return Inertia::render('ClientChoice');
 })->name('clientchoice');
 
 /*
@@ -70,11 +91,11 @@ Route::post('/admin-logout', [AuthController::class, 'logout'])->name('admin.log
 |--------------------------------------------------------------------------
 */
 
-Route::get('/login', function() {
+Route::get('/login', function () {
     return redirect('/signmain');
 })->name('login');
 
-Route::post('/login', function() {
+Route::post('/login', function () {
     return redirect('/admin-login');
 });
 
@@ -88,12 +109,31 @@ Route::put('/admins/products/{id}', [ProductController::class, 'update']);
 |--------------------------------------------------------------------------
 */
 
+
 Route::prefix('admins')->group(function () {
     Route::get('/', [AdminAccountController::class, 'index']);
     Route::post('/', [AdminAccountController::class, 'store']);
-    Route::put('/{admin}', [AdminAccountController::class, 'update']);
-    Route::delete('/{admin}', [AdminAccountController::class, 'destroy']);
+    Route::put('/{id}', [AdminAccountController::class, 'update']);
+    Route::delete('/{id}', [AdminAccountController::class, 'destroy']);
+    Route::put('/{id}/reset-password', [AdminAccountController::class, 'resetPassword']);
+    Route::put('/{id}/status', [AdminAccountController::class, 'updateStatus']);
 });
+
+
+
+// Admin Account Management
+Route::get('/admin/account/list', [AdminAccountController::class, 'list']);
+Route::get('/admin/accounts', [AdminAccountController::class, 'fetch']);
+Route::get('/admin/profile', [AdminAccountController::class, 'profile']);
+Route::post('/admin/profile/update', [AdminAccountController::class, 'updateProfile']);
+
+// Activity Logs Routes
+Route::prefix('admin')->group(function () {
+    Route::get('/activity-logs', [AdminAccountController::class, 'getActivityLogs']);
+    Route::get('/activity-logs/stats', [AdminAccountController::class, 'getActivityLogStats']);
+    Route::get('/activity-logs/admin/{adminId}', [AdminAccountController::class, 'getAdminActivityLogs']);
+});
+
 
 // ======================
 // 🔐 SUPER ADMIN AUTH ROUTES
@@ -157,28 +197,67 @@ Route::get('/sidebar', function () {
 // 🔐 ONLINE MARKET ADMIN ROUTES
 // ======================
 Route::get('/sidebarOnlineMarketAdmin', function () {
-    return Inertia::render('OnlineMarket_ADMIN/adminSidebar');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminSidebar', [
+        'admin' => $admin
+    ]);
 })->name('sidebarOnlineMarketAdmin');
 
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('OnlineMarket_ADMIN/adminDashboard');
-})->name('admin.dashboard');
+// Updated dashboard route to use DashboardController
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboardOnlineMarketAdmin');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+    Route::put('/orders/{order}/mark-paid', [OrderController::class, 'markAsPaid'])->name('admin.orders.mark-paid');
+    Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
+});
 
 Route::get('/admins/inventory', function () {
-    return Inertia::render('OnlineMarket_ADMIN/adminInventory');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminInventory', [
+        'admin' => $admin
+    ]);
 })->name('admins.inventory');
 
 Route::get('/admins/products', function () {
-    return Inertia::render('OnlineMarket_ADMIN/adminProducts');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminProducts', [
+        'admin' => $admin
+    ]);
 })->name('admins.products');
 
-Route::get('/profileOnlineMarketAdmin', function () {
-    return Inertia::render('OnlineMarket_ADMIN/adminProfile');
-})->name('profileOnlineMarketAdmin');
+Route::get('/admins/manageacc', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminManageAccounts', [
+        'admin' => $admin
+    ]);
+})->name('admins.manageacc');
 
-Route::get('/reportsOnlineMarketAdmin', function () {
-    return Inertia::render('OnlineMarket_ADMIN/adminReports');
-})->name('reportsOnlineMarketAdmin');
+Route::get('/admins/profile', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminMainProfile', [
+        'admin' => $admin
+    ]);
+})->name('adminsprofile');
+
+// Updated dashboard route to use AdminReportsController
+Route::get('/admin/reports', [AdminReportsController::class, 'index'])->name('reportsOnlineMarketAdmin');
+
+Route::get('/logsOnlineMarketAdmin', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminLogs', [
+        'admin' => $admin
+    ]);
+})->name('logsOnlineMarketAdmin');
+
+Route::get('/admins/orders', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('OnlineMarket_ADMIN/adminOrders', [
+        'admin' => $admin
+    ]);
+})->name('admins.orders');
 
 Route::prefix('admins/products')->group(function () {
     Route::get('/', [ProductController::class, 'adminIndex'])->name('admin.products.index');
@@ -256,9 +335,9 @@ Route::get('/viewproduct/{id}', function ($id) {
 
 
 // Product Routes
-    Route::get('/fruit', [ProductController::class, 'showFruits'])->name('fruits.index');
-    Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry.index');
-    Route::get('/vegetable', [ProductController::class, 'showVegetables'])->name('vegetables.index');
+Route::get('/fruit', [ProductController::class, 'showFruits'])->name('fruits.index');
+Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry.index');
+Route::get('/vegetable', [ProductController::class, 'showVegetables'])->name('vegetables.index');
 
 
 
@@ -286,11 +365,11 @@ Route::get('/use-of-facilities/hostel', function () {
 })->name('usefacilities.hostel');
 
 Route::get('/use-of-facilities/commercial', function () {
-    return Inertia::render('UseFaci/Commercial'); 
+    return Inertia::render('UseFaci/Commercial');
 })->name('usefacilities.commercial');
 
 Route::get('/use-of-facilities/rental', function () {
-    return Inertia::render('UseFaci/Rental'); 
+    return Inertia::render('UseFaci/Rental');
 })->name('usefacilities.rental');
 
 
@@ -299,73 +378,121 @@ Route::get('/use-of-facilities/rental', function () {
 // ======================
 // ✅ Landing page
 
-Route::get('/adminSidebarPayToPark', function () {
-    return Inertia::render('PayToPark/adminSidebarP2P');
-})->name('adminSidebarPayToPark');
 
-Route::get('/adminAccountPayToPark', function () {
-    return Inertia::render('PayToPark/admin_Account');
-})->name('adminAccountPayToPark');
 
-Route::get('/adminDashboardPayToPark', function () {
-    return Inertia::render('PayToPark/admin_Dashboard');
-})->name('adminDashboardPayToPark');
+Route::get('/logs', [AuditLogController::class, 'index'])
+    ->name('admin.audit.logs');
 
-Route::get('/adminManageParkingPayToPark', function () {
+
+Route::post('/paytopark/clients', [PayParkClientController::class, 'store']);
+// ======================
+// 🔧 PAY2PARK ADMIN ROUTES
+// ======================
+// ✅ Landing page
+// ✅ Staff Dashboard
+Route::get('/pay_park_client/{id}', [PayParkClientController::class, 'show']);
+Route::get('/paypark_transactions/{id}', [PayParkTransactionController::class, 'show']);
+
+//newly added sa p2p
+use App\Http\Controllers\PayPark\ParkingSettingsController;
+Route::post('/parking-settings', [ParkingSettingsController::class, 'store'])->name('parking-settings.store');
+
+Route::get('/reports', [PayParkAdminReportController::class, 'index'])
+    ->name('admin.reports');
+
+Route::get('/managep2p', function () {
     return Inertia::render('PayToPark/admin_ManageParking');
-})->name('adminManageParkingPayToPark');
+})->name('managep2p');
 
-Route::get('/reportsPayToPark', function () {
-    return Inertia::render('PayToPark/admin_parking_reports');
-})->name('reportsPayToPark');
-
-Route::get('/billingPayToPark', function () {
-    return Inertia::render('PayToPark/billing_checkout');
-})->name('billingPayToPark');
-
-Route::get('/editformPayToPark', function () {
-    return Inertia::render('PayToPark/edit_Form');
-})->name('editformPayToPark');
-
-Route::get('/edithistoryPayToPark', function () {
-    return Inertia::render('PayToPark/edit_History');
-})->name('edithistoryPayToPark');
-
-Route::get('/generatePOSPayToPark', function () {
-    return Inertia::render('PayToPark/generate_pos');
-})->name('generatePOSPayToPark');
+// Main dashboard route
 
 
-Route::get('/generateQRPayToPark', function () {
-    return Inertia::render('PayToPark/generate_QRcode');
-})->name('generateQRPayToPark');
-
-Route::get('/parkinghistoryPayToPark', function () {
-    return Inertia::render('PayToPark/parking_History');
-})->name('parkinghistoryPayToPark');
-
-Route::get('/ci', function () {
-    return Inertia::render('PayToPark/client_info');
-})->name('ci');
-
-// PaytoPark Payment 
-Route::get('/payment_procedure', function () {
-    return Inertia::render('PayToPark/payment_procedure');
-})->name('payment_procedure');
+Route::get('/staffdashboardPayToPark', [PayParkClientController::class, 'index'])
+    ->name('staffdashboardPayToPark');
 
 
-// PaytoPark Payment 
-Route::get('/cf', function () {
-    return Inertia::render('PayToPark/client_Form');
-})->name('cf');
+Route::get('/paypark_transactions/today-with-clients', [PayParkTransactionController::class, 'paidTodayWithClients']);
+
+
+
+Route::post('/paytopark/transactions', [PayParkTransactionController::class, 'store']);
+
+use App\Http\Controllers\PayPark\PayParkDashboardController;
+
+Route::get('/dashboard', [PayParkDashboardController::class, 'index'])->name('dashboard');
+
+
+
+// Fetch all clients
+Route::get('/clients', [PayParkClientController::class, 'index'])->name('clients.index');
+
+
+// Fetch individual client info
+Route::get('/clients/{id}', [PayParkClientController::class, 'show'])->name('clients.show');
+
+
+// Update client
+Route::put('/clients/{id}', [PayParkClientController::class, 'update'])->name('clients.update');
+
+
+
+// Store new client (usually via modal form)
+Route::post('/client', [PayParkClientController::class, 'store'])->name('client.store');
+
+
+// Update existing client (for editing or marking as completed)
+Route::put('/client/{id}', [PayParkClientController::class, 'update'])->name('client.update');
+
+
+// Delete a client
+Route::delete('/client/{id}', [PayParkClientController::class, 'destroy'])->name('client.destroy');
+
+
+// Optional if you have a form-based editor
+Route::get('/edit_Form/{id}', function ($id) {
+    return Inertia::render('PayToPark/EditForm', ['clientId' => $id]);
+})->name('client.editForm');
+
+
+// Optional route if you have a separate page for parking history
+
+
+Route::get('/parking_History', [PayParkHistoryController::class, 'index'])->name('parking.history');
+
+
+use Illuminate\Support\Facades\DB;
 
 
 // ======================
 // 🔧 PAY2PARK STAFF ROUTES
 // ======================
-Route::get('/staffdashboardPayToPark', function () {
-    return Inertia::render('PayToPark/staff_Dashboard');
-})->name('staffdashboardPayToPark');
+
+
+
+use Carbon\Carbon;
+
+Route::get('/dashboard-stats', function () {
+    $today = Carbon::today();
+
+    return [
+        'totalVehiclesParkedToday' => DB::table('pay_park_clients')
+            ->whereDate('time_in', $today)
+            ->count(),
+
+        'vehiclesStillIn' => DB::table('pay_park_clients')
+            ->whereNull('time_out')
+            ->count(),
+
+        'vehiclesOutToday' => DB::table('pay_park_clients')
+            ->whereDate('time_out', $today)
+            ->count(),
+
+        'totalSalesToday' => DB::table('paypark_transactions')
+            ->whereDate('transaction_date', $today)
+            ->sum('total_payment'),
+    ];
+});
+
 
 
 // ======================
@@ -374,6 +501,13 @@ Route::get('/staffdashboardPayToPark', function () {
 Route::get('/paytoparklandingpage', function () {
     return Inertia::render('PayToPark/client_Dashboard');
 });
+
+Route::post('/paytopark/scan', [PayParkTransactionController::class, 'scan']);
+
+Route::get('/paypark_transactions/today-with-clients', [PayParkTransactionController::class, 'todayWithClients']);
+
+
+
 
 
 // ======================
@@ -394,29 +528,35 @@ Route::get('/rentallandingpage', function () {
 */
 
 Route::get('/signup/step1', [ClientRegisterController::class, 'step1']);
-Route::get('/signup/step2', fn () => Inertia::render('Client/Signup2'));
+Route::get('/signup/step2', fn() => Inertia::render('Client/Signup2'));
 Route::post('/signup/step2', [ClientRegisterController::class, 'step2']);
 Route::post('/signup/store', [ClientRegisterController::class, 'store']);
-Route::get('/signup/verify-otp', fn () => Inertia::render('Client/VerifyOtp'));
+Route::get('/signup/verify-otp', fn() => Inertia::render('Client/VerifyOtp'));
 Route::post('/signup/verify-otp', [ClientRegisterController::class, 'verifyOtp']);
 Route::post('/signup/resend-otp', [ClientRegisterController::class, 'resendOtp']);
 
 Route::get('/signin', [ClientLoginController::class, 'showLoginForm'])->name('client.login.form');
 Route::post('/signin', [ClientLoginController::class, 'login'])->name('client.login');
 Route::post('/client-logout', [ClientLoginController::class, 'logout'])->name('client.logout');
-Route::get('/client.landing', fn () => Inertia::render('ClientChoice'))->name('client.landing');
+Route::get('/client.landing', fn() => Inertia::render('ClientChoice'))->name('client.landing');
 
 
 Route::get('/pos', [CheckoutController::class, 'displayPOS'])->name('pos.display');
 
-Route::middleware('auth:userclient')->group(function () {
-    Route::get('/clientProfile', [ClientLoginController::class, 'profile'])->name('Profile');
+Route::get('/userclients', function () {
+    return UserClient::all();
+});
 
-    Route::get('/om-landing', fn () => Inertia::render('ClientChoice', [
+//Route::get('/userclients', [ClientLoginController::class, 'profile'])->name('client.profile');
+
+// Routes that require client login
+//Route::middleware('auth:userclient')->group(function () {
+
+    Route::get('/om-landing', fn() => Inertia::render('ClientChoice', [
         'user' => Auth::guard('userclient')->user(),
     ]))->name('client.landing');
 
-    Route::get('/clientSetting', fn () => Inertia::render('Client/clientSetting', [
+    Route::get('/clientSetting', fn() => Inertia::render('Client/clientSetting', [
         'client' => tap(Auth::guard('userclient')->user(), function ($client) {
             $client->image_url = $client->image_path
                 ? asset('storage/' . $client->image_path)
@@ -455,24 +595,15 @@ Route::middleware('auth:userclient')->group(function () {
     // Order History (Optional - for future implementation)
     // Route::get('/orders', [CheckoutController::class, 'orderHistory'])->name('orders.history');
     // Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
-});
 
 
+// Logs
+Route::get('/admin/logs', [LogController::class, 'index'])->name('admin.logs');
+Route::get('/api/logs', fn() => Log::orderByDesc('created_at')->get());
 
+Route::put('/admins/{id}/status', [AdminAccountController::class, 'updateStatus']);
+Route::get('/admins', [AdminAccountController::class, 'index'])->name('admins.index');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-require __DIR__.'/api.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/api.php';

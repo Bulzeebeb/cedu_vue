@@ -103,9 +103,45 @@ import AddProductModal from './modals/AddProductModal.vue'
 import EditProductModal from './modals/EditProductModal.vue'
 import DeleteProductModal from './modals/DeleteProductModal.vue'
 import AdminSidebar from './adminSidebar.vue'
+import { router } from '@inertiajs/vue3'
+
+// Make admin info reactive for sidebar
+const page = usePage()
+const admin = computed(() => page.props.admin)
 
 const props = defineProps({
   products: Array
+})
+
+
+// Computed: Sorted Orders
+const sortedOrders = computed(() => {
+    const list = [...props.orders]
+    if (!sortKey.value) return list
+
+    return list.sort((a, b) => {
+        // Special case: sort by full name
+        if (sortKey.value === 'full_name') {
+            const nameA = `${a.firstname} ${a.lastname}`.toLowerCase()
+            const nameB = `${b.firstname} ${b.lastname}`.toLowerCase()
+            return sortAsc.value ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+        }
+
+        // Default sorting
+        const aVal = a[sortKey.value]
+        const bVal = b[sortKey.value]
+        return typeof aVal === 'number'
+            ? (sortAsc.value ? aVal - bVal : bVal - aVal)
+            : (sortAsc.value
+                ? String(aVal).localeCompare(String(bVal))
+                : String(bVal).localeCompare(String(aVal)))
+    })
+})
+
+
+const paginatedOrders = computed(() => {
+    const start = (currentPage.value - 1) * perPage
+    return sortedOrders.value.slice(start, start + perPage)
 })
 
 const selectedIds = ref([])

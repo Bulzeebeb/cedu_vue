@@ -19,10 +19,32 @@ class Order extends Model
         'status'
     ];
 
+    /**
+     * Summary of casts
+     * @var array
+    
+    *protected $casts = [
+     *   'order_date' => 'date',
+      *  
+    *];  */
+
     protected $casts = [
-        'order_date' => 'date',
-        'total_amount' => 'decimal:2'
+        'created_at' => 'datetime',
+        'order_date' => 'datetime',
+        'total_amount' => 'decimal:2', // Cast order_date to Carbon automatically
     ];
+
+    protected static function boot()
+{
+    parent::boot();
+
+    static::creating(function ($order) {
+        if (empty($order->order_date)) {
+            $order->order_date = now();
+        }
+    });
+}
+
 
     /**
      * Get the user that owns the order.

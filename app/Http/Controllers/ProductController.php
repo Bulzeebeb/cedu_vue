@@ -13,9 +13,10 @@ class ProductController extends Controller
     public function adminIndex()
     {
         $products = Product::all();
-
+        $admin = auth()->guard('admin')->user();
         return Inertia::render('OnlineMarket_ADMIN/adminProducts', [
-            'products' => $products
+            'products' => $products,
+            'admin' => $admin
         ]);
     }
 

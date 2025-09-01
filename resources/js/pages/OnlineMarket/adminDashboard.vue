@@ -1,196 +1,405 @@
 <template>
-  <div class="min-h-screen flex font-sans">
+  <div class="min-h-screen flex font-sans bg-gray-100">
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#5F1213] text-white h-screen p-6 fixed top-0 left-0 z-10">
-      <div class="mb-10">
-        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-500">iCentral</span></h1>
+    <AdminSidebar />
+
+    <!-- Main Dashboard -->
+    <main class="ml-64 flex-1 p-6 pt-4 text-[#5F1213]">
+      <!-- Page Title -->
+      <div class="bg-white rounded-xl p-6 mb-6 shadow border">
+        <div class="flex items-center space-x-4">
+          <i class="i-icon-park-outline-dashboard text-3xl text-black"></i>
+          <h1 class="text-2xl font-semibold">Dashboard</h1>
+        </div>
       </div>
-      <nav class="space-y-4">
-        <Link href="/admin/dashboard" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-      <i class="fas fa-home"></i> Dashboard
-    </Link>
-        <div class="group">
-          <a href="#" class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3">
-              <i class="fas fa-arrows-rotate"></i> Update
-            </span>
-            <i class="fas fa-caret-down"></i>
-          </a>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <a href="#" class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Pay-to-Park</a>
-            <a href="#" class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Online Market</a>
-            <a href="#" class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Use-of-Facilities</a>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+          <h2 class="text-sm font-medium uppercase">Total Sales</h2>
+          <p class="text-3xl font-bold mt-2">₱{{ totalSales?.toLocaleString() ?? 0 }}</p>
+          <p v-if="stats.totalSalesGrowth !== null"
+             :class="stats.totalSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'"
+             class="text-sm mt-1">
+            {{ stats.totalSalesGrowth >= 0 ? '+' : '' }}{{ stats.totalSalesGrowth }}% since last week
+          </p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+          <h2 class="text-sm font-medium uppercase">Crop Sales</h2>
+          <p class="text-3xl font-bold mt-2">₱{{ stats.cropSales?.toLocaleString() ?? 0 }}</p>
+          <p v-if="stats.cropSalesGrowth !== null"
+             :class="stats.cropSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'"
+             class="text-sm mt-1">
+            {{ stats.cropSalesGrowth >= 0 ? '+' : '' }}{{ stats.cropSalesGrowth }}% from last week
+          </p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+          <h2 class="text-sm font-medium uppercase">Poultry Sales</h2>
+          <p class="text-3xl font-bold mt-2">₱{{ stats.poultrySales?.toLocaleString() ?? 0 }}</p>
+          <p v-if="stats.poultrySalesGrowth !== null"
+             :class="stats.poultrySalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'"
+             class="text-sm mt-1">
+            {{ stats.poultrySalesGrowth >= 0 ? '+' : '' }}{{ stats.poultrySalesGrowth }}% from last week
+          </p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+          <h2 class="text-sm font-medium uppercase">Total Orders</h2>
+          <p class="text-3xl font-bold mt-2">{{ stats.totalOrders?.toLocaleString() ?? 0 }}</p>
+          <p class="text-sm text-blue-600 mt-1">{{ stats.pendingOrders }} pending • {{ stats.completedOrders }} completed</p>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <!-- Line Chart -->
+        <div class="bg-white rounded-xl p-6 shadow-lg h-[400px]">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Sales Report</h3>
+            <div class="flex items-center space-x-2">
+              <select v-model="lineChartFilter"
+                class="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-0">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
+              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button>
+            </div>
           </div>
+          <canvas id="lineChart" class="w-full h-full"></canvas>
         </div>
-        <div class="group">
-          <a href="#" class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3">
-              <i class="fas fa-chart-bar"></i> Reports
-            </span>
-            <i class="fas fa-caret-down"></i>
-          </a>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <a href="/admin/parkReport"  class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Pay-to-Park</a>
-            <a href="#" class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Online Market</a>
-            <a href="#" class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Use-of-Facilities</a>
+
+        <!-- Donut Chart -->
+        <div class="bg-white rounded-xl p-6 shadow-lg h-[400px]">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Category Breakdown</h3>
+            <div class="flex items-center space-x-2">
+              <select v-model="pieChartFilter" class="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-0">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
+              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button>
+            </div>
           </div>
-        </div>
-        <div class="group">
-          <a href="#" class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3">
-              <i class="fas fa-user-circle"></i> Account
-            </span>
-            <i class="fas fa-caret-down"></i>
-          </a>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <Link href="/admin/profile" class="block px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition">Profile</Link>
-            <Link href="/admin/account" class="block px-4 py-2 text-sm rounded-md hover:bg-[#FFA600] hover:text-[#5F1213] transition">Manage Account</Link>
-          </div>
-        </div>
-        <Link href="/admin/logs" class="flex items-center gap-3 px-4 py-2 rounded-lg shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition">
-          <i class="fas fa-file-alt"></i> Logs
-        </Link>
-        <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg text-red-400 shadow hover:bg-red-600 hover:text-white transition">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-      </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="ml-64 flex-1 bg-gradient-to-br from-gray-50 to-gray-200 p-10">
-      <h1 class="text-4xl font-bold text-[#5F1213] mb-8">Pay-to-Park</h1>
-
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-center mb-6">
-        <div class="bg-[#5F1213] p-4 rounded-xl shadow-md transform transition hover:scale-105 animate-fade-in">
-          <div class="text-yellow-400 text-2xl mb-1 animate-pulse"><i class="fas fa-car"></i></div>
-          <h3 class="text-xl font-bold text-white">20</h3>
-          <p class="text-yellow-400 text-xs mt-1">Total Vehicles Parked</p>
-        </div>
-        <div class="bg-[#5F1213] p-4 rounded-xl shadow-md transform transition hover:scale-105 animate-fade-in delay-100">
-          <div class="text-yellow-400 text-2xl mb-1 animate-pulse"><i class="fas fa-wallet"></i></div>
-          <h3 class="text-xl font-bold text-white">₱7,000</h3>
-          <p class="text-yellow-400 text-xs mt-1">Total Income</p>
-        </div>
-        <div class="bg-[#5F1213] p-4 rounded-xl shadow-md transform transition hover:scale-105 animate-fade-in delay-200">
-          <div class="text-yellow-400 text-2xl mb-1 animate-pulse"><i class="fas fa-clock"></i></div>
-          <h3 class="text-xl font-bold text-white">13</h3>
-          <p class="text-yellow-400 text-xs mt-1">Peak Hours</p>
+          <canvas id="donutChart" class="w-full h-full"></canvas>
         </div>
       </div>
 
-      <!-- Manage Parking Section -->
-      <div class="bg-white shadow-2xl rounded-2xl p-10 space-y-10 border-t-8 border-[#5F1213]">
-  <h2 class="text-4xl font-extrabold text-[#5F1213] flex items-center gap-3">MANAGE PARKING</h2>
+      <!-- Recent Orders Table -->
+      <div class="bg-white rounded-xl p-6 shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Recent Orders</h3>
+          <button @click="refreshOrders" class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">
+            Refresh
+          </button>
+        </div>
 
-  <!-- Divider -->
-  <div class="h-1 w-full bg-gradient-to-r from-[#5F1213] via-[#FFA600] to-[#5F1213] rounded-full"></div>
+        <div v-if="recentOrders.length === 0" class="text-center py-8 text-gray-500">
+          No orders found.
+        </div>
 
-  <!-- Parking Rate -->
-  <section class="p-6 bg-[#FFF9F0] rounded-xl shadow-inner border border-[#FFD580]">
-    <h3 class="text-2xl font-semibold text-[#5F1213] mb-4">🚗 SET PARKING RATE</h3>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="col-span-1">
-        <label class="text-sm text-gray-700">Time:</label>
-        <input type="time" v-model="form.rateTime" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
+        <table v-else class="w-full text-sm text-left">
+          <thead>
+            <tr class="border-b border-gray-200 font-semibold text-gray-700">
+              <th class="py-2 px-2">ID</th>
+              <th class="py-2 px-2">Name</th>
+              <th class="py-2 px-2">Amount</th>
+              <th class="py-2 px-2">Order Date</th>
+              <th class="py-2 px-2">Status</th>
+              <th class="py-2 px-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="order in recentOrders" :key="order.id" class="hover:bg-gray-50">
+              <td class="py-2 px-2">#{{ order.id.toString().padStart(3, '0') }}</td>
+              <td class="py-2 px-2">{{ order.first_name }} {{ order.last_name }}</td>
+              <td class="py-2 px-2">₱{{ order.total_amount }}</td>
+              <td class="py-2 px-2">{{ formatDate(order.order_date) }}</td>
+              <td class="py-2 px-2">
+                <span :class="getStatusClass(order.status)" class="px-2 py-1 rounded-full text-xs font-medium">
+                  {{ formatStatus(order.status) }}
+                </span>
+              </td>
+              <td class="py-2 px-2 space-x-2">
+                <button @click="printOrder(order)" class="text-blue-600 hover:underline text-xs">Print</button>
+                <button @click="viewOrder(order)" class="text-indigo-600 hover:underline text-xs">View</button>
+                <button v-if="order.status === 'pending'" @click="markAsPaid(order)"
+                  class="text-green-600 hover:underline text-xs">Mark Paid</button>
+                <button v-if="order.status === 'pending'" @click="deleteOrder(order)"
+                  class="text-red-600 hover:underline text-xs">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="md:col-span-3">
-        <label class="text-sm text-gray-700">Hourly Rate (₱):</label>
-        <input type="number" v-model="form.hourlyRate" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
-      </div>
-    </div>
-  </section>
-
-  <!-- Parking Period -->
-  <section class="p-6 bg-[#F3F4F6] rounded-xl shadow-inner border border-gray-300">
-    <h3 class="text-2xl font-semibold text-[#5F1213] mb-4">⏱️ SET PARKING PERIOD</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <label class="text-sm text-gray-700">Max Parking Period (hrs):</label>
-        <input type="number" v-model="form.maxPeriod" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-700">Overtime Fee (₱/hr):</label>
-        <input type="number" v-model="form.overtimeFee" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-700">Overnight Fee (₱):</label>
-        <input type="number" v-model="form.overnightFee" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
-      </div>
-    </div>
-  </section>
-
-  <!-- Operating Hours -->
-  <section class="p-6 bg-[#EFF6FF] rounded-xl shadow-inner border border-blue-200">
-    <h3 class="text-2xl font-semibold text-[#5F1213] mb-4">🕔 OPERATING HOURS</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="text-sm text-gray-700">Opening Time:</label>
-        <input type="time" v-model="form.openTime" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-700">Closing Time:</label>
-        <input type="time" v-model="form.closeTime" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring focus:ring-[#FFA600] text-black" :disabled="!isEditing" />
-      </div>
-    </div>
-  </section>
-
-  <!-- Action Buttons -->
-  <div class="pt-6 flex justify-end space-x-4">
-    <button v-if="!isEditing" @click="enableEdit"
-      class="px-6 py-2 bg-[#5F1213] text-white font-semibold rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-300">
-      Edit
-    </button>
-    <template v-else>
-      <button @click="saveChanges"
-        class="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition duration-300">
-        Save
-      </button>
-      <button @click="cancelEdit"
-        class="px-6 py-2 bg-gray-400 text-white font-semibold rounded-lg hover:bg-gray-500 transition duration-300">
-        Cancel
-      </button>
-    </template>
-  </div>
-</div>
-
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link } from '@inertiajs/inertia-vue3'
+import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
+import Chart from 'chart.js/auto'
+import AdminSidebar from './adminSidebar.vue'
+import { usePage, router } from '@inertiajs/vue3'
 
-const isEditing = ref(false)
+const page = usePage()
 
-const form = ref({
-  rateTime: '01:00',
-  hourlyRate: 20,
-  maxPeriod: 8,
-  overtimeFee: 50,
-  overnightFee: 100,
-  openTime: '07:00',
-  closeTime: '22:00'
+const stats = computed(() => ({
+  totalSales: page.props.stats?.total_sales ?? 0,
+  cropSales: page.props.stats?.crop_sales ?? 0,
+  poultrySales: page.props.stats?.poultry_sales ?? 0,
+  completedOrders: page.props.stats?.completed_orders ?? 0,
+  pendingOrders: page.props.stats?.pending_orders ?? 0,
+  totalOrders: page.props.stats?.total_orders ?? 0,
+  // Comparison data from backend
+  totalSalesGrowth: page.props.stats?.total_sales_growth ?? null,
+  cropSalesGrowth: page.props.stats?.crop_sales_growth ?? null,
+  poultrySalesGrowth: page.props.stats?.poultry_sales_growth ?? null,
+  ordersGrowth: page.props.stats?.orders_growth ?? null
+}))
+
+const totalSales = computed(() => stats.value.totalSales)
+const recentOrders = ref(page.props.recentOrders ?? [])
+const chartData = page.props.chartData ?? {
+  lineChart: {
+    monthly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] },
+    quarterly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] },
+    yearly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] }
+  },
+  pieChart: {
+    monthly: [0, 0, 0],
+    quarterly: [0, 0, 0],
+    yearly: [0, 0, 0]
+  }
+}
+
+const lineChartFilter = ref('monthly')
+const pieChartFilter = ref('monthly')
+
+let lineChartInstance = null
+let donutChartInstance = null
+
+// Helper functions
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function formatStatus(status) {
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+function getStatusClass(status) {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'paid':
+      return 'bg-green-100 text-green-800'
+    case 'cancelled':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+function refreshOrders() {
+  router.reload({ only: ['recentOrders', 'stats'] })
+}
+
+function printOrder(order) {
+  // Implement print functionality
+  console.log('Print order:', order)
+}
+
+function viewOrder(order) {
+  // Implement view order functionality
+  console.log('View order:', order)
+}
+
+function markAsPaid(order) {
+  if (confirm(`Mark order #${order.id} as paid?`)) {
+    router.put(`/admin/orders/${order.id}/mark-paid`, {}, {
+      onSuccess: () => {
+        refreshOrders()
+        alert('Order marked as paid successfully!')
+      },
+      onError: (errors) => {
+        console.error('Update failed:', errors)
+        alert('Failed to update order status. Please try again.')
+      }
+    })
+  }
+}
+
+function deleteOrder(order) {
+  if (confirm(`Are you sure you want to delete order #${order.id}? This action cannot be undone.`)) {
+    router.delete(`/admin/orders/${order.id}`, {
+      onSuccess: () => {
+        refreshOrders()
+        // Show success message
+        alert('Order deleted successfully!')
+      },
+      onError: (errors) => {
+        console.error('Delete failed:', errors)
+        alert('Failed to delete order. Please try again.')
+      }
+    })
+  }
+}
+
+function renderLineChart() {
+  const ctx = document.getElementById('lineChart')
+  if (lineChartInstance) lineChartInstance.destroy()
+
+  const currentData = chartData.lineChart[lineChartFilter.value]
+  const labels = currentData.labels
+  const totalSalesData = currentData.totalSales
+  const cropSalesData = currentData.cropSales
+  const poultrySalesData = currentData.poultrySales
+
+  lineChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Total Sales',
+          data: totalSalesData,
+          borderColor: '#FFA600',
+          backgroundColor: 'rgba(255,166,0,0.2)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Crop Sales',
+          data: cropSalesData,
+          borderColor: '#4CAF50',
+          backgroundColor: 'rgba(76,175,80,0.2)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Poultry Sales',
+          data: poultrySalesData,
+          borderColor: '#2196F3',
+          backgroundColor: 'rgba(33,150,243,0.2)',
+          fill: true,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: 20 },
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₱' + value.toLocaleString()
+            }
+          }
+        }
+      }
+    }
+  })
+}
+
+function renderDonutChart() {
+  const ctx = document.getElementById('donutChart')
+  if (donutChartInstance) donutChartInstance.destroy()
+
+  const currentData = chartData.pieChart[pieChartFilter.value]
+  const total = currentData.reduce((sum, val) => sum + val, 0)
+
+  // Show actual values if there's data, otherwise show empty chart
+  const hasData = total > 0
+
+  donutChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Fruits', 'Vegetables', 'Poultry'],
+      datasets: [{
+        data: hasData ? currentData : [1, 1, 1], // Show equal segments if no data
+        backgroundColor: hasData ? ['#FFA600', '#5F1213', '#FF6384'] : ['#e5e5e5', '#e5e5e5', '#e5e5e5'],
+        borderWidth: hasData ? 0 : 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      layout: {
+        padding: { top: 20, bottom: 30, left: 10, right: 10 }
+      },
+      plugins: {
+        legend: {
+          display: hasData,
+          position: 'bottom'
+        },
+        tooltip: {
+          enabled: hasData,
+          callbacks: hasData ? {
+            label: function(context) {
+              const value = context.parsed
+              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
+              return `${context.label}: ₱${value.toLocaleString()} (${percentage}%)`
+            }
+          } : { label: () => 'No data available' }
+        }
+      }
+    }
+  })
+
+  // Add "No Data" text in center if no data
+  if (!hasData) {
+    const centerText = {
+      id: 'centerText',
+      beforeDraw: function(chart) {
+        const ctx = chart.ctx
+        ctx.save()
+        ctx.font = '16px Arial'
+        ctx.fillStyle = '#666'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        const centerX = (chart.chartArea.left + chart.chartArea.right) / 2
+        const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2
+        ctx.fillText('No Data Available', centerX, centerY)
+        ctx.restore()
+      }
+    }
+    Chart.register(centerText)
+  }
+}
+
+onMounted(() => {
+  renderLineChart()
+  renderDonutChart()
 })
 
-const enableEdit = () => {
-  isEditing.value = true
-}
+watch(lineChartFilter, renderLineChart)
+watch(pieChartFilter, renderDonutChart)
 
-const cancelEdit = () => {
-  isEditing.value = false
-}
-
-const saveChanges = () => {
-  // Save logic here (e.g., API call)
-  alert('Changes saved!')
-  isEditing.value = false
-}
+onBeforeUnmount(() => {
+  if (lineChartInstance) lineChartInstance.destroy()
+  if (donutChartInstance) donutChartInstance.destroy()
+})
 </script>
 
 <style scoped>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-@import url('https://cdn.jsdelivr.net/npm/chart.js');
-
+canvas {
+  box-sizing: border-box;
+}
 </style>

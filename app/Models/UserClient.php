@@ -2,30 +2,47 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable; // For login/auth
-use Illuminate\Database\Eloquent\SoftDeletes; // For soft deletes
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserClient extends Authenticatable
 {
-    use SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    protected $table = 'user_client'; // Custom table name
+    protected $table = 'user_client';
 
     protected $fillable = [
         'email',
         'password',
+        'firstName',
+        'middleName',
+        'lastName',
+        'extension',
         'address',
         'contactNum',
         'gender',
         'age',
-        'firstName',
-        'lastName',
-        'middleName',
-        'extension',
-        'image',
+        'image', // ✅ Make sure this is included
     ];
 
-    public $timestamps = true;
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // Optional: Add accessor for image URL
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return asset('images/Client/default_profile.png');
+    }
 }

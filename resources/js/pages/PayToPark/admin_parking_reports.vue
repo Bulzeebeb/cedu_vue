@@ -1,89 +1,258 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, toRef } from 'vue'
 import { router } from '@inertiajs/vue3'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import AdminSidebarP2P from './adminSidebarP2P.vue'
+
+// Props from Laravel/Inertia
+const props = defineProps({
+  entries: {
+    type: Array,
+    default: () => []
+  }
+})
+const entries = toRef(props, 'entries')
 
 // Sidebar toggle
 const sidebarOpen = ref(false)
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
 
 // Navigation
 const admin_Dashboard = () => router.visit('/admin_Dashboard')
 const admin_ManageParking = () => router.visit('/admin_ManageParking')
+const admin_Reports = () => router.visit('/admin_Reports')
 const admin_Account = () => router.visit('/admin_Account')
-const admin_Reports = () => router.visit('/admin_parking_reports')
 
-// Pagination, search, data
-const currentPage = ref(1)
-const rowsPerPage = 10
+// Filters
+const selectedFilter = ref('all')
 const searchQuery = ref('')
-const logs = ref(Array.from({ length: 25 }, (_, i) => ({
-  name: `Sample User ${i + 1}`,
-  plate: `XYZ-${1000 + i}`,
-  in: '2025-07-17 08:00 AM',
-  out: '2025-07-17 10:00 AM',
-  hours: '2',
-  amount: `₱${(20 + (i % 5) * 10).toFixed(2)}`,
-  qr: 'https://via.placeholder.com/100x100.png?text=QR'
-})))
 
-const filteredLogs = computed(() => {
-  return logs.value.filter(log =>
-    log.plate.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+// Filtered reports
+const filteredReports = computed(() => {
+  const now = new Date()
+  return entries.value.filter((report) => {
+    const inDate = report.time_in ? new Date(report.time_in) : null
+    const matchesFilter = (() => {
+      switch (selectedFilter.value) {
+        case 'daily':
+          return inDate && inDate.toDateString() === now.toDateString()
+        case 'weekly':
+          if (!inDate) return false
+          const startOfWeek = new Date(now)
+          startOfWeek.setDate(now.getDate() - now.getDay())
+          const endOfWeek = new Date(startOfWeek)
+          endOfWeek.setDate(startOfWeek.getDate() + 6)
+          return inDate >= startOfWeek && inDate <= endOfWeek
+        case 'monthly':
+          return inDate && inDate.getMonth() === now.getMonth() && inDate.getFullYear() === now.getFullYear()
+        case 'annually':
+          return inDate && inDate.getFullYear() === now.getFullYear()
+        default:
+          return true
+      }
+    })()
+
+    const matchesSearch =
+      report.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      report.plate?.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    return matchesFilter && matchesSearch
+  })
 })
 
-const paginatedLogs = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage
-  return filteredLogs.value.slice(start, start + rowsPerPage)
+// Pagination states
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+const totalPages = computed(() => Math.ceil(filteredReports.value.length / itemsPerPage.value))
+
+// Slice reports for current page
+const paginatedReports = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredReports.value.slice(start, end)
 })
 
-const totalSales = computed(() => {
-  return filteredLogs.value.reduce((total, log) => {
-    const num = parseFloat(log.amount.replace(/[^\d.]/g, ''))
-    return total + num
-  }, 0)
-})
-
-const totalPages = computed(() =>
-  Math.ceil(filteredLogs.value.length / rowsPerPage)
-)
-
+// Visible page numbers
 const visiblePages = computed(() => {
-  const range = []
-  const maxPages = 5
-  let start = Math.max(1, currentPage.value - Math.floor(maxPages / 2))
-  let end = Math.min(totalPages.value, start + maxPages - 1)
-  if (end - start < maxPages - 1) start = Math.max(1, end - maxPages + 1)
-  for (let i = start; i <= end; i++) range.push(i)
-  return range
+  const pages = []
+  let start = Math.max(1, currentPage.value - 2)
+  let end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
 })
 
+// Change page
 function changePage(page) {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
 }
 
-function downloadPOS(log) {
-  const content = `Name: ${log.name}\nPlate No.: ${log.plate}\nTime In: ${log.in}\nTime Out: ${log.out}\nTotal Hours: ${log.hours}\nAmount: ${log.amount}`
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${log.plate}_POS.txt`
-  a.click()
-  URL.revokeObjectURL(url)
+// Total sales (all filtered results)
+const totalSales = computed(() =>
+  filteredReports.value.reduce((t, report) => t + (report.total_amount || 0), 0)
+)
+
+// Compute total hours
+function getHours(inTime, outTime) {
+  if (!inTime || !outTime) return '—'
+  const diffMs = new Date(outTime) - new Date(inTime)
+  return Math.round(diffMs / 1000 / 60 / 60 * 10) / 10
+}
+
+// Download POS PDF
+const downloadPOS = (report) => {
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const marginLeft = 14;
+  let y = 15;
+
+  const name = report.name || 'Unknown';
+  const dateToday = new Date().toLocaleDateString();
+  const controlNo = `POS-${String(report.id).padStart(6, '0')}`;
+  const totalCost = report.total_amount || 0;
+
+  pdf.setTextColor(0, 0, 0);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Republic of the Philippines', 105, y, { align: 'center' });
+  y += 5;
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('University of Southeastern Philippines', 105, y, { align: 'center' });
+  y += 5;
+  pdf.setFont('helvetica', 'italic');
+  pdf.text('Resource Management Division (RMD)', 105, y, { align: 'center' });
+  y += 6;
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('ORDER OF PAYMENT', 105, y, { align: 'center' });
+  y += 10;
+
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.rect(marginLeft, y, 182, 32);
+  pdf.text(`Control No.: ${controlNo}`, marginLeft + 2, y + 6);
+  pdf.text(`Name: ${name}`, marginLeft + 2, y + 12);
+  pdf.text(`Organization: ____________________________`, marginLeft + 2, y + 18);
+  pdf.text(`Date Applied: ${dateToday}`, marginLeft + 2, y + 24);
+  pdf.text(`Validity Period: ____________________________`, marginLeft + 2, y + 30);
+  y += 38;
+
+  const facilities = [
+    'Billboard Posting', 'Classrooms', 'Commercial Stall', 'Consultancy', 'Covered Court',
+    'Farmer’s Training Center', 'Fitness Center', 'Gymnasium', 'Hostel Dining Hall', 'Hostel Rooms',
+    'Hostel Training Hall', 'Open Space/Ground', 'Printing Press', 'Social Hall',
+    'Others (specify): PAY TO PARK'
+  ];
+
+  const facilityRows = facilities.map(item => {
+    const isChecked = item.includes('Others');
+    return {
+      select: isChecked ? '☑' : '☐',
+      facility: item,
+      cost: isChecked ? totalCost.toFixed(2) : ''
+    };
+  });
+
+  autoTable(pdf, {
+    startY: y,
+    head: [['', 'Facility', 'Cost']],
+    body: facilityRows.map(row => [row.select, row.facility, row.cost]),
+    theme: 'grid',
+    headStyles: { fillColor: [200, 200, 200], fontSize: 9, fontStyle: 'bold', halign: 'center' },
+    bodyStyles: { fontSize: 9, valign: 'middle' },
+    columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 120 }, 2: { cellWidth: 52, halign: 'right' } }
+  });
+
+  y = pdf.lastAutoTable.finalY + 6;
+
+  const payments = [
+    'Excess Hour/s', 'Overtime Pay of Staff', 'Use of Generator', 'Others (specify): ______________________'
+  ];
+  const paymentRows = payments.map(item => ({ select: '☐', description: item, cost: '' }));
+
+  autoTable(pdf, {
+    startY: y,
+    head: [['', 'Description', 'Cost']],
+    body: paymentRows.map(row => [row.select, row.description, row.cost]),
+    theme: 'grid',
+    headStyles: { fillColor: [200, 200, 200], fontSize: 9, fontStyle: 'bold', halign: 'center' },
+    bodyStyles: { fontSize: 9, valign: 'middle' },
+    columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 120 }, 2: { cellWidth: 52, halign: 'right' } }
+  });
+
+  y = pdf.lastAutoTable.finalY + 6;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(10);
+  pdf.text(`Total Cost: Php`, 135, y);
+  pdf.text(totalCost.toFixed(2), 195, y, { align: 'right' });
+  y += 18;
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text('By: Staff', marginLeft, y);
+  pdf.text('Noted by: CEDU Head / RMD Director', 130, y);
+  y += 6;
+  pdf.text('_____________________', marginLeft, y);
+  pdf.text('_____________________', 130, y);
+
+  pdf.save(`POS_${name.replace(/\s+/g, '_')}.pdf`);
+};
+
+// Download filtered logs as PDF
+function downloadFilteredPDF() {
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  pdf.setFillColor(95, 18, 19);
+  pdf.rect(0, 0, 210, 20, 'F');
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(255, 255, 255);
+  pdf.text('Filtered Parking Logs', 105, 13, { align: 'center' });
+
+  const tableColumns = ['Client Name', 'Plate No.', 'Time In', 'Time Out', 'Hours', 'Amount'];
+  const tableRows = filteredReports.value.map((report) => {
+    const hoursVal = getHours(report.time_in, report.time_out);
+    return [
+      report.name || '',
+      report.plate || '',
+      report.time_in ? new Date(report.time_in).toLocaleString() : '—',
+      report.time_out ? new Date(report.time_out).toLocaleString() : '—',
+      typeof hoursVal === 'number' ? hoursVal.toFixed(2) : hoursVal,
+      `₱${(report.total_amount || 0).toFixed(2)}`
+    ];
+  });
+
+  autoTable(pdf, {
+    startY: 30,
+    head: [tableColumns],
+    body: tableRows,
+    theme: 'grid',
+    headStyles: { fillColor: [95, 18, 19], textColor: 255, fontStyle: 'bold', halign: 'center', valign: 'middle' },
+    bodyStyles: { valign: 'middle', fontSize: 10 },
+    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'left' }, 2: { halign: 'center' }, 3: { halign: 'center' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+    styles: { lineColor: [200, 200, 200], lineWidth: 0.1 }
+  });
+
+  const finalY = pdf.lastAutoTable.finalY || 25;
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(0, 0, 0);
+  pdf.text(`Total Sales: ₱${totalSales.value.toFixed(2)}`, 175, finalY + 10, { align: 'right' });
+
+  pdf.save('filtered_logs.pdf');
 }
 </script>
 
 <template>
-  <div class="min-h-screen flex font-sans text-[#5F1213] relative">
+  <div class="min-h-screen flex font-sans text-[#5F1213]">
     <AdminSidebarP2P />
-
-    <!-- Main Content -->
-    <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-6 overflow-x-hidden">
-      <header class="flex items-center justify-between mb-6">
+    <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
+      <header class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
           <button class="md:hidden text-2xl hover:text-[#FFA600]" @click="toggleSidebar">
             <i class="fas fa-bars"></i>
@@ -94,314 +263,86 @@ function downloadPOS(log) {
 
       <div class="h-1 w-full bg-gradient-to-r from-[#5F1213] via-[#FFA600] to-[#5F1213] rounded-full mb-6"></div>
 
-      <!-- Filters -->
-      <div class="flex flex-col lg:flex-row justify-between items-center gap-4 mb-6">
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          <div class="relative w-full sm:w-64">
-            <input v-model="searchQuery" type="text" placeholder="Search plate number..." class="input-style" />
-            <i class="fas fa-search search-icon"></i>
-          </div>
-          <select class="select-style">
-            <option disabled selected>Filter: Daily</option>
-            <option>Weekly</option>
-            <option>Monthly</option>
-            <option>Annually</option>
-          </select>
-        </div>
-        <button class="download-btn">
-          <i class="fas fa-file-download"></i> Download PDF
+      <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+        <input type="text" v-model="searchQuery" placeholder="Search name or plate..."
+          class="bg-white text-black border border-gray-300 px-4 py-2 rounded w-full md:w-64" />
+        <select v-model="selectedFilter"
+          class="bg-white text-black border border-gray-300 px-4 py-2 rounded w-full md:w-40">
+          <option value="all">All</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="annually">Annually</option>
+        </select>
+        <button @click="downloadFilteredPDF" class="ml-auto bg-[#5F1213] text-white px-4 py-2 rounded">
+          Download PDF
         </button>
       </div>
 
-      <!-- Responsive Table Wrapper -->
-      <div class="bg-white shadow rounded-lg overflow-x-auto">
-        <table class="min-w-[900px] w-full text-sm text-left text-gray-800 border border-gray-200">
-          <thead
-            class="bg-gradient-to-r from-[#5F1213] via-[#7A2E2F] to-[#5F1213] text-white text-sm uppercase tracking-wide">
+      <div class="overflow-auto rounded-lg shadow">
+        <table class="w-full">
+          <thead class="bg-[#5F1213] text-white">
             <tr>
-              <th class="p-4 border-b">#</th>
-              <th class="p-4 border-b">Name</th>
-              <th class="p-4 border-b">Plate No.</th>
-              <th class="p-4 border-b">Time IN</th>
-              <th class="p-4 border-b">Time OUT</th>
-              <th class="p-4 border-b">Hours</th>
-              <th class="p-4 border-b">Amount</th>
-              <th class="p-4 border-b">QR</th>
-              <th class="p-4 border-b">POS</th>
+              <th class="p-3 text-left">#</th>
+              <th class="p-3 text-left">Client Name</th>
+              <th class="p-3 text-left">Plate No.</th>
+              <th class="p-3 text-left">Time In</th>
+              <th class="p-3 text-left">Time Out</th>
+              <th class="p-3 text-left">Hours</th>
+              <th class="p-3 text-left">Amount</th>
+              <th class="p-3 text-left">QR</th>
+              <th class="p-3 text-left">POS</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(log, index) in paginatedLogs" :key="index" class="hover:bg-yellow-50 border-t border-gray-200">
-              <td class="p-3">{{ index + 1 + (currentPage - 1) * rowsPerPage }}</td>
-              <td class="p-3">{{ log.name }}</td>
-              <td class="p-3">{{ log.plate }}</td>
-              <td class="p-3">{{ log.in }}</td>
-              <td class="p-3">{{ log.out }}</td>
-              <td class="p-3">{{ log.hours }}</td>
-              <td class="p-3 font-semibold text-[#5F1213]">{{ log.amount }}</td>
+            <tr v-for="(report, index) in paginatedReports" :key="report.id" class="border-b">
+              <td class="py-2 px-4">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+              <td class="p-3">{{ report.name }}</td>
+              <td class="p-3">{{ report.plate }}</td>
+              <td class="p-3">{{ new Date(report.time_in).toLocaleString() }}</td>
+              <td class="p-3">{{ new Date(report.time_out).toLocaleString() }}</td>
+              <td class="p-3">{{ getHours(report.time_in, report.time_out) }}</td>
+              <td class="p-3">₱{{ report.total_amount?.toFixed(2) }}</td>
               <td class="p-3">
-                <img :src="log.qr"
-                  class="w-10 h-10 object-cover cursor-pointer hover:scale-110 transition-transform rounded" alt="QR" />
+                <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${report.plate}`" alt="QR Code"
+                  class="w-12 h-12" />
               </td>
-              <td class="p-3 text-center">
-                <button @click="downloadPOS(log)"
-                  class="relative group text-[#5F1213] hover:text-[#3C0C0C] transition text-lg">
-                  <i class="fas fa-download"></i>
+              <td class="p-3">
+                <button @click="downloadPOS(report)"
+                  class="bg-yellow-400 text-white p-2 rounded hover:bg-yellow-500 transition">
+                  <i class="fa-solid fa-file-arrow-down"></i>
                 </button>
               </td>
             </tr>
           </tbody>
-          <tfoot>
-            <tr class="bg-yellow-100 font-semibold text-[#5F1213]">
-              <td colspan="6" class="text-right p-3">Total Sales:</td>
-              <td class="p-3">₱{{ totalSales.toFixed(2) }}</td>
-              <td colspan="2"></td>
-            </tr>
-          </tfoot>
         </table>
       </div>
 
-      <!-- Pagination -->
       <div class="flex justify-center mt-6 gap-2 text-sm">
-        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn"
-          :class="currentPage === 1 ? 'disabled-btn' : 'hover:bg-yellow-400'">&lt;</button>
+        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
+          class="px-3 py-1 rounded border border-maroon text-maroon transition duration-200"
+          :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-400 hover:text-white'">
+          &lt;
+        </button>
         <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
-          :class="['page-btn', currentPage === page ? 'bg-yellow-400 text-white' : 'hover:bg-yellow-200']">{{ page
-          }}</button>
-        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="page-btn"
-          :class="currentPage === totalPages ? 'disabled-btn' : 'hover:bg-yellow-400'">&gt;</button>
-      </div>
-      
-      
-      //MODAAAAAL
-
-
-
-      <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div
-          class="bg-white text-black rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 lg:p-8 relative border border-gray-300 mx-4">
-
-          <!-- Header Title and Close -->
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-1 h-6 bg-maroon rounded-sm"></div>
-            <h2 class="text-xl font-semibold text-yellow-600">GENERATED POS</h2>
-            <button @click="close" class="absolute top-4 right-4 text-xl font-bold text-gray-600 hover:text-red-500">
-              &times;
-            </button>
-          </div>
-
-          <!-- POS FORM CONTENT START -->
-          <div class="pos-form border border-gray-400 rounded-lg p-4 sm:p-6 shadow-sm">
-
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row items-center sm:items-stretch mb-6 gap-4">
-              <div class="w-full sm:w-1/5 flex items-center justify-center">
-                <img src="/logo.png" alt="Logo" class="h-full max-h-[120px] object-contain" />
-              </div>
-              <div class="w-full sm:w-4/5 flex flex-col justify-center text-center px-4">
-                <h1 class="text-base">Republic of the Philippines</h1>
-                <h2 class="text-xl font-bold">University of Southeastern Philippines</h2>
-                <h3 class="text-sm italic">Resource Management Division (RMD)</h3><br>
-                <h2 class="text-2xl font-bold tracking-wide mt-1">ORDER OF PAYMENT</h2>
-              </div>
-            </div>
-
-            <!-- Basic Info (with border) -->
-            <div class="border border-gray-300 rounded-md p-4 text-sm mb-6 space-y-2 shadow-sm">
-              <div class="flex justify-between">
-                <div></div>
-                <div><span class="font-semibold">Control No.:</span> 001</div>
-              </div>
-              <div class="flex justify-between">
-                <div><span class="font-semibold">Name:</span> Shannen Ann C. Boliros</div>
-              </div>
-              <div><span class="font-semibold">Organization:</span> BSIT</div>
-              <div class="flex justify-between">
-                <div><span class="font-semibold">Date Applied:</span> July 8, 2025</div>
-              </div>
-              <div><span class="font-semibold">Validity Period:</span> July 8–10, 2025</div>
-            </div>
-
-            <!-- Facility to Use -->
-            <h3 class="text-lg font-semibold mb-2">Facility to Use</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm border border-gray-300 mb-6">
-                <thead>
-                  <tr class="bg-gray-200">
-                    <th class="text-left p-2 border-b border-gray-300">Select</th>
-                    <th class="text-left p-2 border-b border-gray-300">Facility</th>
-                    <th class="text-right p-2 border-b border-gray-300">Cost (Php)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(cost, name) in facilities" :key="name" class="even:bg-gray-50">
-                    <td class="p-2 border-b border-gray-200">
-                      <input type="checkbox" v-model="selectedFacilities" :value="name" />
-                    </td>
-                    <td class="p-2 border-b border-gray-200">
-                      <template v-if="name === 'Other (Specify)'">
-                        <input v-if="selectedFacilities.includes(name)" type="text" v-model="otherFacilityName"
-                          placeholder="Specify other facility" class="border px-2 py-1 rounded w-full" />
-                        <span v-else>{{ name }}</span>
-                      </template>
-                      <template v-else>{{ name }}</template>
-                    </td>
-                    <td class="p-2 text-right border-b border-gray-200">
-                      <input type="number" v-model.number="facilities[name]"
-                        class="border px-2 py-1 rounded text-right w-24" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Additional Payments -->
-            <h3 class="text-lg font-semibold mb-2">Additional Payment For:</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm border border-gray-300 mb-6">
-                <thead>
-                  <tr class="bg-gray-200">
-                    <th class="text-left p-2 border-b border-gray-300">Select</th>
-                    <th class="text-left p-2 border-b border-gray-300">Payment</th>
-                    <th class="text-right p-2 border-b border-gray-300">Cost (Php)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(cost, name) in additionalPayments" :key="name" class="even:bg-gray-50">
-                    <td class="p-2 border-b border-gray-200">
-                      <input type="checkbox" v-model="selectedAdditionalPayments" :value="name" />
-                    </td>
-                    <td class="p-2 border-b border-gray-200">
-                      <template v-if="name === 'Other (Specify)'">
-                        <input v-if="selectedAdditionalPayments.includes(name)" type="text" v-model="otherPaymentName"
-                          placeholder="Specify other payment" class="border px-2 py-1 rounded w-full" />
-                        <span v-else>{{ name }}</span>
-                      </template>
-                      <template v-else>{{ name }}</template>
-                    </td>
-                    <td class="p-2 text-right border-b border-gray-200">
-                      <input type="number" v-model.number="additionalPayments[name]"
-                        class="border px-2 py-1 rounded text-right w-24" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Total Cost -->
-            <div class="text-right font-semibold text-xl mt-4 mb-8 border-t pt-3">
-              Total Cost: Php {{ totalCost.toFixed(2) }}
-            </div>
-
-            <!-- Signatures -->
-            <div class="flex flex-col sm:flex-row justify-between mt-8 text-sm gap-8">
-              <div class="text-center">
-                <span class="block mb-6">By: Staff</span>
-                <div class="border-t border-gray-400 w-40 mx-auto"></div>
-              </div>
-              <div class="text-center">
-                <span class="block mb-6">Noted by: CEDU Head / RMD Director</span>
-                <div class="border-t border-gray-400 w-60 mx-auto"></div>
-              </div>
-            </div>
-          </div>
-          <!-- POS FORM CONTENT END -->
-
-          <!-- Buttons -->
-          <div class="mt-10 flex justify-center gap-4">
-            <button @click="downloadPOS"
-              class="w-full bg-maroon text-white py-2 rounded-full hover:bg-red-800 font-medium">
-              Download POS
-            </button>
-          </div>
-        </div>
+          class="px-3 py-1 rounded border border-maroon transition duration-200"
+          :class="currentPage === page ? 'bg-yellow-400 text-white' : 'text-maroon hover:bg-yellow-200'">
+          {{ page }}
+        </button>
+        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded border border-maroon text-maroon transition duration-200"
+          :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-400 hover:text-white'">
+          &gt;
+        </button>
       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+      <div class="mt-4 text-right text-xl font-bold text-[#5F1213]">
+        Total Sales: ₱{{ totalSales.toFixed(2) }}
+      </div>
     </div>
   </div>
 </template>
 
-<style>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-
-body {
-  font-family: 'Inter', sans-serif;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s, color 0.3s;
-}
-
-.nav-link:hover {
-  background-color: #FFA600;
-  color: #5F1213;
-}
-
-.input-style {
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
-  border: 1px solid #ccc;
-  border-radius: 0.375rem;
-  width: 100%;
-}
-
-.search-icon {
-  position: absolute;
-  top: 50%;
-  left: 0.75rem;
-  transform: translateY(-50%);
-  color: #888;
-}
-
-.select-style {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 0.375rem;
-}
-
-.download-btn {
-  background-color: #5F1213;
-  color: white;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.3s;
-}
-
-.download-btn:hover {
-  background-color: #731a1c;
-}
-
-.page-btn {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 9999px;
-}
-
-.disabled-btn {
-  color: #aaa;
-  cursor: not-allowed;
-}
-</style>
+<script>
+export default { name: 'admin_parking_reports' }
+</script>

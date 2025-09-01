@@ -1,77 +1,94 @@
-<script setup>
-import { router } from '@inertiajs/vue3'
-
-function staff_Dashboard() {
-  router.visit('/staff_Dashboard')
-}
-function edit_Form() {
-  router.visit('/edit_Form')
-}
-</script>
-
 <template>
-  <div class="landing-page bg-white text-black min-h-screen font-sans">
+  <div class="bg-gray-50 text-gray-900 min-h-screen font-sans">
     <!-- Header -->
     <header class="bg-maroon text-white py-2 px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
       <div class="flex items-center gap-2">
         <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
         <h1 class="text-lg font-bold">CEDU <span class="text-blue-300">iCentral</span></h1>
       </div>
-      <div class="flex items-center gap-2 w-full sm:w-auto">
-        <input type="text" placeholder="Search" class="flex-1 rounded px-2 py-1 text-white border border-white bg-transparent" />
-        <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 border border-white">Search</button>
-        <button class="text-white hover:text-yellow-300"><i class="fas fa-bell"></i></button>
-        <div class="w-8 h-8 bg-red-700 rounded-full"></div>
-      </div>
     </header>
 
     <!-- Parking History Section -->
     <section class="px-4 py-6 sm:px-8">
-      <h2 class="text-lg font-semibold text-yellow-600 mb-4 border-l-4 border-maroon pl-2">Parking History</h2>
+      <h2 class="text-2xl font-bold text-yellow-600 mb-6 border-l-4 border-maroon pl-3">
+        Parking History
+      </h2>
 
-      <div class="flex justify-end mb-4">
-        <select class="px-2 py-1 border rounded text-sm">
-          <option>Daily</option>
-          <option>Weekly</option>
-        </select>
-      </div>
+      <div class="bg-white rounded-xl shadow-xl p-6">
+        <!-- Search + Filter -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-2 mb-4">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by name or plate"
+            class="px-3 py-2 rounded border border-gray-300 text-sm w-full sm:w-64"
+          />
+        </div>
 
-      <!-- Table -->
-      <div class="bg-white rounded shadow-md overflow-x-auto">
-        <div class="overflow-y-auto" style="max-height: 400px;">
-          <table class="w-full text-left text-sm min-w-[900px]">
-            <thead class="bg-gray-200 text-gray-700 sticky top-0 z-10">
-              <tr>
-                <th class="py-2 px-3">NO.</th>
-                <th class="py-2 px-3">NAME</th>
-                <th class="py-2 px-3">PLATE NO.</th>
-                <th class="py-2 px-3">DATE & TIME IN</th>
-                <th class="py-2 px-3">DATE & TIME OUT</th>
-                <th class="py-2 px-3">HOURS</th>
-                <th class="py-2 px-3">AMOUNT</th>
-                <th class="py-2 px-3">STATUS</th>
-                <th class="py-2 px-3">ACTIONS</th>
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="bg-maroon text-white text-left">
+                <th class="py-3 px-4">#</th>
+                <th class="py-3 px-4">Name</th>
+                <th class="py-3 px-4">Plate</th>
+                <th class="py-3 px-4">Time In</th>
+                <th class="py-3 px-4">Time Out</th>
+                <th class="py-3 px-4">Total Hours</th>
+                <th class="py-3 px-4">Amount</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">QR Code</th>
+                <th class="py-3 px-4 text-center">POS</th>
               </tr>
             </thead>
-            <tbody class="text-gray-700">
-              <tr v-for="(entry, index) in paginatedEntries" :key="'entry-' + index" class="border-t">
-                <td class="py-2 px-3">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-                <td class="py-2 px-3">{{ entry.name }}</td>
-                <td class="py-2 px-3">{{ entry.plate }}</td>
-                <td class="py-2 px-3">{{ entry.timeIn }}</td>
-                <td class="py-2 px-3">{{ entry.timeOut }}</td>
-                <td class="py-2 px-3">{{ entry.totalHours }}</td>
-                <td class="py-2 px-3">{{ entry.totalAmount }}</td>
-                <td class="py-2 px-3">{{ entry.status }}</td>
-                <td class="py-2 px-3 whitespace-nowrap">
-                  <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 mb-1" @click="editClient(index)">Edit</button>
-                  <button class="bg-red-500 text-white px-2 py-1 ml-1 rounded hover:bg-red-600" @click="deleteClient(index)">Delete</button>
+            <tbody class="text-gray-800">
+              <tr
+                v-for="(entry, index) in paginatedEntries"
+                :key="entry.id"
+                class="border-t hover:bg-yellow-50 even:bg-gray-50 transition"
+              >
+                <td class="py-2 px-4">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+                <td class="py-2 px-4">{{ entry.name }}</td>
+                <td class="py-2 px-4">{{ entry.plate }}</td>
+                <td class="py-2 px-4">{{ formatTime(entry.time_in) }}</td>
+                <td class="py-2 px-4">{{ formatTime(entry.time_out) }}</td>
+                <td class="py-2 px-4">{{ computeHours(entry.time_in, entry.time_out) }}</td>
+                <td class="py-2 px-4">{{ entry.total_amount || '—' }}</td>
+                <td class="py-2 px-4">
+                  <span
+                    :class="entry.status === 'Paid' ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'"
+                  >
+                    {{ entry.status }}
+                  </span>
                 </td>
-              </tr>
+                <td class="py-2 px-4">
+                  <img
+                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${entry.plate}`"
+                    alt="QR Code"
+                    class="w-12 h-12"
+                  />
+                </td>
+                <td class="py-2 px-4 text-center">
+                  <button
+                    @click="downloadPOS(entry)"
+                    title="Download POS"
+                    class="bg-yellow-400 text-white p-2 rounded hover:bg-yellow-500 transition"
+                  >
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                  </button>
+                  <button
+                      @click="openEditModal(client.id)"
+                      title="Edit"
+                      class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+              </tr> 
 
-              <!-- Placeholder Rows -->
-              <tr v-for="n in emptyRowCount" :key="'blank-' + n" class="border-t">
-                <td colspan="9" class="py-2 px-3 text-center text-gray-200">—</td>
+              <tr v-for="n in emptyRowCount" :key="'blank-' + n" class="border-t even:bg-gray-50">
+                <td colspan="10" class="py-2 px-4 text-center text-gray-300">—</td>
               </tr>
             </tbody>
           </table>
@@ -79,39 +96,33 @@ function edit_Form() {
       </div>
 
       <!-- Pagination -->
-      <div class="flex flex-wrap justify-center sm:justify-end mt-6 gap-2 items-center">
-        <button 
-          class="px-2 text-maroon disabled:text-gray-400" 
-          @click="prevPage"
+      <div class="flex justify-center mt-6 gap-2 text-sm">
+        <button
+          @click="changePage(currentPage - 1)"
           :disabled="currentPage === 1"
+          class="px-3 py-1 rounded border border-maroon text-maroon transition duration-200"
+          :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-400 hover:text-white'"
         >
-          ◀
+          &lt;
         </button>
-        <span 
-          v-for="page in totalPages" 
+        <button
+          v-for="page in visiblePages"
           :key="page"
-          @click="currentPage = page"
-          class="px-3 py-1 rounded-full cursor-pointer"
-          :class="currentPage === page ? 'bg-yellow-500 text-white' : 'text-maroon hover:bg-gray-200'"
+          @click="changePage(page)"
+          class="px-3 py-1 rounded border border-maroon transition duration-200"
+          :class="currentPage === page
+            ? 'bg-yellow-400 text-white'
+            : 'text-maroon hover:bg-yellow-200'"
         >
           {{ page }}
-        </span>
-        <button 
-          class="px-2 text-maroon disabled:text-gray-400" 
-          @click="nextPage"
-          :disabled="currentPage === totalPages"
-        >
-          ▶
         </button>
-      </div>
-
-      <!-- Back Button -->
-      <div class="flex justify-center sm:justify-end mt-4">
-        <button 
-          @click="staff_Dashboard"
-          class="bg-maroon text-white px-4 py-2 rounded hover:bg-red-800 transition-colors"
+        <button
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1 rounded border border-maroon text-maroon transition duration-200"
+          :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-400 hover:text-white'"
         >
-          ← Back
+          &gt;
         </button>
       </div>
     </section>
@@ -120,8 +131,8 @@ function edit_Form() {
     <footer class="bg-maroon text-white mt-10 py-6 px-4 sm:px-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
       <div>
         <h3 class="font-bold mb-1">Support</h3>
-        <p>University of Southeastern Philippines,<br>Tagum-Mabini Campus, Tagum Unit, CEDU Office, Apokon, Tagum City</p>
-        <p>cedu@usep.edu.ph<br>+88015-88888-9998</p>
+        <p>University of Southeastern Philippines,<br />Tagum-Mabini Campus, Tagum Unit, CEDU Office, Apokon, Tagum City</p>
+        <p>cedu@usep.edu.ph<br />+88015-88888-9998</p>
       </div>
       <div>
         <h3 class="font-bold mb-1">Account</h3>
@@ -137,60 +148,104 @@ function edit_Form() {
       </div>
     </footer>
   </div>
+  <ParkingHistory :entries="parkingHistoryData" />
+
 </template>
 
-<script>
-export default {
-  name: 'ParkingHistory',
-  data() {
-    return {
-      currentPage: 1,
-      itemsPerPage: 5,
-      entries: [
-        { name: 'Joan Malintad', plate: 'ABC123', timeIn: '7:30 AM', timeOut: '8:30 AM', totalHours: '1', totalAmount: '₱20', status: 'Active' },
-        { name: 'Axl Rose', plate: 'XYZ456', timeIn: '7:30 AM', timeOut: '9:00 AM', totalHours: '1.5', totalAmount: '₱30', status: 'Complete' },
-        { name: 'Christine Tabacon', plate: 'DEF789', timeIn: '7:30 AM', timeOut: '8:30 AM', totalHours: '1', totalAmount: '₱20', status: 'Active' },
-        { name: 'Precious Suico', plate: 'GHI012', timeIn: '7:30 AM', timeOut: '10:00 AM', totalHours: '2.5', totalAmount: '₱50', status: 'Active' },
-        { name: 'Mark Reyes', plate: 'JKL345', timeIn: '8:00 AM', timeOut: '9:00 AM', totalHours: '1', totalAmount: '₱25', status: 'Complete' },
-        { name: 'Liza Cruz', plate: 'MNO678', timeIn: '9:00 AM', timeOut: '10:00 AM', totalHours: '1', totalAmount: '₱25', status: 'Active' },
-        { name: 'Rico Santos', plate: 'PQR901', timeIn: '6:00 AM', timeOut: '8:00 AM', totalHours: '2', totalAmount: '₱45', status: 'Complete' },
-        { name: 'Jane Doe', plate: 'STU234', timeIn: '7:15 AM', timeOut: '8:15 AM', totalHours: '1', totalAmount: '₱25', status: 'Active' },
-      ]
-    }
-  },
-  computed: {
-    paginatedEntries() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      return this.entries.slice(start, start + this.itemsPerPage);
-    },
-    emptyRowCount() {
-      return this.itemsPerPage - this.paginatedEntries.length;
-    },
-    totalPages() {
-      return Math.ceil(this.entries.length / this.itemsPerPage);
-    }
-  },
-  methods: {
-    prevPage() {
-      if (this.currentPage > 1) this.currentPage--;
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) this.currentPage++;
-    },
-    editClient(index) {
-      alert(`Edit Client #${(this.currentPage - 1) * this.itemsPerPage + index + 1}`);
-    },
-    deleteClient(index) {
-      if (confirm('Are you sure you want to delete this client?')) {
-        const globalIndex = (this.currentPage - 1) * this.itemsPerPage + index;
-        this.entries.splice(globalIndex, 1);
-      }
-    }
+<script setup>
+import { ref, computed, toRef } from 'vue'
+import jsPDF from 'jspdf'
+
+const props = defineProps({
+  entries: {
+    type: Array,
+    default: () => []
   }
+})
+
+const entries = toRef(props, 'entries')  // make entries reactive
+
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const searchQuery = ref('')
+
+// Filter entries based on search query (name or plate)
+const history = computed(() => {
+  const term = searchQuery.value.toLowerCase().trim()
+  if (!term) return entries.value
+
+  return entries.value.filter(entry =>
+    entry.name?.toLowerCase().includes(term) ||
+    entry.plate?.toLowerCase().includes(term)
+  )
+})
+
+// Paginate the filtered results
+const paginatedEntries = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return history.value.slice(start, start + itemsPerPage.value)
+})
+
+// Calculate how many empty rows to add to maintain table height
+const emptyRowCount = computed(() => {
+  return itemsPerPage.value - paginatedEntries.value.length
+})
+
+const totalPages = computed(() => Math.ceil(history.value.length / itemsPerPage.value))
+
+const visiblePages = computed(() =>
+  Array.from({ length: totalPages.value }, (_, i) => i + 1)
+)
+
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+function formatTime(time) {
+  return time ? new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'
+}
+
+function computeHours(start, end) {
+  if (!start || !end) return '—'
+  const s = new Date(start)
+  const e = new Date(end)
+  const diff = (e - s) / (1000 * 60 * 60)
+  return diff.toFixed(1)
+}
+
+function downloadPOS(entry) {
+  const pdf = new jsPDF()
+  pdf.setFontSize(12)
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('Republic of the Philippines', 105, 20, { align: 'center' })
+  pdf.text('University of Southeastern Philippines', 105, 28, { align: 'center' })
+  pdf.text('ORDER PAYMENT SLIP (OPS/POS)', 105, 36, { align: 'center' })
+  pdf.setLineWidth(0.5)
+  pdf.line(20, 40, 190, 40)
+
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(11)
+  pdf.text(`Payer Name: ${entry.name}`, 20, 50)
+  pdf.text(`Plate No.: ${entry.plate}`, 20, 58)
+  pdf.text(`Time In: ${formatTime(entry.time_in)}`, 20, 66)
+  pdf.text(`Time Out: ${formatTime(entry.time_out)}`, 20, 74)
+  pdf.text(`Total Hours: ${computeHours(entry.time_in, entry.time_out)}`, 20, 82)
+  pdf.text(`Total Amount: ${entry.total_amount || '—'}`, 20, 90)
+
+  pdf.setFont('helvetica', 'bold')
+  pdf.text(`Prepared by: _________________________`, 20, 110)
+  pdf.text('Staff: ________________________', 20, 120)
+  pdf.text('Cashier: ________________________', 20, 130)
+
+  pdf.save(`${entry.plate}_POS.pdf`)
 }
 </script>
 
 <style scoped>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
 .bg-maroon {
   background-color: #650000;
 }

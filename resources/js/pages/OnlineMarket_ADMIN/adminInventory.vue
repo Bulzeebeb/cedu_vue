@@ -84,6 +84,10 @@ import { usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import AdminSidebar from './adminSidebar.vue'
 
+// Make admin info reactive for sidebar
+const page = usePage()
+const admin = page.props.admin
+
 const props = defineProps({
   products: Array
 })

@@ -1,14 +1,7 @@
 <template>
-<div class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4">
-    <div class="bg-white text-black font-sans flex flex-col">
-     
-      <!-- Optional banner image inside modal -->
-      <!--<div class="h-40 bg-cover bg-center" style="background-image: url('/images/banner.jpg')"></div>-->
-
-      <!-- OTP Content -->
-       <div class="flex-grow flex items-center justify-center py-8">
-        <div class="border border-gray-300 p-6 rounded-md w-full max-w-2xl shadow-md">
-         
+  <!-- Only the modal card, no overlay or blur -->
+  <transition name="scale-fade">
+    <div v-if="!success" class="bg-white rounded-xl shadow-lg w-full max-w-lg text-black font-sans overflow-hidden">
       <div class="p-6">
         <h2 class="text-center text-2xl font-bold mb-4">Verify OTP</h2>
         <p class="text-center text-gray-600 mb-2">
@@ -19,10 +12,11 @@
         </p>
 
         <!-- OTP Form -->
-        <form @submit.prevent="submitOtp" v-if="!success">
+        <form @submit.prevent="submitOtp">
           <div class="mb-4">
             <input type="text" v-model="form.otp" maxlength="6" placeholder="Enter OTP"
-              class="w-full px-4 py-2 border border-gray-300 rounded text-center tracking-widest text-xl" required />
+              class="w-full px-4 py-2 border border-gray-300 rounded text-center tracking-widest text-xl"
+              required />
             <p v-if="form.errors.otp" class="text-red-500 text-sm mt-1">{{ form.errors.otp }}</p>
           </div>
 
@@ -32,38 +26,35 @@
           </button>
         </form>
 
-        <!-- Success Message -->
-        <div v-else class="text-center">
-          <p class="text-green-600 text-lg font-semibold mb-4">✅ Account created successfully!</p>
-          <button @click="goToLogin" class="text-blue-600 font-semibold hover:underline">
-            Go to Login →
-          </button>
-        </div>
-
         <!-- Resend -->
         <p class="text-center text-sm mt-4">
           Didn't receive the code?
           <span class="text-blue-600 font-semibold hover:underline cursor-pointer"
-            :class="{ 'opacity-50 cursor-not-allowed': resendCooldown > 0 }"
-            @click="resendCooldown === 0 ? resendOtp() : null">
+                :class="{ 'opacity-50 cursor-not-allowed': resendCooldown > 0 }"
+                @click="resendCooldown === 0 ? resendOtp() : null">
             Resend <span v-if="resendCooldown > 0">({{ resendCooldown }}s)</span>
           </span>
         </p>
       </div>
-        </div>
-       </div>
     </div>
-  </div>
+  </transition>
 </template>
-
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import Swal from 'sweetalert2'
-import { defineEmits } from 'vue'
+import { defineEmits, defineProps } from 'vue'
+import { router } from '@inertiajs/vue3'
+
 
 const emit = defineEmits(['close'])
+const props = defineProps({
+  formData: {
+    type: Object,
+    default: () => ({})
+  }
+})
 const form = useForm({ otp: '' })
 const success = ref(false)
 const otpCountdown = ref(300) // 5 mins
@@ -79,26 +70,31 @@ const formattedOtpTime = computed(() => {
 })
 
 function submitOtp() {
+  Swal.fire({
+    title: 'Verified! You may now login to your account.',
+    icon: 'success',
+    showConfirmButton: false,
+    allowOutsideClick: false,
+    timer: 1200,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
   form.post('/signup/verify-otp', {
     preserveScroll: true,
     onSuccess: () => {
-      success.value = true
-      clearInterval(otpTimer)
-      clearInterval(cooldownTimer)
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Verified!',
-        text: 'Your account has been created successfully.',
-        timer: 2000,
-        showConfirmButton: false
-      })
-
+      success.value = true;
+      clearInterval(otpTimer);
+      clearInterval(cooldownTimer);
       setTimeout(() => {
-        emit('close')
-      }, 2000)
+        Swal.close();
+          window.location.href = '/signmain';
+      }, 1200);
+    },
+    onError: () => {
+      Swal.close();
     }
-  })
+  });
 }
 
 function resendOtp() {
@@ -141,8 +137,8 @@ function startCooldownTimer() {
   }, 1000)
 }
 
-function goToLogin() {
-  emit('close')
+function goToLogin(id) {
+  router.visit(`/signmain`)
 }
 
 onMounted(() => {
@@ -159,8 +155,28 @@ onBeforeUnmount(() => {
 .bg-maroon {
   background-color: #650000;
 }
-
 .text-maroon {
   color: #650000;
+}
+
+/* Overlay fade */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* Card scale & fade */
+.scale-fade-enter-active, .scale-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.scale-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+.scale-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 </style>

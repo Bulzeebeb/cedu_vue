@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 
+const page = usePage()
+const admin = computed(() => page.props.admin)
 const showNotif = ref(false)
 
 function toggleNotif(event) {
@@ -20,15 +24,30 @@ function goToProducts() {
 function goToOrders() {
   router.visit('/admins/orders')
 }
+function goToLogs() {
+  router.visit('/logsOnlineMarketAdmin')
+}
+function goToManageAccount() {
+  router.visit('/admins/manageacc')
+}
 function goToProfile() {
-  router.visit('/profileOnlineMarketAdmin')
+  router.visit('/admins/profile')
 }
 function goToReports() {
-  router.visit('/reportsOnlineMarketAdmin')
+  router.visit('/admin/reports')
 }
 function goToHome() {
   router.visit('/landingpage')
 }
+
+// Helper to get the correct profile picture URL
+function getProfilePictureUrl(path) {
+  if (!path) return 'https://i.pravatar.cc/300';
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('storage/admin_profiles')) path = path.substring(1);
+  return `/${path}`;
+}
+
 onMounted(() => {
   window.addEventListener('click', () => {
     showNotif.value = false
@@ -42,6 +61,7 @@ onMounted(() => {
     <div>
       <div class="mb-10">
         <h1 class="text-lg font-bold">CEDU <span class="text-yellow-500">iCentral</span></h1>
+        <h1 class="text-sm text-yellow-500">Online Market Admin</h1>
       </div>
       <nav class="space-y-4">
         <a href="#" @click="goToDashboard"
@@ -64,7 +84,7 @@ onMounted(() => {
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-chart-bar"></i> Reports
         </a>
-        <a href="#" @click="goToProfile"
+        <a href="#" @click="goToManageAccount"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-user-circle"></i> Accounts
         </a>
@@ -85,9 +105,10 @@ onMounted(() => {
       <div class="flex items-center justify-between px-2 mt-4">
         <!-- Profile Left -->
         <div class="flex items-center gap-3 cursor-pointer" @click="goToProfile">
-          <img src="https://i.pravatar.cc/300" alt="Profile"
+          <img :src="getProfilePictureUrl(admin?.profile_picture)"
             class="w-12 h-12 rounded-full border-2 border-white object-cover" />
-          <p class="text-sm">Admin</p>
+          <p class="text-sm">{{ $page.props.admin ? ($page.props.admin.first_name + ' ' + $page.props.admin.last_name) :
+            'Admin'}}</p>
         </div>
 
         <!-- Bell Right -->
@@ -126,7 +147,8 @@ onMounted(() => {
       <div class="border-t border-[#FFA600]/40 my-3"></div>
 
       <!-- Logout -->
-      <button @click="goToHome" type="button" class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2 w-full">
+      <button @click="goToHome" type="button"
+        class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2 w-full">
         <i class="fas fa-power-off text-lg"></i> Log Out
       </button>
     </div>

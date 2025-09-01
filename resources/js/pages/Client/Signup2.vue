@@ -1,10 +1,8 @@
 <template>
-  <div class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4">
-    <div class="bg-white text-black font-sans flex flex-col">
-      <!-- <section class="w-full bg-cover bg-center" style="background-image: url('/images/banner.jpg')"></section> -->
-
-      <div class="flex-grow flex items-center justify-center py-8">
-        <div class="border border-gray-300 p-6 rounded-md w-full max-w-2xl shadow-md">
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto flex-col overflow-hidden p-0 m-0">
+  <div class="bg-white rounded-xl shadow-lg text-black font-sans flex flex-col overflow-hidden p-0 m-0">
+    <div class="flex-grow flex items-center justify-center py-0 m-0">
+      <div class="border border-gray-300 p-6 rounded-md w-full max-w-2xl shadow-md m-0">
           <h2 class="text-center text-2xl font-bold mb-6">Create Account - Step 2 of 2</h2>
           <p class="text-center text-gray-600 mb-6">Account Information</p>
 
@@ -66,7 +64,7 @@
 
           <p class="text-center text-sm mt-4">
             Already have an account?
-            <Link href="/signin" class="text-blue-600 font-semibold hover:underline">Login</Link>
+            <Link href="/signmain" class="text-blue-600 font-semibold hover:underline">Login</Link>
           </p>
         </div>
       </div>
@@ -79,6 +77,7 @@
 import { ref } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import { defineEmits, defineProps } from 'vue'
+import Swal from 'sweetalert2'
 
 const emit = defineEmits(['next', 'close'])
 const props = defineProps({
@@ -109,17 +108,34 @@ async function handleCreateAccount() {
   }
 
   try {
+    Swal.fire({
+      title: 'Please wait...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
     await form.post('/signup/store', {
       preserveScroll: true,
       onError: (errors) => {
+        Swal.close();
         console.error('Validation failed:', errors)
       },
       onSuccess: () => {
-        // Emit to parent to open VerifyOtp modal
-        emit('next')
+        Swal.close();
+        Swal.fire({
+          title: 'Account created successfully!',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          // Emit to parent to open VerifyOtp modal
+          emit('next')
+        });
       }
     })
   } catch (error) {
+    Swal.close();
     console.error('Unexpected error:', error)
     alert('Something went wrong. Please try again.')
   }

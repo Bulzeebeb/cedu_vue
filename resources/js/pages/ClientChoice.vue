@@ -33,7 +33,7 @@
             class="absolute right-0 mt-2 w-56 bg-white text-[#650000] font-medium border rounded-lg shadow-lg z-50 animate-fade-in p-4 space-y-3">
             <!-- Greeting -->
             <div class="bg-yellow-400 px-3 py-2 rounded text-[#650000] font-medium text-sm">
-              Hello, <span class="font-bold">Alexis</span>
+                Hello, <span class="font-bold">{{ ($page.props.user?.firstName || 'User') + '!' }}</span>
             </div>
 
             <button @click="goToHome"

@@ -62,8 +62,8 @@
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
-              <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
-              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button>
+              <!-- <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
+              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button> -->
             </div>
           </div>
           <canvas id="lineChart" class="w-full h-full"></canvas>
@@ -79,8 +79,8 @@
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
-              <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
-              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button>
+              <!-- <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
+              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button> -->
             </div>
           </div>
           <canvas id="donutChart" class="w-full h-full"></canvas>
@@ -108,7 +108,7 @@
               <th class="py-2 px-2">Amount</th>
               <th class="py-2 px-2">Order Date</th>
               <th class="py-2 px-2">Status</th>
-              <th class="py-2 px-2">Actions</th>
+              <!-- <th class="py-2 px-2">Actions</th> -->
             </tr>
           </thead>
           <tbody>
@@ -116,19 +116,20 @@
               <td class="py-2 px-2">#{{ order.id.toString().padStart(3, '0') }}</td>
               <td class="py-2 px-2">{{ order.first_name }} {{ order.last_name }}</td>
               <td class="py-2 px-2">₱{{ order.total_amount }}</td>
-              <td class="py-2 px-2">{{ formatDate(order.order_date) }}</td>
+              <!-- Updated this line to use display_date with fallback to created_at -->
+              <td class="py-2 px-2">{{ formatDate(order.display_date || order.created_at) }}</td>
               <td class="py-2 px-2">
                 <span :class="getStatusClass(order.status)" class="px-2 py-1 rounded-full text-xs font-medium">
                   {{ formatStatus(order.status) }}
                 </span>
               </td>
               <td class="py-2 px-2 space-x-2">
-                <button @click="printOrder(order)" class="text-blue-600 hover:underline text-xs">Print</button>
-                <button @click="viewOrder(order)" class="text-indigo-600 hover:underline text-xs">View</button>
-                <button v-if="order.status === 'pending'" @click="markAsPaid(order)"
+                <!-- <button @click="printOrder(order)" class="text-blue-600 hover:underline text-xs">Print</button>
+                <button @click="viewOrder(order)" class="text-indigo-600 hover:underline text-xs">View</button> -->
+                <!-- <button v-if="order.status === 'pending'" @click="markAsPaid(order)"
                   class="text-green-600 hover:underline text-xs">Mark Paid</button>
                 <button v-if="order.status === 'pending'" @click="deleteOrder(order)"
-                  class="text-red-600 hover:underline text-xs">Delete</button>
+                  class="text-red-600 hover:underline text-xs">Delete</button> -->
               </td>
             </tr>
           </tbody>
@@ -183,7 +184,15 @@ let donutChartInstance = null
 
 // Helper functions
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('en-US', {
+  if (!dateString) return 'N/A'
+
+  // Handle if dateString is already a Date object
+  const date = dateString instanceof Date ? dateString : new Date(dateString)
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) return 'Invalid Date'
+
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

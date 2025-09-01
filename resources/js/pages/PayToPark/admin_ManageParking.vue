@@ -12,24 +12,34 @@ const rateMinute = ref('00')
 const rateFee = ref('20')         
 
 const parkingPeriod = ref('8 hrs')
-const overtimeFee = ref('₱')
-const overnightFee = ref('₱')
+const overtimeFee = ref('')
+const overnightFee = ref('')
 
-const openingHour = ref(6)
-const closingHour = ref(22)
+const openingHour = ref('06:00')
+const closingHour = ref('22:00')
 
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
 }
 function handleSave() {
   isSaved.value = true
-
-  // Replace this with an Inertia POST/PUT to backend when ready
-  console.log('Parking Rate:', `${rateHour.value}:${rateMinute.value} ${ratePeriod.value}`, 'Fee:', rateFee.value)
-  console.log('Parking Period:', parkingPeriod.value)
-  console.log('Overtime Fee:', overtimeFee.value)
-  console.log('Overnight Fee:', overnightFee.value)
-  console.log('Operating Hours:', `${openingHour.value} - ${closingHour.value}`)
+  router.post('/parking-settings', {
+    rate_hour: rateHour.value,
+    rate_minute: rateMinute.value,
+    rate_fee: rateFee.value,
+    parking_period: parkingPeriod.value,
+    overtime_fee: overtimeFee.value.replace('₱','') || null,
+    overnight_fee: overnightFee.value.replace('₱','') || null,
+    opening_hour: openingHour.value,
+    closing_hour: closingHour.value,
+  }, {
+    onSuccess: () => {
+      alert('Parking settings saved successfully!')
+    },
+    onError: (errors) => {
+      console.error(errors)
+    }
+  })
 }
 function handleEdit() {
   isSaved.value = false
@@ -37,19 +47,8 @@ function handleEdit() {
 function handleBack() {
   router.visit('/admin_Dashboard')
 }
-function admin_Dashboard() {
-  router.visit('/admin_Dashboard')
-}
-function admin_ManageParking() {
-  router.visit('/admin_ManageParking')
-}
-function admin_Account() {
-  router.visit('/admin_Account')
-}
-function admin_Reports() {
-  router.visit('/admin_parking_reports')
-}
 </script>
+
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
@@ -279,3 +278,5 @@ function admin_Reports() {
   background-color: #6b7280;
 }
 </style>
+
+

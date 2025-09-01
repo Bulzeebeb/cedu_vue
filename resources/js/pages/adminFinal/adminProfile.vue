@@ -9,10 +9,10 @@
           Admin Profile
         </div>
         <div class="flex items-center gap-8 mb-10">
-          <img src="https://i.pravatar.cc/100" alt="User Photo" class="w-28 h-28 rounded-full border-4 border-[#FFA600] shadow-lg" />
+          <img src="/images/lamban.jpg" alt="User Photo" class="w-28 h-28 rounded-full border-4 border-[#FFA600] shadow-lg" />
           <div>
-            <h2 class="text-3xl font-extrabold">Admin</h2>
-            <p class="text-gray-500">System Administrator</p>
+            <h2 class="text-3xl font-extrabold">Liza May M. Lamban, R.Agr., MBA</h2>
+            <p class="text-gray-500">CEDU Deputy Head</p>
           </div>
         </div>
 
@@ -20,21 +20,21 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-            <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Juan" />
+            <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Liza May" />
           </div>
           <div class="grid grid-cols-3 gap-3">
             <div class="col-span-2">
               <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-              <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Dela Cruz" />
+              <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Lamban" />
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">M.I.</label>
-              <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-left text-gray-700 cursor-default" value="P" />
+              <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-left text-gray-700 cursor-default" value="M" />
             </div>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-            <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Tagum City" />
+            <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Mabini, Davao de Oro" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Number</label>
@@ -42,20 +42,20 @@
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
-            <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Male" />
+            <input type="text" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="Female" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Age</label>
-            <input type="number" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="25" />
+            <input type="number" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="45" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-            <input type="email" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="admin@material.com" />
+            <input type="email" readonly class="w-full px-4 py-3 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="lmmlamban@usep.edu.ph" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
             <div class="relative">
-              <input :type="showPassword ? 'text' : 'password'" readonly class="w-full px-4 py-3 pr-10 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="secret123" />
+              <input :type="showPassword ? 'text' : 'password'" readonly class="w-full px-4 py-3 pr-10 border bg-gray-100 border-gray-300 rounded-lg shadow-sm text-gray-700 cursor-default" value="*********" />
               <span class="absolute inset-y-0 right-3 flex items-center cursor-pointer" @click="showPassword = !showPassword">
                 <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-gray-500"></i>
               </span>
@@ -85,27 +85,27 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="text-sm font-semibold text-gray-700 mb-1 block">First Name</label>
-            <input type="text" placeholder="Juan"
+            <input type="text" placeholder="Liza May"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 hover:shadow-md transition" />
           </div>
           <div>
             <label class="text-sm font-semibold text-gray-700 mb-1 block">Last Name</label>
-            <input type="text" placeholder="Dela Cruz"
+            <input type="text" placeholder="Lamban"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 hover:shadow-md transition" />
           </div>
           <div>
             <label class="text-sm font-semibold text-gray-700 mb-1 block">Middle Initial</label>
-            <input type="text" maxlength="1" placeholder="P"
+            <input type="text" maxlength="1" placeholder="M"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 hover:shadow-md transition" />
           </div>
           <div>
             <label class="text-sm font-semibold text-gray-700 mb-1 block">Email</label>
-            <input type="email" placeholder="admin@example.com"
+            <input type="email" placeholder="lmmlamban@usep.edu.ph"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 hover:shadow-md transition" />
           </div>
           <div>
             <label class="text-sm font-semibold text-gray-700 mb-1 block">Address</label>
-            <input type="text" placeholder="Tagum City"
+            <input type="text" placeholder="Mabini, Davao de Oro"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 hover:shadow-md transition" />
           </div>
           <div>
@@ -117,14 +117,14 @@
             <label class="text-sm font-semibold text-gray-700 mb-1 block">Gender</label>
             <select
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 text-gray-700 hover:shadow-md transition">
-              <option disabled selected>Select Gender</option>
+              <option disabled selected>Female</option>
               <option>Male</option>
               <option>Female</option>
             </select>
           </div>
           <div>
             <label class="text-sm font-semibold text-gray-700 mb-1 block">Age</label>
-            <input type="number" placeholder="25"
+            <input type="number" placeholder="45"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFA600] bg-gray-50 hover:shadow-md transition" />
           </div>
         </div>

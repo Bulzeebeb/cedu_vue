@@ -1,12 +1,16 @@
 <script setup>
 import { router } from '@inertiajs/vue3'
 import { ref } from 'vue'
+
 const props = defineProps({
   cartCount: {
     type: Number,
     default: 0
   }
 })
+
+// Define emits for search functionality
+const emit = defineEmits(['search'])
 
 const isOpen = ref(false)
 const isDropdownOpen = ref(false)
@@ -17,7 +21,15 @@ function toggleDropdown() {
 }
 
 function handleSearch() {
-  alert(`Searching for: ${searchQuery.value}`)
+  // Emit search event to parent component
+  emit('search', searchQuery.value.trim())
+}
+
+// Handle search on Enter key press
+function handleSearchKeypress(event) {
+  if (event.key === 'Enter') {
+    handleSearch()
+  }
 }
 
 function goHome() {
@@ -48,8 +60,8 @@ function logout() {
 <template>
   <div class="fixed top-0 left-0 w-full z-50">
     <!-- Top maroon bar -->
-    <div class="w-full bg-maroon text-[10px] text-gray-200 flex justify-end items-center pr-4 py-2 border-b border-yellow-500">
-      
+    <div class="w-full bg-maroon text-[10px] text-gray-200 text-bold flex justify-end items-center pr-4 py-2 border-b border-yellow-500">
+      <span>Corporate Enterprise Department Unit | University of Southeastern Philippines - Tagum-Mabini Campus</span>
     </div>
 
     <!-- Main Navbar -->
@@ -108,10 +120,13 @@ function logout() {
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Search"
+                placeholder="Search products..."
                 class="flex-grow px-2 py-1 text-black outline-none bg-white"
+                @keypress="handleSearchKeypress"
               />
-              <button @click="handleSearch" class="bg-yellow-500 text-white px-4">Search</button>
+              <button @click="handleSearch" class="bg-yellow-500 text-white px-4 hover:bg-yellow-600 transition-colors">
+                Search
+              </button>
             </div>
 
             <!-- Cart -->
@@ -157,10 +172,13 @@ function logout() {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search"
+            placeholder="Search products..."
             class="flex-grow px-2 py-1 text-black outline-none bg-white"
+            @keypress="handleSearchKeypress"
           />
-          <button @click="handleSearch" class="bg-yellow-500 text-white px-4">Search</button>
+          <button @click="handleSearch" class="bg-yellow-500 text-white px-4 hover:bg-yellow-600 transition-colors">
+            Search
+          </button>
         </div>
 
         <!-- Links with icons -->

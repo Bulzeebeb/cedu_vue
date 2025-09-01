@@ -14,9 +14,10 @@ class OnlineMarketOrdersController extends Controller
     public function adminIndex()
     {
         $orders = Order::with('orderItems.product')->get();
-
+        $admin = auth()->guard('admin')->user();
         return Inertia::render('OnlineMarket_ADMIN/adminOrders', [
-            'orders' => $orders
+            'orders' => $orders,
+            'admin' => $admin
         ]);
     }
 

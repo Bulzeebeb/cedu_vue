@@ -194,8 +194,7 @@ function clearCart() {
 }
 
 function proceedToCheckout() {
-  // Navigate to checkout page
-  router.visit('/checkout')
+  router.visit(route('checkout.index')) // safer with named routes
 }
 
 function returnToShop() {

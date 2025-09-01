@@ -32,9 +32,9 @@
           <div v-if="showDropdown"
             class="absolute right-0 mt-2 w-56 bg-white text-[#650000] font-medium border rounded-lg shadow-lg z-50 animate-fade-in p-4 space-y-3">
             <!-- Greeting -->
-            <div class="bg-yellow-400 px-3 py-2 rounded text-[#650000] font-medium text-sm">
-              Hello, <span class="font-bold">Admin</span>
-            </div>
+      <div class="bg-yellow-400 px-3 py-2 rounded text-[#650000] font-medium text-sm">
+        Hello, <span class="font-bold">{{ ($page.props.admin?.first_name || 'Admin') + '!' }}</span>
+      </div>
 
             <button @click="goToHome"
               class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
@@ -145,7 +145,7 @@ function goToOnlineMarketAdmin() {
   router.visit('/admin/dashboard')
 }
 function goToPayToParkAdmin() {
-  router.visit('/adminDashboardPayToPark')
+  router.visit('/dashboard')
 }
 function goToRentalAdmin() {
   router.visit('/rentalfacility')

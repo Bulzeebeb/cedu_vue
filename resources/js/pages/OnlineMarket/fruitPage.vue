@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="pt-24 px-4"></div>
-    <SiteHeader :cart-count="cartCount" />
+    <SiteHeader :cart-count="cartCount" @search="handleSearch" />
 
     <!-- Shop Page Content -->
     <section class="py-12 bg-gray-100">
@@ -14,6 +14,12 @@
           <div class="relative flex items-center justify-start h-full p-8">
             <h2 class="text-6xl font-bold text-white text-left">FRUITS</h2>
           </div>
+        </div>
+
+        <!-- Search Results Info -->
+        <div v-if="searchQuery" class="text-sm text-gray-600">
+          <p>Showing results for: <span class="font-semibold">"{{ searchQuery }}"</span></p>
+          <p>{{ filteredProducts.length }} product(s) found</p>
         </div>
 
         <!-- Sorting -->
@@ -82,7 +88,16 @@
 
         <!-- No products message -->
         <div v-else class="text-center py-12">
-          <p class="text-gray-500 text-lg">No fruits available at the moment.</p>
+          <div v-if="searchQuery">
+            <p class="text-gray-500 text-lg">No fruits found for "{{ searchQuery }}".</p>
+            <button
+              @click="clearSearch"
+              class="mt-4 bg-yellow-500 text-maroon px-4 py-2 rounded hover:bg-yellow-400 transition"
+            >
+              Clear Search
+            </button>
+          </div>
+          <p v-else class="text-gray-500 text-lg">No fruits available at the moment.</p>
         </div>
 
         <!-- Pagination -->
@@ -132,10 +147,25 @@ const props = defineProps({
 
 const sortBy = ref('asc')
 const itemsToShow = ref(10)
+const searchQuery = ref('')
 
-// Use the products from Laravel instead of hardcoded data
+// Filter products based on search query
+const filteredProducts = computed(() => {
+  if (!searchQuery.value) {
+    return props.products
+  }
+
+  const query = searchQuery.value.toLowerCase()
+  return props.products.filter(product =>
+    product.name.toLowerCase().includes(query) ||
+    product.branch.toLowerCase().includes(query) ||
+    product.unit.toLowerCase().includes(query)
+  )
+})
+
+// Sort and limit filtered products
 const sortedProducts = computed(() => {
-  return props.products
+  return filteredProducts.value
     .slice()
     .sort((a, b) => {
       const priceA = parseFloat(a.price)
@@ -144,6 +174,14 @@ const sortedProducts = computed(() => {
     })
     .slice(0, itemsToShow.value)
 })
+
+function handleSearch(query) {
+  searchQuery.value = query
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+}
 
 function addToCart(productId) {
   router.post('/cart/add', {

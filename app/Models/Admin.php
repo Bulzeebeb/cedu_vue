@@ -18,7 +18,14 @@ class Admin extends Authenticatable
         'age',
         'role',
         'password',
+        'profile_picture',
     ];
 
     protected $hidden = ['password'];
+
+    public function getProfilePictureAttribute($value)
+    {
+        return $value ? asset('storage/' . $value) : null;
+    }
+
 }
