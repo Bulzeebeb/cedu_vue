@@ -283,7 +283,11 @@ Route::prefix('admins/orders')->group(function () {
     Route::delete('/{id}', [OnlineMarketOrdersController::class, 'destroy'])->name('admin.orders.destroy');
 });
 
+Route::get('/admindashboard', function () {
+    return Inertia::render('Admin/adminDashboard');
+})->name('admindashboard');
 
+<<<<<<< Updated upstream
 // Actual dashboard data
 Route::get('/admin/dashboard/data', [DashboardController::class, 'index'])->name('admin.dashboard.data');
 
@@ -299,6 +303,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/userclients', [AdminUserClientController::class, 'index']);
     Route::delete('/userclients/{id}', [AdminUserClientController::class, 'destroy']);
 });
+=======
+Route::get('/adminlogs', function () {
+    return Inertia::render('Admin/adminLogs');
+})->name('admindashlogs');
+>>>>>>> Stashed changes
 
 
 
