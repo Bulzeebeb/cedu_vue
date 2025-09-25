@@ -148,7 +148,7 @@ function goToPayToParkAdmin() {
   router.visit('/dashboard')
 }
 function goToRentalAdmin() {
-  router.visit('/rentalfacility')
+  router.visit('/use/facidashboard')
 }
 
 </script>

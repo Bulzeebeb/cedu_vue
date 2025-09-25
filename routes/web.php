@@ -287,7 +287,6 @@ Route::get('/admindashboard', function () {
     return Inertia::render('Admin/adminDashboard');
 })->name('admindashboard');
 
-<<<<<<< Updated upstream
 // Actual dashboard data
 Route::get('/admin/dashboard/data', [DashboardController::class, 'index'])->name('admin.dashboard.data');
 
@@ -303,17 +302,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/userclients', [AdminUserClientController::class, 'index']);
     Route::delete('/userclients/{id}', [AdminUserClientController::class, 'destroy']);
 });
-=======
 Route::get('/adminlogs', function () {
     return Inertia::render('Admin/adminLogs');
 })->name('admindashlogs');
->>>>>>> Stashed changes
 
 
 
-// ======================
-// ONLINE MARKET ROUTES CLIENT
-// ======================
+// ==============================//
+// ONLINE MARKET ROUTES CLIENT   //
+// ==============================//
 
 
 Route::get('/omu', function () {
@@ -525,6 +522,38 @@ Route::get('/paypark_transactions/today-with-clients', [PayParkTransactionContro
 Route::get('/rentallandingpage', function () {
     return Inertia::render('UseFaci/uf_home');
 });
+
+
+// ======================
+// 🔧 RENTAL FACILITY ADMIN ROUTES
+// ======================
+Route::get('/use/facidashboard', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_FaciDashboard');
+});
+
+Route::get('/use/category', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_Category');
+});
+
+Route::get('/use/facilities', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_Facilities');
+});
+
+Route::get('/use/booking', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_Booking');
+});
+
+Route::get('/use/reports', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_Reports');
+});
+Route::get('/use/accounts', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_Accounts');
+});
+Route::get('/use/logs', function () {
+    return Inertia::render('UseFaci_ADMIN/admin_Logs');
+});
+
+
 
 // Route::get('dashboard', function () {
 //     return Inertia::render('Dashboard');
