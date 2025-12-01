@@ -20,6 +20,9 @@ use App\Http\Controllers\AdminUserClientController;
 use App\Models\UserClient;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\BookingController;
 use App\Models\Log;
 
 use App\Http\Controllers\PayPark\PayParkAdminReportController;
@@ -366,18 +369,9 @@ Route::get('/use-of-facilities', function () {
     return Inertia::render('UseFaci/uf_home');
 });
 
-Route::get('/use-of-facilities/hostel', function () {
-    return Inertia::render('UseFaci/Hostel');
-})->name('usefacilities.hostel');
-
-Route::get('/use-of-facilities/commercial', function () {
-    return Inertia::render('UseFaci/Commercial');
-})->name('usefacilities.commercial');
-
-Route::get('/use-of-facilities/rental', function () {
-    return Inertia::render('UseFaci/Rental');
-})->name('usefacilities.rental');
-
+Route::get('/use-of-facilities/hostel', [FacilityController::class, 'showHostel'])->name('usefacilities.hostel');
+Route::get('/use-of-facilities/commercial', [FacilityController::class, 'showCommercial'])->name('usefacilities.commercial');
+Route::get('/use-of-facilities/rental', [FacilityController::class, 'showRental'])->name('usefacilities.rental');
 
 // ======================
 // 🔧 PAY2PARK ADMIN ROUTES
@@ -641,6 +635,37 @@ Route::get('/api/logs', fn() => Log::orderByDesc('created_at')->get());
 
 Route::put('/admins/{id}/status', [AdminAccountController::class, 'updateStatus']);
 Route::get('/admins', [AdminAccountController::class, 'index'])->name('admins.index');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Category Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('categories')->group(function () {
+    Route::get('/', [CategoryController::class, 'index']);
+    Route::get('/active', [CategoryController::class, 'getActive']);
+    Route::post('/', [CategoryController::class, 'store']);
+    Route::get('/{id}', [CategoryController::class, 'show']);
+    Route::put('/{id}', [CategoryController::class, 'update']);
+    Route::patch('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
+});
+
+// Facilities Routes
+Route::prefix('facilities')->group(function () {
+    Route::get('/', [FacilityController::class, 'index']);
+    Route::post('/', [FacilityController::class, 'store']);
+    Route::get('/{id}', [FacilityController::class, 'show']);
+    Route::post('/{id}', [FacilityController::class, 'update']);
+    Route::patch('/{id}/toggle-status', [FacilityController::class, 'toggleStatus']);
+    Route::delete('/{id}', [FacilityController::class, 'destroy']);
+});
+
+Route::middleware(['web'])->group(function () {
+    // Booking routes
+    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::get('/bookings', [BookingController::class, 'index']);
+    Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

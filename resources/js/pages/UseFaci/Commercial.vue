@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 
 // Tabs and modal controls
 const activeTab = ref('all')
@@ -13,11 +14,13 @@ const selectedRoom = ref(null)
 const selectedCommercialRoom = ref(null)
 
 // Form input states
+const commercialName = ref('')
 const commercialEmail = ref('')
 const commercialContact = ref('')
 const eventType = ref('')
 const commercialStartDate = ref('')
 const commercialEndDate = ref('')
+const additionalNotes = ref('')
 const showCommercialSuccessMessage = ref(false)
 
 // Rooms data
@@ -89,7 +92,11 @@ function confirmBooking() {
     showCommercialBookingForm.value = true
     showModal.value = false
   } else {
-    alert('No room selected.')
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No room selected.'
+    })
   }
 }
 
@@ -106,41 +113,113 @@ function confirmCommercialBooking() {
   closeCommercialBookingForm()
 }
 
-// Submit booking form (dummy alert + show success)
+// Submit booking form
 function submitCommercialBooking() {
-  alert('Booking submitted successfully!')
-  showCommercialSuccessMessage.value = true
+  // Validate only essential fields
+  if (!commercialStartDate.value || !commercialEndDate.value) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Validation Error',
+      text: 'Please fill start and end dates.'
+    })
+    return
+  }
 
-  setTimeout(() => {
-    showCommercialSuccessMessage.value = false
-    closeCommercialBookingForm()
-  }, 2000)
+  const payload = {
+    facility_id: selectedCommercialRoom.value.id,
+    customer_name: commercialName.value?.trim() || 'Commercial Client',
+    customer_email: commercialEmail.value?.trim() || 'commercial@usep.edu.ph',
+    customer_contact: commercialContact.value?.trim() || '09000000000',
+    check_in: commercialStartDate.value,
+    check_out: commercialEndDate.value,
+    booking_type: 'Commercial',
+    number_of_guests: 1,
+    additional_notes: (eventType.value?.trim() || 'No event type') + ' | ' + (additionalNotes.value?.trim() || 'No notes'),
+    usep_affiliation: 'no',
+    usep_id_file: null
+  }
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+  
+  if (!csrfToken) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'CSRF token not found. Please refresh the page.'
+    })
+    return
+  }
+
+  Swal.fire({
+    title: 'Processing...',
+    allowOutsideClick: false,
+    didOpen: async () => {
+      Swal.showLoading()
+      
+      try {
+        const res = await fetch('/bookings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+        
+        const data = await res.json()
+        
+        if (res.ok || res.status === 201) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Booking Confirmed!',
+            text: 'Your commercial space booking has been confirmed successfully.',
+            confirmButtonColor: '#650000'
+          }).then(() => {
+            closeCommercialBookingForm()
+          })
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Booking Failed',
+            text: data.message || 'An error occurred while processing your booking.'
+          })
+        }
+      } catch (error) {
+        console.error('Booking error:', error)
+        Swal.fire({
+          icon: 'error',
+          title: 'Network Error',
+          text: 'Failed to connect to server. Please check your internet connection and try again.'
+        })
+      }
+    }
+  })
 }
 
+// Open commercial modal for selected room
 function openCommercialModal(room) {
   selectedCommercialRoom.value = room
   showCommercialModal.value = true
   showCommercialBookingForm.value = true
 }
 
-
 // Reset form inputs
 function resetForm() {
+  commercialName.value = ''
   commercialEmail.value = ''
   commercialContact.value = ''
   eventType.value = ''
   commercialStartDate.value = ''
   commercialEndDate.value = ''
+  additionalNotes.value = ''
 }
 </script>
 
 <template>
   <div class="landing-page bg-white text-black min-h-screen font-sans">
     <!-- Header -->
-    <header class="bg-maroon text-white py-2 px-4 flex justify-between items-center">
-      <h1 class="text-lg font-bold">CEDU <span class="text-yellow-300">iCentral</span></h1>
-      <Link href="/facilities" class="text-white bg-transparent hover:underline"> Back to Menu </Link>
-    </header>
+    <Header />
 
     <!-- Hero Section -->
     <section class="relative px-6 py-24 overflow-hidden bg-white">
@@ -249,7 +328,7 @@ function resetForm() {
 
 
     <!-- Commercial Modal (Booking Form) -->
-    <div v-if="showCommercialModal && selectedCommercialRoom" class="fixed inset-0 bg-black bg-opacity-40 z-50 overflow-auto">
+    <div v-if="showCommercialModal && selectedCommercialRoom" class="fixed inset-0 z-50 overflow-auto backdrop-blur-sm" style="background-color: rgba(0, 0, 0, 0.2);">
       <div id="modal-top" class="bg-white max-w-4xl mx-auto mt-10 mb-20 rounded-2xl shadow-xl overflow-hidden animate-fade-in">
         <div class="p-6 relative">
           <button
@@ -287,7 +366,7 @@ function resetForm() {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Renter's Name</label>
-              <input type="text" class="mt-1 block w-full px-3 py-2 border rounded-md" />
+              <input type="text" class="mt-1 block w-full px-3 py-2 border rounded-md" v-model="commercialName" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Email Address</label>
@@ -332,7 +411,7 @@ function resetForm() {
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700">Additional Notes</label>
-              <textarea class="mt-1 block w-full px-3 py-2 border rounded-md"></textarea>
+              <textarea class="mt-1 block w-full px-3 py-2 border rounded-md" v-model="additionalNotes"></textarea>
             </div>
           </div>
           <div class="flex justify-between items-center mt-6">
@@ -349,25 +428,7 @@ function resetForm() {
     </div>
 
     <!-- Footer -->
-    <footer class="bg-maroon text-white mt-10 py-6 px-4 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-      <div class="ml-6">
-        <h3 class="font-bold mb-1 text-yellow-500">Support</h3>
-        <p>University of Southeastern Philippines<br />Tagum-Mabini Campus<br />Apokon, Tagum City</p>
-        <p>osorio.jg@usep.edu.ph<br />+63915-8538-959</p>
-      </div>
-      <div>
-        <h3 class="font-bold mb-1 text-yellow-500">Account</h3>
-        <p>My Account</p>
-        <p>Login / Register</p>
-      </div>
-      <div>
-        <h3 class="font-bold mb-1 text-yellow-500">Quick Link</h3>
-        <p>Privacy Policy</p>
-        <p>Terms of Use</p>
-        <p>FAQ</p>
-        <p>Contact</p>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -394,6 +455,9 @@ function resetForm() {
 </style>
 
 <script>
+import Header from "./header.vue";
+import Footer from "./footer.vue";
+
 window.addEventListener('scroll', () => {
   const indicator = document.getElementById('scrollIndicator')
   if (window.scrollY > 50) {

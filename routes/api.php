@@ -4,14 +4,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\API\AuthController;
 use Illuminate\Http\Request;
-
-// Public Routesuse Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+// use App\Http\Controllers\BookingController;
+
 
 Route::apiResource('products', ProductController::class);
-
+Route::apiResource('facilities', \App\Http\Controllers\FacilityController::class);
+Route::apiResource('categories', \App\Http\Controllers\CategoryController::class);
+Route::get('categories/active', [\App\Http\Controllers\CategoryController::class, 'getActive']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -50,4 +51,8 @@ Route::post('/logout', function (Request $request) {
     $request->user()->tokens()->delete();
     return response()->json(['message' => 'Logged out']);
 })->middleware('auth:sanctum');
+
+
+
+
 

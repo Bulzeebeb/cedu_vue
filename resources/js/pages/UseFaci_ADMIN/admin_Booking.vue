@@ -135,21 +135,27 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminSidebar from './adminSidebar.vue'
 
 const showModal = ref(false)
 const selectedBooking = ref({})
 const sortOption = ref('checkIn')
 const categoryFilter = ref('')
+const bookings = ref([])
 
-// Dummy booking data
-const bookings = ref([
-  { id: 1, facility: 'Deluxe Room 101', category: 'Hostel', customer: 'John Doe', checkIn: '2025-09-15', checkOut: '2025-09-18', duration: 3, status: 'Pending' },
-  { id: 2, facility: 'Conference Hall A', category: 'Commercial', customer: 'Jane Smith', checkIn: '2025-09-20', checkOut: '2025-09-22', duration: 2, status: 'Approved' },
-  { id: 3, facility: 'Tractor', category: 'Rental', customer: 'Michael Lee', checkIn: '2025-09-25', checkOut: '2025-09-26', duration: 1, status: 'Rejected' },
-  { id: 4, facility: 'Room B', category: 'Hostel', customer: 'Alice', checkIn: '2025-09-12', checkOut: '2025-09-14', duration: 2, status: 'Pending' }
-])
+onMounted(() => {
+  fetchBookings()
+})
+
+function fetchBookings() {
+  fetch('/bookings')
+    .then(res => res.json())
+    .then(data => {
+      bookings.value = data
+    })
+    .catch(error => console.error('Error fetching bookings:', error))
+}
 
 const categories = computed(() => [...new Set(bookings.value.map(b => b.category))])
 
@@ -169,13 +175,29 @@ const filteredSortedBookings = computed(() => {
 })
 
 function approveBooking(id) {
-  const booking = bookings.value.find(b => b.id === id)
-  if (booking) booking.status = 'Approved'
+  updateBookingStatus(id, 'Approved')
 }
+
 function rejectBooking(id) {
-  const booking = bookings.value.find(b => b.id === id)
-  if (booking) booking.status = 'Rejected'
+  updateBookingStatus(id, 'Rejected')
 }
+
+function updateBookingStatus(id, status) {
+  fetch(`/bookings/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({ status })
+  })
+  .then(res => res.json())
+  .then(data => {
+    fetchBookings()
+  })
+  .catch(error => console.error('Error updating booking:', error))
+}
+
 function viewDetails(booking) {
   selectedBooking.value = booking
   showModal.value = true
