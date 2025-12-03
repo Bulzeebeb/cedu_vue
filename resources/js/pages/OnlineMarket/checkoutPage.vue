@@ -37,7 +37,8 @@
                   type="text"
                   placeholder="First name"
                   required
-                  class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  readonly
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 bg-gray-50 cursor-not-allowed"
                 />
               </div>
               <div>
@@ -47,7 +48,8 @@
                   type="text"
                   placeholder="Last name"
                   required
-                  class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  readonly
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 bg-gray-50 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -60,7 +62,8 @@
                 placeholder="09xxxxxxxxx"
                 pattern="[0-9]{11}"
                 required
-                class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                readonly
+                class="w-full border border-gray-300 rounded px-3 py-2 text-xs text-gray-800 bg-gray-50 cursor-not-allowed"
               />
               <p class="text-xs text-gray-500 mt-1">Format: 09123456789</p>
             </div>
@@ -245,19 +248,20 @@ onMounted(() => {
 
   // Pre-fill user information if available
   if (props.user) {
-    // Split full name if available
-    if (props.user.full_name) {
-      const nameParts = props.user.full_name.trim().split(' ')
-      billing.value.firstName = nameParts[0] || ''
-      billing.value.lastName = nameParts.slice(1).join(' ') || ''
-    } else {
-      // Try individual fields
-      billing.value.firstName = props.user.first_name || props.user.firstName || ''
-      billing.value.lastName = props.user.last_name || props.user.lastName || ''
-    }
+    // Pre-fill first name
+    billing.value.firstName = props.user.firstName || props.user.first_name || ''
 
-    // Pre-fill contact number
-    billing.value.contact = props.user.contact || props.user.phone || props.user.contact_number || ''
+    // Pre-fill last name
+    billing.value.lastName = props.user.lastName || props.user.last_name || ''
+
+    // Pre-fill contact number - THIS IS THE FIX
+    // Try multiple possible field names for contact number
+    billing.value.contact = props.user.contactNum ||
+                           props.user.contact_num ||
+                           props.user.contact ||
+                           props.user.phone ||
+                           props.user.contact_number ||
+                           ''
   }
 })
 </script>

@@ -125,10 +125,14 @@ class BuyHistoryController extends Controller
 
         $stats = [
             'total_orders' => Order::where('user_id', $user->id)->count(),
-            'pending_orders' => Order::where('user_id', $user->id)->where('status', 'pending')->count(),
-            'completed_orders' => Order::where('user_id', $user->id)->where('status', 'completed')->count(),
+            'pending_orders' => Order::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'Pending'])
+                ->count(),
+            'completed_orders' => Order::where('user_id', $user->id)
+                ->whereIn('status', ['completed', 'Completed'])
+                ->count(),
             'total_spent' => Order::where('user_id', $user->id)
-                ->where('status', '!=', 'cancelled')
+                ->whereNotIn('status', ['cancelled', 'Cancelled'])
                 ->sum('total_amount'),
             'recent_orders' => Order::where('user_id', $user->id)
                 ->with(['orderItems'])

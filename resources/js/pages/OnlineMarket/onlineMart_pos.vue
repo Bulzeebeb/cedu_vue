@@ -3,7 +3,7 @@
     <div class="bg-white text-black rounded-xl shadow-lg w-full max-w-4xl max-h-[95vh] overflow-y-auto p-4 sm:p-6 lg:p-8 relative border border-gray-300 mx-4">
 
       <!-- Header Title and Close -->
-      <div class="flex items-center gap-2 mb-4 print:hidden">
+      <div class="flex items-center gap-2 mb-4">
         <div class="w-1 h-6 bg-maroon rounded-sm"></div>
         <h2 class="text-xl font-semibold text-yellow-600">GENERATED POS</h2>
         <button @click="close" class="absolute top-4 right-4 text-xl font-bold text-gray-600 hover:text-red-500">
@@ -12,7 +12,7 @@
       </div>
 
       <!-- POS FORM CONTENT START -->
-      <div class="pos-form border border-gray-400 rounded-lg p-3 sm:p-4 md:p-6 shadow-sm print:border-none print:shadow-none print:rounded-none print:p-0">
+      <div class="pos-form border border-gray-400 rounded-lg p-3 sm:p-4 md:p-6 shadow-sm">
 
         <!-- Header -->
         <div class="text-center mb-4">
@@ -130,18 +130,12 @@
       </div>
 
       <!-- Buttons -->
-      <div class="mt-6 flex flex-col sm:flex-row justify-center gap-4 print:hidden">
+      <div class="mt-6 flex flex-col sm:flex-row justify-center gap-4">
         <button
           @click="downloadPOS"
           class="w-full sm:w-auto bg-maroon text-white py-2 px-6 rounded-full hover:bg-red-800 font-medium text-sm sm:text-base"
         >
           Download POS
-        </button>
-        <button
-          @click="printPOS"
-          class="w-full sm:w-auto bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 font-medium text-sm sm:text-base"
-        >
-          Print POS
         </button>
         <button
           @click="goToLanding"
@@ -169,205 +163,238 @@ const props = defineProps({
 const close = () => router.visit('/om-landing')
 const goToLanding = () => router.visit('/om-landing')
 
-// Print function
-const printPOS = () => {
-  window.print()
-}
+// Download as PDF function using jsPDF
+const downloadPOS = async () => {
+  try {
+    // Check if jsPDF is already loaded
+    if (!window.jspdf) {
+      // Load jsPDF library
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
+    }
 
-// Download as Word document function
-const downloadPOS = () => {
-  // Create Word document content in HTML format that Word can read
-  const wordContent = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-    <head>
-      <meta charset="utf-8">
-      <title>ORDER PAYMENT SLIP</title>
-      <!--[if gte mso 9]>
-      <xml>
-        <w:WordDocument>
-          <w:View>Print</w:View>
-          <w:Zoom>90</w:Zoom>
-          <w:DoNotPromptForConvert/>
-          <w:DoNotShowInsertionsAndDeletions/>
-        </w:WordDocument>
-      </xml>
-      <![endif]-->
-      <style>
-        @page {
-          size: 8.5in 11in;
-          margin: 0.3in 0.4in;
-        }
-        body {
-          font-family: Arial, sans-serif;
-          font-size: 9pt;
-          line-height: 1.1;
-          color: black;
-          margin: 0;
-          padding: 0;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 8pt;
-        }
-        h1 {
-          font-size: 10pt;
-          margin: 1pt 0;
-          font-weight: normal;
-        }
-        h2 {
-          font-size: 11pt;
-          margin: 1pt 0;
-          font-weight: bold;
-        }
-        h3 {
-          font-size: 9pt;
-          margin: 1pt 0;
-          font-style: italic;
-          font-weight: normal;
-        }
-        .control-no {
-          text-align: right;
-          font-weight: bold;
-          margin-top: 2pt;
-          font-size: 9pt;
-        }
-        .basic-info {
-          border: 1pt solid black;
-          padding: 4pt;
-          margin-bottom: 8pt;
-          font-size: 9pt;
-        }
-        .basic-info p {
-          margin: 1pt 0;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 8pt;
-          font-size: 8pt;
-        }
-        th, td {
-          border: 1pt solid #666;
-          padding: 1pt 3pt;
-          text-align: center;
-          vertical-align: middle;
-          line-height: 1.0;
-        }
-        th {
-          background-color: #f0f0f0;
-          font-weight: bold;
-          font-size: 8pt;
-        }
-        .product-cell {
-          text-align: left;
-        }
-        .section-header {
-          background-color: #f5f5f5;
-          font-weight: bold;
-          text-align: left;
-          font-size: 8pt;
-        }
-        .grand-total {
-          text-align: right;
-          font-weight: bold;
-          font-size: 11pt;
-          margin: 8pt 0;
-        }
-        .signatures {
-          margin-top: 10pt;
-          font-size: 9pt;
-          line-height: 1.3;
-        }
-        .signatures p {
-          margin: 4pt 0;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Republic of the Philippines</h1>
-        <h2>University of Southeastern Philippines</h2>
-        <h3>Resource Management Division (RMD)</h3>
-        <h2>ORDER PAYMENT SLIP (OPS/POS)</h2>
-        <p class="control-no">Control No.: ${props.orderData?.orderId || '______'}</p>
-      </div>
+    const { jsPDF } = window.jspdf
 
-      <div class="basic-info">
-        <p><strong>Payor/Name:</strong> ${props.orderData?.customerName || '__________________________'}</p>
-        <p><strong>Organization:</strong> CEDU CROP PRODUCTION PROJECT</p>
-        <p><strong>Date:</strong> ${props.orderData?.orderDate || '__________________________'}</p>
-        <p>OTHER BUSINESS INCOME</p>
-      </div>
+    // Create new PDF document
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    })
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 8%;">Select</th>
-            <th style="width: 35%;">Product</th>
-            <th style="width: 12%;">QTY</th>
-            <th style="width: 20%;">UNIT COST</th>
-            <th style="width: 25%;">TOTAL COST</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="section-header">
-            <td colspan="5">CEDU TAGUM – CROP PRODUCTION</td>
-          </tr>
-          ${sections[0].products.map(item => `
-            <tr>
-              <td>${item.selected ? '☑' : '☐'}</td>
-              <td class="product-cell">
-                ${item.name}${item.bananaType ? ' ' + item.bananaType : ''}${item.otherDetails ? ' ' + item.otherDetails : ''}
-              </td>
-              <td>${item.qty || 0}</td>
-              <td>${item.unitCost || 0}</td>
-              <td>${(item.qty * item.unitCost).toFixed(2)}</td>
-            </tr>
-          `).join('')}
-          <tr class="section-header">
-            <td colspan="5">CEDU MABINI – CROP PRODUCTION</td>
-          </tr>
-          ${sections[1].products.map(item => `
-            <tr>
-              <td>${item.selected ? '☑' : '☐'}</td>
-              <td class="product-cell">
-                ${item.name}${item.bananaType ? ' ' + item.bananaType : ''}${item.otherDetails ? ' ' + item.otherDetails : ''}
-              </td>
-              <td>${item.qty || 0}</td>
-              <td>${item.unitCost || 0}</td>
-              <td>${(item.qty * item.unitCost).toFixed(2)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+    // Set font
+    doc.setFont('helvetica')
 
-      <div class="grand-total">
-        GRAND TOTAL COST: Php ${grandTotal.value}
-      </div>
+    // Header
+    let yPos = 15
+    doc.setFontSize(10)
+    doc.text('Republic of the Philippines', 105, yPos, { align: 'center' })
 
-      <div class="signatures">
-        <p>Prepared By: _________________________</p>
-        <p>Staff: _________________________</p>
-        <p>Cashier: _________________________</p>
-        <p>OR No.: _________________________</p>
-      </div>
-    </body>
-    </html>
-  `
+    yPos += 5
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('University of Southeastern Philippines', 105, yPos, { align: 'center' })
 
-  // Create and download as Word document
-  const blob = new Blob(['\ufeff', wordContent], {
-    type: 'application/msword'
-  })
+    yPos += 5
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'italic')
+    doc.text('Resource Management Division (RMD)', 105, yPos, { align: 'center' })
 
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `POS_${props.orderData?.orderId || 'Order'}_${new Date().toISOString().split('T')[0]}.doc`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
+    yPos += 7
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    doc.text('ORDER PAYMENT SLIP (OPS/POS)', 105, yPos, { align: 'center' })
+
+    yPos += 7
+    doc.setFontSize(9)
+    doc.text('Control No.: ' + (props.orderData?.orderId || '______'), 190, yPos, { align: 'right' })
+
+    // Basic Info Box
+    yPos += 5
+    const boxHeight = 25
+    doc.rect(15, yPos, 180, boxHeight)
+    yPos += 6
+    doc.setFont('helvetica', 'bold')
+    doc.text('Payor/Name: ', 18, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(props.orderData?.customerName || '__________________________', 42, yPos)
+
+    yPos += 6
+    doc.setFont('helvetica', 'bold')
+    doc.text('Organization: ', 18, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text('CEDU CROP PRODUCTION PROJECT', 45, yPos)
+
+    yPos += 6
+    doc.setFont('helvetica', 'bold')
+    doc.text('Date: ', 18, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(props.orderData?.orderDate || '__________________________', 30, yPos)
+
+    yPos += 6
+    doc.text('OTHER BUSINESS INCOME', 18, yPos)
+
+    // Table
+    yPos += 8
+    const tableStartY = yPos
+
+    // Table headers
+    doc.setFillColor(240, 240, 240)
+    doc.rect(15, yPos, 180, 7, 'FD')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+
+    // Draw vertical lines for header
+    doc.line(15, yPos, 15, yPos + 7)
+    doc.line(30, yPos, 30, yPos + 7)
+    doc.line(115, yPos, 115, yPos + 7)
+    doc.line(135, yPos, 135, yPos + 7)
+    doc.line(165, yPos, 165, yPos + 7)
+    doc.line(195, yPos, 195, yPos + 7)
+
+    doc.text('Select', 22.5, yPos + 4.5, { align: 'center' })
+    doc.text('Product', 72.5, yPos + 4.5, { align: 'center' })
+    doc.text('QTY', 125, yPos + 4.5, { align: 'center' })
+    doc.text('UNIT COST', 150, yPos + 4.5, { align: 'center' })
+    doc.text('TOTAL COST', 180, yPos + 4.5, { align: 'center' })
+
+    yPos += 7
+
+    // CEDU TAGUM Section
+    doc.setFillColor(245, 245, 245)
+    doc.rect(15, yPos, 180, 6, 'FD')
+    doc.setFont('helvetica', 'bold')
+    doc.text('CEDU TAGUM - CROP PRODUCTION', 18, yPos + 4)
+
+    // Draw vertical lines for section header
+    doc.line(15, yPos, 15, yPos + 6)
+    doc.line(195, yPos, 195, yPos + 6)
+
+    yPos += 6
+
+    doc.setFont('helvetica', 'normal')
+    sections[0].products.forEach(item => {
+      const rowHeight = 6
+
+      // Draw all cell borders
+      doc.line(15, yPos, 195, yPos) // Top horizontal line
+      doc.line(15, yPos, 15, yPos + rowHeight) // Left vertical
+      doc.line(30, yPos, 30, yPos + rowHeight) // After Select
+      doc.line(115, yPos, 115, yPos + rowHeight) // After Product
+      doc.line(135, yPos, 135, yPos + rowHeight) // After QTY
+      doc.line(165, yPos, 165, yPos + rowHeight) // After Unit Cost
+      doc.line(195, yPos, 195, yPos + rowHeight) // Right vertical
+
+      // Draw checkbox
+      const checkboxX = 20
+      const checkboxY = yPos + 1.5
+      const checkboxSize = 3
+      doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
+
+      // Draw checkmark if selected
+      if (item.selected) {
+        doc.setLineWidth(0.5)
+        doc.line(checkboxX + 0.3, checkboxY + 1.5, checkboxX + 1.2, checkboxY + 2.5)
+        doc.line(checkboxX + 1.2, checkboxY + 2.5, checkboxX + 2.7, checkboxY + 0.5)
+        doc.setLineWidth(0.2)
+      }
+
+      let productName = item.name
+      if (item.bananaType) productName += ' ' + item.bananaType
+      if (item.otherDetails) productName += ' ' + item.otherDetails
+      doc.text(productName, 33, yPos + 4)
+      doc.text(String(item.qty || 0), 125, yPos + 4, { align: 'center' })
+      doc.text(String(item.unitCost || 0), 150, yPos + 4, { align: 'center' })
+      doc.text((item.qty * item.unitCost).toFixed(2), 180, yPos + 4, { align: 'center' })
+
+      yPos += rowHeight
+    })
+
+    // Bottom line for last row of TAGUM
+    doc.line(15, yPos, 195, yPos)
+
+    // CEDU MABINI Section
+    doc.setFillColor(245, 245, 245)
+    doc.rect(15, yPos, 180, 6, 'FD')
+    doc.setFont('helvetica', 'bold')
+    doc.text('CEDU MABINI - CROP PRODUCTION', 18, yPos + 4)
+
+    // Draw vertical lines for section header
+    doc.line(15, yPos, 15, yPos + 6)
+    doc.line(195, yPos, 195, yPos + 6)
+
+    yPos += 6
+
+    doc.setFont('helvetica', 'normal')
+    sections[1].products.forEach(item => {
+      const rowHeight = 6
+
+      // Draw all cell borders
+      doc.line(15, yPos, 195, yPos) // Top horizontal line
+      doc.line(15, yPos, 15, yPos + rowHeight) // Left vertical
+      doc.line(30, yPos, 30, yPos + rowHeight) // After Select
+      doc.line(115, yPos, 115, yPos + rowHeight) // After Product
+      doc.line(135, yPos, 135, yPos + rowHeight) // After QTY
+      doc.line(165, yPos, 165, yPos + rowHeight) // After Unit Cost
+      doc.line(195, yPos, 195, yPos + rowHeight) // Right vertical
+
+      // Draw checkbox
+      const checkboxX = 20
+      const checkboxY = yPos + 1.5
+      const checkboxSize = 3
+      doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
+
+      // Draw checkmark if selected
+      if (item.selected) {
+        doc.setLineWidth(0.5)
+        doc.line(checkboxX + 0.3, checkboxY + 1.5, checkboxX + 1.2, checkboxY + 2.5)
+        doc.line(checkboxX + 1.2, checkboxY + 2.5, checkboxX + 2.7, checkboxY + 0.5)
+        doc.setLineWidth(0.2)
+      }
+
+      let productName = item.name
+      if (item.bananaType) productName += ' ' + item.bananaType
+      if (item.otherDetails) productName += ' ' + item.otherDetails
+      doc.text(productName, 33, yPos + 4)
+      doc.text(String(item.qty || 0), 125, yPos + 4, { align: 'center' })
+      doc.text(String(item.unitCost || 0), 150, yPos + 4, { align: 'center' })
+      doc.text((item.qty * item.unitCost).toFixed(2), 180, yPos + 4, { align: 'center' })
+
+      yPos += rowHeight
+    })
+
+    // Bottom line for last row of MABINI
+    doc.line(15, yPos, 195, yPos)
+
+    // Grand Total
+    yPos += 8
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text('GRAND TOTAL COST: Php ' + grandTotal.value, 190, yPos, { align: 'right' })
+
+    // Signatures
+    yPos += 12
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Prepared By: _________________________', 18, yPos)
+    yPos += 6
+    doc.text('Staff: _________________________', 18, yPos)
+    yPos += 6
+    doc.text('Cashier: _________________________', 18, yPos)
+    yPos += 6
+    doc.text('OR No.: _________________________', 18, yPos)
+
+    // Save the PDF
+    doc.save(`POS_${props.orderData?.orderId || 'Order'}_${new Date().toISOString().split('T')[0]}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  }
 }
 
 // Product mapping function
@@ -491,73 +518,6 @@ div {
   }
   .text-lg {
     font-size: 1rem;
-  }
-}
-
-@media print {
-  @page {
-    size: A4;
-    margin: 0.5in;
-  }
-
-  .fixed {
-    position: static !important;
-  }
-
-  .print\:hidden {
-    display: none !important;
-  }
-
-  .bg-black {
-    background: transparent !important;
-  }
-
-  .print\:border-none {
-    border: none !important;
-  }
-
-  .print\:shadow-none {
-    box-shadow: none !important;
-  }
-
-  .print\:rounded-none {
-    border-radius: 0 !important;
-  }
-
-  .print\:p-0 {
-    padding: 0 !important;
-  }
-
-  /* Ensure table fits on one page */
-  table {
-    page-break-inside: avoid;
-  }
-
-  .pos-form {
-    font-size: 11px !important;
-  }
-
-  .pos-form table {
-    font-size: 10px !important;
-    line-height: 1.2;
-  }
-
-  .pos-form th,
-  .pos-form td {
-    padding: 2px 4px !important;
-  }
-
-  /* Compact spacing for print */
-  .pos-form .mb-4 {
-    margin-bottom: 8px !important;
-  }
-
-  .pos-form .mt-6 {
-    margin-top: 12px !important;
-  }
-
-  .pos-form .space-y-2 > * + * {
-    margin-top: 4px !important;
   }
 }
 </style>

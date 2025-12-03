@@ -229,287 +229,279 @@ const loadMoreOrders = () => {
   })
 }
 
-// Updated Download POS function to match onlineMart_pos format
-const downloadOrderPOS = (order) => {
-  // Helper function to determine product section
-  function getProductSection(productName) {
-    const tagumProducts = ['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra']
-    const mabiniProducts = ['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo']
-
-    // Normalize product name for comparison
-    const normalizedName = productName.toLowerCase()
-
-    // Check if it matches any known products
-    const matchesTagum = tagumProducts.some(product => normalizedName.includes(product.toLowerCase()))
-    const matchesMabini = mabiniProducts.some(product => normalizedName.includes(product.toLowerCase()))
-
-    if (matchesTagum) return 'tagum'
-    if (matchesMabini) return 'mabini'
-
-    // Default to tagum for unknown products
-    return 'tagum'
-  }
-
-  // Initialize sections with all products
-  const sections = [
-    {
-      title: 'CEDU TAGUM – CROP PRODUCTION',
-      products: [
-        'Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango',
-        'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra', 'Others:'
-      ].map(name => ({
-        name,
-        qty: 0,
-        unitCost: 0,
-        selected: false,
-        bananaType: name === 'Banana' ? '' : undefined,
-        otherDetails: name === 'Others:' ? '' : undefined
-      }))
-    },
-    {
-      title: 'CEDU MABINI – CROP PRODUCTION',
-      products: [
-        'Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango',
-        'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo', 'Others:'
-      ].map(name => ({
-        name,
-        qty: 0,
-        unitCost: 0,
-        selected: false,
-        bananaType: name === 'Banana' ? '' : undefined,
-        otherDetails: name === 'Others:' ? '' : undefined
-      }))
+// Download POS as PDF - Same format as onlineMart_pos.vue
+const downloadOrderPOS = async (order) => {
+  try {
+    // Check if jsPDF is already loaded
+    if (!window.jspdf) {
+      // Load jsPDF library
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
     }
-  ]
 
-  // Populate sections with order items
-  order.order_items.forEach(orderItem => {
-    const sectionType = getProductSection(orderItem.product_name)
-    const sectionIndex = sectionType === 'tagum' ? 0 : 1
+    const { jsPDF } = window.jspdf
 
-    // Try to find matching product in the section
-    let productFound = false
+    // Helper function to determine product section
+    function getProductSection(productName) {
+      const tagumProducts = ['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra']
+      const mabiniProducts = ['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo']
 
-    sections[sectionIndex].products.forEach(product => {
-      const productNameLower = product.name.toLowerCase()
-      const orderItemLower = orderItem.product_name.toLowerCase()
+      const normalizedName = productName.toLowerCase()
 
-      if (productNameLower === orderItemLower ||
-          (productNameLower !== 'others:' && orderItemLower.includes(productNameLower))) {
-        product.selected = true
-        product.qty = parseInt(orderItem.quantity) || 0
-        product.unitCost = parseFloat(orderItem.unit_price) || 0
-        productFound = true
+      const matchesTagum = tagumProducts.some(product => normalizedName.includes(product.toLowerCase()))
+      const matchesMabini = mabiniProducts.some(product => normalizedName.includes(product.toLowerCase()))
 
-        // Handle banana type specification
-        if (product.name === 'Banana' && orderItem.product_name.toLowerCase() !== 'banana') {
-          product.bananaType = orderItem.product_name.replace(/banana/i, '').trim()
+      if (matchesTagum) return 'tagum'
+      if (matchesMabini) return 'mabini'
+
+      return 'tagum'
+    }
+
+    // Initialize sections with all products
+    const sections = [
+      {
+        title: 'CEDU TAGUM – CROP PRODUCTION',
+        products: [
+          'Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango',
+          'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra', 'Others:'
+        ].map(name => ({
+          name,
+          qty: 0,
+          unitCost: 0,
+          selected: false,
+          bananaType: name === 'Banana' ? '' : undefined,
+          otherDetails: name === 'Others:' ? '' : undefined
+        }))
+      },
+      {
+        title: 'CEDU MABINI – CROP PRODUCTION',
+        products: [
+          'Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango',
+          'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo', 'Others:'
+        ].map(name => ({
+          name,
+          qty: 0,
+          unitCost: 0,
+          selected: false,
+          bananaType: name === 'Banana' ? '' : undefined,
+          otherDetails: name === 'Others:' ? '' : undefined
+        }))
+      }
+    ]
+
+    // Populate sections with order items
+    order.order_items.forEach(orderItem => {
+      const sectionType = getProductSection(orderItem.product_name)
+      const sectionIndex = sectionType === 'tagum' ? 0 : 1
+
+      let productFound = false
+
+      sections[sectionIndex].products.forEach(product => {
+        const productNameLower = product.name.toLowerCase()
+        const orderItemLower = orderItem.product_name.toLowerCase()
+
+        if (productNameLower === orderItemLower ||
+            (productNameLower !== 'others:' && orderItemLower.includes(productNameLower))) {
+          product.selected = true
+          product.qty = parseInt(orderItem.quantity) || 0
+          product.unitCost = parseFloat(orderItem.unit_price) || 0
+          productFound = true
+
+          if (product.name === 'Banana' && orderItem.product_name.toLowerCase() !== 'banana') {
+            product.bananaType = orderItem.product_name.replace(/banana/i, '').trim()
+          }
+        }
+      })
+
+      if (!productFound) {
+        const othersProduct = sections[sectionIndex].products.find(p => p.name === 'Others:')
+        if (othersProduct) {
+          othersProduct.selected = true
+          othersProduct.qty = parseInt(orderItem.quantity) || 0
+          othersProduct.unitCost = parseFloat(orderItem.unit_price) || 0
+          othersProduct.otherDetails = orderItem.product_name
         }
       }
     })
 
-    // If no matching product found, put it in "Others:"
-    if (!productFound) {
-      const othersProduct = sections[sectionIndex].products.find(p => p.name === 'Others:')
-      if (othersProduct) {
-        othersProduct.selected = true
-        othersProduct.qty = parseInt(orderItem.quantity) || 0
-        othersProduct.unitCost = parseFloat(orderItem.unit_price) || 0
-        othersProduct.otherDetails = orderItem.product_name
-      }
-    }
-  })
+    // Calculate grand total
+    const grandTotal = sections.reduce((total, section) => {
+      return (
+        total +
+        section.products
+          .filter(item => item.selected)
+          .reduce((subtotal, item) => subtotal + item.qty * item.unitCost, 0)
+      )
+    }, 0).toFixed(2)
 
-  // Calculate grand total
-  const grandTotal = sections.reduce((total, section) => {
-    return (
-      total +
-      section.products
-        .filter(item => item.selected)
-        .reduce((subtotal, item) => subtotal + item.qty * item.unitCost, 0)
-    )
-  }, 0).toFixed(2)
+    // Create new PDF document
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    })
 
-  // Create Word document content in HTML format that Word can read
-  const wordContent = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-    <head>
-      <meta charset="utf-8">
-      <title>ORDER PAYMENT SLIP</title>
-      <!--[if gte mso 9]>
-      <xml>
-        <w:WordDocument>
-          <w:View>Print</w:View>
-          <w:Zoom>90</w:Zoom>
-          <w:DoNotPromptForConvert/>
-          <w:DoNotShowInsertionsAndDeletions/>
-        </w:WordDocument>
-      </xml>
-      <![endif]-->
-      <style>
-        @page {
-          size: 8.5in 11in;
-          margin: 0.3in 0.4in;
-        }
-        body {
-          font-family: Arial, sans-serif;
-          font-size: 9pt;
-          line-height: 1.1;
-          color: black;
-          margin: 0;
-          padding: 0;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 8pt;
-        }
-        h1 {
-          font-size: 10pt;
-          margin: 1pt 0;
-          font-weight: normal;
-        }
-        h2 {
-          font-size: 11pt;
-          margin: 1pt 0;
-          font-weight: bold;
-        }
-        h3 {
-          font-size: 9pt;
-          margin: 1pt 0;
-          font-style: italic;
-          font-weight: normal;
-        }
-        .control-no {
-          text-align: right;
-          font-weight: bold;
-          margin-top: 2pt;
-          font-size: 9pt;
-        }
-        .basic-info {
-          border: 1pt solid black;
-          padding: 4pt;
-          margin-bottom: 8pt;
-          font-size: 9pt;
-        }
-        .basic-info p {
-          margin: 1pt 0;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 8pt;
-          font-size: 8pt;
-        }
-        th, td {
-          border: 1pt solid #666;
-          padding: 1pt 3pt;
-          text-align: center;
-          vertical-align: middle;
-          line-height: 1.0;
-        }
-        th {
-          background-color: #f0f0f0;
-          font-weight: bold;
-          font-size: 8pt;
-        }
-        .product-cell {
-          text-align: left;
-        }
-        .section-header {
-          background-color: #f5f5f5;
-          font-weight: bold;
-          text-align: left;
-          font-size: 8pt;
-        }
-        .grand-total {
-          text-align: right;
-          font-weight: bold;
-          font-size: 11pt;
-          margin: 8pt 0;
-        }
-        .signatures {
-          margin-top: 10pt;
-          font-size: 9pt;
-          line-height: 1.3;
-        }
-        .signatures p {
-          margin: 4pt 0;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Republic of the Philippines</h1>
-        <h2>University of Southeastern Philippines</h2>
-        <h3>Resource Management Division (RMD)</h3>
-        <h2>ORDER PAYMENT SLIP (OPS/POS)</h2>
-        <p class="control-no">Control No.: ${order.id}</p>
-      </div>
+    // Set font
+    doc.setFont('helvetica')
 
-      <div class="basic-info">
-        <p><strong>Payor/Name:</strong> ${order.full_name}</p>
-        <p><strong>Organization:</strong> CEDU CROP PRODUCTION PROJECT</p>
-        <p><strong>Date:</strong> ${formatDate(order.order_date)}</p>
-        <p>OTHER BUSINESS INCOME</p>
-      </div>
+    // Header
+    let yPos = 15
+    doc.setFontSize(10)
+    doc.text('Republic of the Philippines', 105, yPos, { align: 'center' })
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 8%;">Select</th>
-            <th style="width: 35%;">Product</th>
-            <th style="width: 12%;">QTY</th>
-            <th style="width: 20%;">UNIT COST</th>
-            <th style="width: 25%;">TOTAL COST</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${sections.map(section => `
-            <tr class="section-header">
-              <td colspan="5">${section.title}</td>
-            </tr>
-            ${section.products.map(item => `
-              <tr>
-                <td>${item.selected ? '☑' : '☐'}</td>
-                <td class="product-cell">
-                  ${item.name}${item.bananaType ? ' ' + item.bananaType : ''}${item.otherDetails ? ' ' + item.otherDetails : ''}
-                </td>
-                <td>${item.qty || 0}</td>
-                <td>₱${(item.unitCost || 0).toFixed(2)}</td>
-                <td>₱${(item.qty * item.unitCost).toFixed(2)}</td>
-              </tr>
-            `).join('')}
-          `).join('')}
-        </tbody>
-      </table>
+    yPos += 5
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text('University of Southeastern Philippines', 105, yPos, { align: 'center' })
 
-      <div class="grand-total">
-        GRAND TOTAL COST: Php ${grandTotal}
-      </div>
+    yPos += 5
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'italic')
+    doc.text('Resource Management Division (RMD)', 105, yPos, { align: 'center' })
 
-      <div class="signatures">
-        <p>Prepared By: _________________________</p>
-        <p>Staff: _________________________</p>
-        <p>Cashier: _________________________</p>
-        <p>OR No.: _________________________</p>
-      </div>
-    </body>
-    </html>
-  `
+    yPos += 7
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    doc.text('ORDER PAYMENT SLIP (OPS/POS)', 105, yPos, { align: 'center' })
 
-  // Create and download as Word document
-  const blob = new Blob(['\ufeff', wordContent], {
-    type: 'application/msword'
-  })
+    yPos += 7
+    doc.setFontSize(9)
+    doc.text('Control No.: ' + order.id, 190, yPos, { align: 'right' })
 
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `POS_Order_${order.id}_${new Date().toISOString().split('T')[0]}.doc`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
+    // Basic Info Box
+    yPos += 5
+    const boxHeight = 25
+    doc.rect(15, yPos, 180, boxHeight)
+    yPos += 6
+    doc.setFont('helvetica', 'bold')
+    doc.text('Payor/Name: ', 18, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(order.full_name || '', 42, yPos)
+
+    yPos += 6
+    doc.setFont('helvetica', 'bold')
+    doc.text('Organization: ', 18, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text('CEDU CROP PRODUCTION PROJECT', 45, yPos)
+
+    yPos += 6
+    doc.setFont('helvetica', 'bold')
+    doc.text('Date: ', 18, yPos)
+    doc.setFont('helvetica', 'normal')
+    doc.text(formatDate(order.order_date), 30, yPos)
+
+    yPos += 6
+    doc.text('OTHER BUSINESS INCOME', 18, yPos)
+
+    // Table
+    yPos += 8
+
+    // Table headers
+    doc.setFillColor(240, 240, 240)
+    doc.rect(15, yPos, 180, 7, 'FD')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+
+    // Draw vertical lines for header
+    doc.line(15, yPos, 15, yPos + 7)
+    doc.line(30, yPos, 30, yPos + 7)
+    doc.line(115, yPos, 115, yPos + 7)
+    doc.line(135, yPos, 135, yPos + 7)
+    doc.line(165, yPos, 165, yPos + 7)
+    doc.line(195, yPos, 195, yPos + 7)
+
+    doc.text('Select', 22.5, yPos + 4.5, { align: 'center' })
+    doc.text('Product', 72.5, yPos + 4.5, { align: 'center' })
+    doc.text('QTY', 125, yPos + 4.5, { align: 'center' })
+    doc.text('UNIT COST', 150, yPos + 4.5, { align: 'center' })
+    doc.text('TOTAL COST', 180, yPos + 4.5, { align: 'center' })
+
+    yPos += 7
+
+    // Render both sections
+    sections.forEach((section, sectionIdx) => {
+      // Section Header
+      doc.setFillColor(245, 245, 245)
+      doc.rect(15, yPos, 180, 6, 'FD')
+      doc.setFont('helvetica', 'bold')
+      doc.text(section.title, 18, yPos + 4)
+
+      doc.line(15, yPos, 15, yPos + 6)
+      doc.line(195, yPos, 195, yPos + 6)
+
+      yPos += 6
+
+      doc.setFont('helvetica', 'normal')
+      section.products.forEach(item => {
+        const rowHeight = 6
+
+        // Draw all cell borders
+        doc.line(15, yPos, 195, yPos)
+        doc.line(15, yPos, 15, yPos + rowHeight)
+        doc.line(30, yPos, 30, yPos + rowHeight)
+        doc.line(115, yPos, 115, yPos + rowHeight)
+        doc.line(135, yPos, 135, yPos + rowHeight)
+        doc.line(165, yPos, 165, yPos + rowHeight)
+        doc.line(195, yPos, 195, yPos + rowHeight)
+
+        // Draw checkbox
+        const checkboxX = 20
+        const checkboxY = yPos + 1.5
+        const checkboxSize = 3
+        doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
+
+        // Draw checkmark if selected
+        if (item.selected) {
+          doc.setLineWidth(0.5)
+          doc.line(checkboxX + 0.3, checkboxY + 1.5, checkboxX + 1.2, checkboxY + 2.5)
+          doc.line(checkboxX + 1.2, checkboxY + 2.5, checkboxX + 2.7, checkboxY + 0.5)
+          doc.setLineWidth(0.2)
+        }
+
+        let productName = item.name
+        if (item.bananaType) productName += ' ' + item.bananaType
+        if (item.otherDetails) productName += ' ' + item.otherDetails
+        doc.text(productName, 33, yPos + 4)
+        doc.text(String(item.qty || 0), 125, yPos + 4, { align: 'center' })
+        doc.text(String(item.unitCost || 0), 150, yPos + 4, { align: 'center' })
+        doc.text((item.qty * item.unitCost).toFixed(2), 180, yPos + 4, { align: 'center' })
+
+        yPos += rowHeight
+      })
+
+      // Bottom line for section
+      doc.line(15, yPos, 195, yPos)
+    })
+
+    // Grand Total
+    yPos += 8
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text('GRAND TOTAL COST: Php ' + grandTotal, 190, yPos, { align: 'right' })
+
+    // Signatures
+    yPos += 12
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text('Prepared By: _________________________', 18, yPos)
+    yPos += 6
+    doc.text('Staff: _________________________', 18, yPos)
+    yPos += 6
+    doc.text('Cashier: _________________________', 18, yPos)
+    yPos += 6
+    doc.text('OR No.: _________________________', 18, yPos)
+
+    // Save the PDF
+    doc.save(`POS_Order_${order.id}_${new Date().toISOString().split('T')[0]}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Failed to generate PDF. Please try again.')
+  }
 }
 
 // Protect route

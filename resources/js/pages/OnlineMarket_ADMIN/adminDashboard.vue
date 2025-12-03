@@ -1,9 +1,7 @@
 <template>
   <div class="min-h-screen flex font-sans bg-gray-100">
-    <!-- Sidebar -->
     <AdminSidebar />
 
-    <!-- Main Dashboard -->
     <main class="ml-64 flex-1 p-6 pt-4 text-[#5F1213]">
       <!-- Page Title -->
       <div class="bg-white rounded-xl p-6 mb-6 shadow border">
@@ -62,8 +60,6 @@
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
-              <!-- <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
-              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button> -->
             </div>
           </div>
           <canvas id="lineChart" class="w-full h-full"></canvas>
@@ -79,8 +75,6 @@
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
-              <!-- <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
-              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button> -->
             </div>
           </div>
           <canvas id="donutChart" class="w-full h-full"></canvas>
@@ -108,7 +102,6 @@
               <th class="py-2 px-2">Amount</th>
               <th class="py-2 px-2">Order Date</th>
               <th class="py-2 px-2">Status</th>
-              <!-- <th class="py-2 px-2">Actions</th> -->
             </tr>
           </thead>
           <tbody>
@@ -116,20 +109,11 @@
               <td class="py-2 px-2">#{{ order.id.toString().padStart(3, '0') }}</td>
               <td class="py-2 px-2">{{ order.first_name }} {{ order.last_name }}</td>
               <td class="py-2 px-2">₱{{ order.total_amount }}</td>
-              <!-- Updated this line to use display_date with fallback to created_at -->
               <td class="py-2 px-2">{{ formatDate(order.display_date || order.created_at) }}</td>
               <td class="py-2 px-2">
                 <span :class="getStatusClass(order.status)" class="px-2 py-1 rounded-full text-xs font-medium">
                   {{ formatStatus(order.status) }}
                 </span>
-              </td>
-              <td class="py-2 px-2 space-x-2">
-                <!-- <button @click="printOrder(order)" class="text-blue-600 hover:underline text-xs">Print</button>
-                <button @click="viewOrder(order)" class="text-indigo-600 hover:underline text-xs">View</button> -->
-                <!-- <button v-if="order.status === 'pending'" @click="markAsPaid(order)"
-                  class="text-green-600 hover:underline text-xs">Mark Paid</button>
-                <button v-if="order.status === 'pending'" @click="deleteOrder(order)"
-                  class="text-red-600 hover:underline text-xs">Delete</button> -->
               </td>
             </tr>
           </tbody>
@@ -154,7 +138,6 @@ const stats = computed(() => ({
   completedOrders: page.props.stats?.completed_orders ?? 0,
   pendingOrders: page.props.stats?.pending_orders ?? 0,
   totalOrders: page.props.stats?.total_orders ?? 0,
-  // Comparison data from backend
   totalSalesGrowth: page.props.stats?.total_sales_growth ?? null,
   cropSalesGrowth: page.props.stats?.crop_sales_growth ?? null,
   poultrySalesGrowth: page.props.stats?.poultry_sales_growth ?? null,
@@ -185,13 +168,8 @@ let donutChartInstance = null
 // Helper functions
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
-
-  // Handle if dateString is already a Date object
   const date = dateString instanceof Date ? dateString : new Date(dateString)
-
-  // Check if date is valid
   if (isNaN(date.getTime())) return 'Invalid Date'
-
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -202,13 +180,30 @@ function formatDate(dateString) {
 }
 
 function formatStatus(status) {
-  return status.charAt(0).toUpperCase() + status.slice(1)
+  if (!status) return 'Unknown'
+  // Handle both capitalized and lowercase statuses
+  const statusLower = status.toLowerCase()
+  switch (statusLower) {
+    case 'completed':
+    case 'paid':
+      return 'Completed'
+    case 'pending':
+      return 'Pending'
+    case 'cancelled':
+      return 'Cancelled'
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1)
+  }
 }
 
 function getStatusClass(status) {
-  switch (status) {
+  if (!status) return 'bg-gray-100 text-gray-800'
+
+  const statusLower = status.toLowerCase()
+  switch (statusLower) {
     case 'pending':
       return 'bg-yellow-100 text-yellow-800'
+    case 'completed':
     case 'paid':
       return 'bg-green-100 text-green-800'
     case 'cancelled':
@@ -220,47 +215,6 @@ function getStatusClass(status) {
 
 function refreshOrders() {
   router.reload({ only: ['recentOrders', 'stats'] })
-}
-
-function printOrder(order) {
-  // Implement print functionality
-  console.log('Print order:', order)
-}
-
-function viewOrder(order) {
-  // Implement view order functionality
-  console.log('View order:', order)
-}
-
-function markAsPaid(order) {
-  if (confirm(`Mark order #${order.id} as paid?`)) {
-    router.put(`/admin/orders/${order.id}/mark-paid`, {}, {
-      onSuccess: () => {
-        refreshOrders()
-        alert('Order marked as paid successfully!')
-      },
-      onError: (errors) => {
-        console.error('Update failed:', errors)
-        alert('Failed to update order status. Please try again.')
-      }
-    })
-  }
-}
-
-function deleteOrder(order) {
-  if (confirm(`Are you sure you want to delete order #${order.id}? This action cannot be undone.`)) {
-    router.delete(`/admin/orders/${order.id}`, {
-      onSuccess: () => {
-        refreshOrders()
-        // Show success message
-        alert('Order deleted successfully!')
-      },
-      onError: (errors) => {
-        console.error('Delete failed:', errors)
-        alert('Failed to delete order. Please try again.')
-      }
-    })
-  }
 }
 
 function renderLineChart() {
@@ -331,8 +285,6 @@ function renderDonutChart() {
 
   const currentData = chartData.pieChart[pieChartFilter.value]
   const total = currentData.reduce((sum, val) => sum + val, 0)
-
-  // Show actual values if there's data, otherwise show empty chart
   const hasData = total > 0
 
   donutChartInstance = new Chart(ctx, {
@@ -340,7 +292,7 @@ function renderDonutChart() {
     data: {
       labels: ['Fruits', 'Vegetables', 'Poultry'],
       datasets: [{
-        data: hasData ? currentData : [1, 1, 1], // Show equal segments if no data
+        data: hasData ? currentData : [1, 1, 1],
         backgroundColor: hasData ? ['#FFA600', '#5F1213', '#FF6384'] : ['#e5e5e5', '#e5e5e5', '#e5e5e5'],
         borderWidth: hasData ? 0 : 2,
         borderColor: '#fff'
@@ -372,7 +324,6 @@ function renderDonutChart() {
     }
   })
 
-  // Add "No Data" text in center if no data
   if (!hasData) {
     const centerText = {
       id: 'centerText',

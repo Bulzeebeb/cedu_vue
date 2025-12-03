@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="min-h-screen flex flex-col">
     <SiteHeader />
 
-    <section class="py-12 bg-gray-100">
+    <section class="flex-grow py-12 bg-gray-100">
       <div class="max-w-6xl mx-auto px-4 space-y-6">
         <!-- Page Title -->
         <div class="text-3xl font-bold text-maroon">Your Cart</div>
@@ -45,16 +45,16 @@
                 </td>
                 <td class="px-4 py-3">₱{{ parseFloat(item.price).toFixed(2) }}</td>
                 <td class="px-4 py-3">
-                  <form @submit.prevent="updateQuantity(item.id, item.qty)" class="inline">
-                    <input
-                      type="number"
-                      min="1"
-                      :max="item.stock"
-                      v-model.number="item.qty"
-                      @change="updateQuantity(item.id, item.qty)"
-                      class="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </form>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    v-model="item.qty"
+                    @input="handleQuantityInput(item, $event)"
+                    @blur="validateAndUpdate(item)"
+                    @keypress="onlyNumbers($event)"
+                    @keyup.enter="validateAndUpdate(item)"
+                    class="w-20 border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 focus:ring-2 focus:ring-yellow-500 focus:border-transparent no-arrows"
+                  />
                   <div class="text-xs text-gray-500 mt-1">Max: {{ item.stock }}</div>
                 </td>
                 <td class="px-4 py-3 font-semibold">₱{{ subtotal(item) }}</td>
@@ -155,12 +155,75 @@ function subtotal(item) {
   return (parseFloat(item.price) * item.qty).toFixed(2)
 }
 
-function updateQuantity(productId, quantity) {
-  if (quantity < 1) {
-    alert('Quantity must be at least 1')
+// Only allow number input
+function onlyNumbers(event) {
+  const charCode = event.which ? event.which : event.keyCode
+  // Allow only numbers (0-9)
+  if (charCode < 48 || charCode > 57) {
+    event.preventDefault()
+  }
+}
+
+// Handle quantity input in real-time
+function handleQuantityInput(item, event) {
+  let value = event.target.value
+
+  // Remove non-numeric characters
+  value = value.replace(/[^0-9]/g, '')
+
+  // If empty, keep it empty for now (will be validated on blur)
+  if (value === '') {
+    item.qty = ''
     return
   }
 
+  // Convert to number
+  let numValue = parseInt(value)
+
+  // Enforce maximum stock limit
+  if (numValue > item.stock) {
+    numValue = item.stock
+    event.target.value = numValue
+  }
+
+  // Ensure minimum is 1
+  if (numValue < 1) {
+    numValue = 1
+    event.target.value = numValue
+  }
+
+  item.qty = numValue
+}
+
+// Validate and update quantity when user leaves the field
+function validateAndUpdate(item) {
+  let quantity = item.qty
+
+  // If empty or invalid, set to 1
+  if (!quantity || quantity === '' || isNaN(quantity)) {
+    quantity = 1
+  } else {
+    quantity = parseInt(quantity)
+  }
+
+  // Ensure within bounds
+  if (quantity < 1) {
+    quantity = 1
+  }
+
+  if (quantity > item.stock) {
+    quantity = item.stock
+    alert(`Maximum available stock for this item is ${item.stock}`)
+  }
+
+  // Update the item quantity
+  item.qty = quantity
+
+  // Send update to server
+  updateQuantity(item.id, quantity)
+}
+
+function updateQuantity(productId, quantity) {
   router.post('/cart/update', {
     product_id: productId,
     quantity: quantity
@@ -169,6 +232,7 @@ function updateQuantity(productId, quantity) {
     preserveScroll: true,
     onError: (errors) => {
       console.error('Update failed:', errors)
+      alert('Failed to update quantity. Please try again.')
     }
   })
 }
@@ -194,7 +258,7 @@ function clearCart() {
 }
 
 function proceedToCheckout() {
-  router.visit(route('checkout.index')) // safer with named routes
+  router.visit(route('checkout.index'))
 }
 
 function returnToShop() {
@@ -208,5 +272,17 @@ function returnToShop() {
 }
 .text-maroon {
   color: #651818;
+}
+
+/* Remove number input arrows */
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-arrows[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 </style>

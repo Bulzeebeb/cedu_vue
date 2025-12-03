@@ -15,7 +15,8 @@ class OrderController extends Controller
     public function markAsPaid(Order $order)
     {
         try {
-            $order->update(['status' => 'paid']);
+            // Change status to 'Completed' (with capital C) to match frontend expectations
+            $order->update(['status' => 'Completed']);
 
             return redirect()->back()->with('success', 'Order marked as paid successfully.');
         } catch (\Exception $e) {
@@ -74,7 +75,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:pending,paid,cancelled,completed'
+            'status' => 'required|in:Pending,Completed,Cancelled,pending,paid,cancelled,completed'
         ]);
 
         try {

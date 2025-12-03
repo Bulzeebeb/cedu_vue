@@ -9,99 +9,113 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-
 class DashboardController extends Controller
 {
     public function index()
     {
-
         try {
-
             $admin = Auth::guard('admin')->user();
-            // Current period calculations
 
             // Get current month's start and end dates
             $startOfMonth = Carbon::now()->startOfMonth();
             $endOfMonth = Carbon::now()->endOfMonth();
-            // Current month total sales
+
+            // Current month total sales (only from Completed orders)
             $totalSales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereBetween('orders.created_at', [$startOfMonth, $endOfMonth])
+                ->where('orders.status', 'Completed') // Only count completed orders
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-            // Current month crop sales (fruits + vegetables)
+            // Current month crop sales (fruits + vegetables, Completed only)
             $cropSales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->whereBetween('orders.created_at', [$startOfMonth, $endOfMonth])
+                ->where('orders.status', 'Completed')
                 ->where(function ($query) {
                     $query->whereRaw("LOWER(products.category) LIKE '%fruit%'")
                         ->orWhereRaw("LOWER(products.category) LIKE '%vegetable%'");
                 })
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
+            // Current month poultry sales (Completed only)
             $poultrySales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->whereBetween('orders.created_at', [$startOfMonth, $endOfMonth])
+                ->where('orders.status', 'Completed')
                 ->where('products.category', 'poultry')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
             $totalOrders = Order::count();
-            $completedOrders = Order::where('status', 'paid')->count();
-            $pendingOrders = Order::where('status', 'pending')->count();
+            // Count both "Completed" and legacy "paid" status as completed
+            $completedOrders = Order::whereIn('status', ['Completed', 'paid'])->count();
+            // Count both "Pending" and legacy "pending" status as pending
+            $pendingOrders = Order::whereIn('status', ['Pending', 'pending'])->count();
 
             // Previous week calculations for growth comparison
             $lastWeekStart = Carbon::now()->subWeek()->startOfWeek();
             $lastWeekEnd = Carbon::now()->subWeek()->endOfWeek();
             $thisWeekStart = Carbon::now()->startOfWeek();
 
-            // Only calculate growth if there's data from previous week
+            // Last week total sales (Completed only)
             $lastWeekTotalSales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereBetween('orders.created_at', [$lastWeekStart, $lastWeekEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
+            // This week total sales (Completed only)
             $thisWeekTotalSales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->where('orders.created_at', '>=', $thisWeekStart)
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
+            // Last week crop sales (Completed only)
             $lastWeekCropSales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->whereBetween('orders.created_at', [$lastWeekStart, $lastWeekEnd])
+                ->where('orders.status', 'Completed')
                 ->where(function ($query) {
                     $query->whereRaw("LOWER(products.category) LIKE '%fruit%'")
                         ->orWhereRaw("LOWER(products.category) LIKE '%vegetable%'");
                 })
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
+            // This week crop sales (Completed only)
             $thisWeekCropSales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->where('orders.created_at', '>=', $thisWeekStart)
+                ->where('orders.status', 'Completed')
                 ->where(function ($query) {
                     $query->whereRaw("LOWER(products.category) LIKE '%fruit%'")
                         ->orWhereRaw("LOWER(products.category) LIKE '%vegetable%'");
                 })
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-
+            // Last week poultry sales (Completed only)
             $lastWeekPoultrySales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->where('products.category', 'poultry')
                 ->whereBetween('orders.created_at', [$lastWeekStart, $lastWeekEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
+            // This week poultry sales (Completed only)
             $thisWeekPoultrySales = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->where('products.category', 'poultry')
                 ->where('orders.created_at', '>=', $thisWeekStart)
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-            // Calculate growth percentages only if there's previous data
+            // Calculate growth percentages
             $totalSalesGrowth = null;
             $cropSalesGrowth = null;
             $poultrySalesGrowth = null;
@@ -118,12 +132,11 @@ class DashboardController extends Controller
                 $poultrySalesGrowth = round((($thisWeekPoultrySales - $lastWeekPoultrySales) / $lastWeekPoultrySales) * 100, 1);
             }
 
-            // Recent Orders with their items - Updated to show proper timestamps
-            // Step 1: Update order_date for records that don't have it yet
+            // Update order_date for records that don't have it
             Order::whereNull('order_date')
                 ->update(['order_date' => DB::raw('created_at')]);
 
-            // Step 2: Get the recent orders
+            // Get recent orders
             $recentOrders = Order::latest('created_at')
                 ->with('orderItems')
                 ->select('id', 'first_name', 'last_name', 'total_amount', 'created_at', 'order_date', 'status')
@@ -132,14 +145,11 @@ class DashboardController extends Controller
                 ->map(function ($order) {
                     $order->formatted_created_at = $order->created_at?->format('Y-m-d H:i:s');
                     $order->formatted_order_date = $order->order_date?->format('Y-m-d H:i:s');
-
                     $order->display_date = ($order->order_date && $order->order_date->format('H:i:s') !== '00:00:00')
                         ? $order->order_date
                         : $order->created_at;
-
                     return $order;
                 });
-
 
             // Chart data calculations
             $chartData = $this->getChartData();
@@ -152,7 +162,6 @@ class DashboardController extends Controller
                     'completed_orders' => $completedOrders,
                     'pending_orders' => $pendingOrders,
                     'total_orders' => $totalOrders,
-                    // Growth percentages (null if no previous data)
                     'total_sales_growth' => $totalSalesGrowth,
                     'crop_sales_growth' => $cropSalesGrowth,
                     'poultry_sales_growth' => $poultrySalesGrowth,
@@ -167,7 +176,6 @@ class DashboardController extends Controller
             Log::error('Dashboard error: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
 
-            // Return empty data to prevent frontend crash
             return Inertia::render('OnlineMarket_ADMIN/adminDashboard', [
                 'stats' => [
                     'total_sales' => 0,
@@ -201,12 +209,9 @@ class DashboardController extends Controller
     private function getChartData()
     {
         try {
-            // Get data for different time periods
             $monthlyData = $this->getMonthlyChartData();
             $quarterlyData = $this->getQuarterlyChartData();
             $yearlyData = $this->getYearlyChartData();
-
-            // Get category breakdown data
             $categoryData = $this->getCategoryBreakdownData();
 
             return [
@@ -224,8 +229,6 @@ class DashboardController extends Controller
             ];
         } catch (\Exception $e) {
             Log::error('Chart data error: ' . $e->getMessage());
-
-            // Return empty chart data structure
             return [
                 'lineChart' => [
                     'monthly' => ['labels' => [], 'totalSales' => [], 'cropSales' => [], 'poultrySales' => []],
@@ -244,7 +247,6 @@ class DashboardController extends Controller
 
     private function getMonthlyChartData()
     {
-        // Get last 7 days of data
         $days = [];
         $totalSales = [];
         $cropSales = [];
@@ -252,15 +254,15 @@ class DashboardController extends Controller
 
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
-            $days[] = $date->format('D'); // Mon, Tue, Wed, etc.
+            $days[] = $date->format('D');
 
-            // Total sales for this day
+            // Only count Completed orders
             $dailyTotal = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereDate('orders.created_at', $date->format('Y-m-d'))
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-            // Crop sales for this day
             $dailyCrop = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
@@ -269,15 +271,15 @@ class DashboardController extends Controller
                         ->orWhereRaw("LOWER(products.category) LIKE '%vegetable%'");
                 })
                 ->whereDate('orders.created_at', $date->format('Y-m-d'))
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-
-            // Poultry sales for this day
             $dailyPoultry = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->where('products.category', 'poultry')
                 ->whereDate('orders.created_at', $date->format('Y-m-d'))
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
             $totalSales[] = floatval($dailyTotal ?? 0);
@@ -295,10 +297,8 @@ class DashboardController extends Controller
 
     private function getQuarterlyChartData()
     {
-        // Get last 4 quarters
         $quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
         $currentYear = Carbon::now()->year;
-
         $totalSales = [];
         $cropSales = [];
         $poultrySales = [];
@@ -306,17 +306,15 @@ class DashboardController extends Controller
         for ($q = 1; $q <= 4; $q++) {
             $startMonth = ($q - 1) * 3 + 1;
             $endMonth = $q * 3;
-
             $quarterStart = Carbon::create($currentYear, $startMonth, 1)->startOfMonth();
             $quarterEnd = Carbon::create($currentYear, $endMonth, 1)->endOfMonth();
 
-            // Total sales for this quarter
             $quarterlyTotal = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereBetween('orders.created_at', [$quarterStart, $quarterEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-            // Crop sales for this quarter
             $quarterlyCrop = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
@@ -325,15 +323,15 @@ class DashboardController extends Controller
                         ->orWhereRaw("LOWER(products.category) LIKE '%vegetable%'");
                 })
                 ->whereBetween('orders.created_at', [$quarterStart, $quarterEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-
-            // Poultry sales for this quarter
             $quarterlyPoultry = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->where('products.category', 'poultry')
                 ->whereBetween('orders.created_at', [$quarterStart, $quarterEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
             $totalSales[] = floatval($quarterlyTotal ?? 0);
@@ -351,7 +349,6 @@ class DashboardController extends Controller
 
     private function getYearlyChartData()
     {
-        // Get last 4 years
         $years = [];
         $totalSales = [];
         $cropSales = [];
@@ -360,17 +357,15 @@ class DashboardController extends Controller
         for ($i = 3; $i >= 0; $i--) {
             $year = Carbon::now()->subYears($i)->year;
             $years[] = (string) $year;
-
             $yearStart = Carbon::create($year, 1, 1)->startOfYear();
             $yearEnd = Carbon::create($year, 12, 31)->endOfYear();
 
-            // Total sales for this year
             $yearlyTotal = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereBetween('orders.created_at', [$yearStart, $yearEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-            // Crop sales for this year
             $yearlyCrop = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
@@ -379,14 +374,15 @@ class DashboardController extends Controller
                         ->orWhereRaw("LOWER(products.category) LIKE '%vegetable%'");
                 })
                 ->whereBetween('orders.created_at', [$yearStart, $yearEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
-            // Poultry sales for this year
             $yearlyPoultry = DB::table('order_items')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->where('products.category', 'poultry')
                 ->whereBetween('orders.created_at', [$yearStart, $yearEnd])
+                ->where('orders.status', 'Completed')
                 ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
             $totalSales[] = floatval($yearlyTotal ?? 0);
@@ -409,7 +405,6 @@ class DashboardController extends Controller
             $currentMonth = Carbon::now()->month;
             $currentQuarter = ceil($currentMonth / 3);
 
-            // Get all available categories dynamically
             $availableCategories = DB::table('products')
                 ->select('category')
                 ->distinct()
@@ -418,7 +413,6 @@ class DashboardController extends Controller
                 ->pluck('category')
                 ->toArray();
 
-            // If no categories found, return default structure
             if (empty($availableCategories)) {
                 Log::warning('No categories found in products table');
                 return [
@@ -429,13 +423,10 @@ class DashboardController extends Controller
                 ];
             }
 
-            Log::info('Available categories:', $availableCategories);
-
-            // Monthly breakdown (current month)
+            // Monthly breakdown (Completed orders only)
             $monthStart = Carbon::now()->startOfMonth();
             $monthEnd = Carbon::now()->endOfMonth();
 
-            // Get monthly data for each category
             $monthlyData = [];
             foreach ($availableCategories as $category) {
                 $monthlyAmount = DB::table('order_items')
@@ -443,12 +434,13 @@ class DashboardController extends Controller
                     ->join('products', 'order_items.product_id', '=', 'products.id')
                     ->where('products.category', $category)
                     ->whereBetween('orders.created_at', [$monthStart, $monthEnd])
+                    ->where('orders.status', 'Completed')
                     ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
                 $monthlyData[$category] = floatval($monthlyAmount ?? 0);
             }
 
-            // Quarterly breakdown (current quarter)
+            // Quarterly breakdown (Completed orders only)
             $quarterStartMonth = ($currentQuarter - 1) * 3 + 1;
             $quarterEndMonth = $currentQuarter * 3;
             $quarterStart = Carbon::create($currentYear, $quarterStartMonth, 1)->startOfMonth();
@@ -461,12 +453,13 @@ class DashboardController extends Controller
                     ->join('products', 'order_items.product_id', '=', 'products.id')
                     ->where('products.category', $category)
                     ->whereBetween('orders.created_at', [$quarterStart, $quarterEnd])
+                    ->where('orders.status', 'Completed')
                     ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
                 $quarterlyData[$category] = floatval($quarterlyAmount ?? 0);
             }
 
-            // Yearly breakdown (current year)
+            // Yearly breakdown (Completed orders only)
             $yearStart = Carbon::now()->startOfYear();
             $yearEnd = Carbon::now()->endOfYear();
 
@@ -477,17 +470,12 @@ class DashboardController extends Controller
                     ->join('products', 'order_items.product_id', '=', 'products.id')
                     ->where('products.category', $category)
                     ->whereBetween('orders.created_at', [$yearStart, $yearEnd])
+                    ->where('orders.status', 'Completed')
                     ->sum(DB::raw('order_items.quantity * order_items.unit_price'));
 
                 $yearlyData[$category] = floatval($yearlyAmount ?? 0);
             }
 
-            // Log the data for debugging
-            Log::info('Monthly data:', $monthlyData);
-            Log::info('Quarterly data:', $quarterlyData);
-            Log::info('Yearly data:', $yearlyData);
-
-            // Ensure we have at least 3 categories, pad with 'Other' if needed
             $categories = array_pad(array_slice($availableCategories, 0, 3), 3, 'Other');
 
             return [
@@ -511,8 +499,6 @@ class DashboardController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Category breakdown error: ' . $e->getMessage());
-
-            // Return safe default data
             return [
                 'monthly' => [0, 0, 0],
                 'quarterly' => [0, 0, 0],
