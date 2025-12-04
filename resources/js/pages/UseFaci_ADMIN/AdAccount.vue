@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import AdminSidebar from './admin_Sidebar.vue'
+import AdminSidebar from './adminSidebar.vue'
 import { ref, computed } from 'vue'
 
 // Dummy account data

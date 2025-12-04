@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class FacilityController extends Controller
@@ -92,6 +93,9 @@ class FacilityController extends Controller
 
         // Render with the correct path (UseFaci/Hostel, UseFaci/Rental, etc.)
         return Inertia::render('UseFaci/' . $viewName, [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
             'category' => $category,
             'facilities' => $facilities
         ]);

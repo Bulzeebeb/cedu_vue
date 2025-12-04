@@ -4,6 +4,10 @@ import { router } from '@inertiajs/vue3'
 
 const showNotif = ref(false)
 
+function getProfilePictureUrl(picture) {
+  return picture ? `/storage/${picture}` : 'https://i.pravatar.cc/300'
+}
+
 function toggleNotif(event) {
   event.stopPropagation()
   showNotif.value = !showNotif.value
@@ -11,7 +15,7 @@ function toggleNotif(event) {
 
 // Fixed routes according to your PHP Laravel/Inertia routes
 function goToDashboard() {
-  router.visit('/use/dashboard')
+  router.visit('/use/facidashboard')
 }
 function goToCategory() {
   router.visit('/use/category')
@@ -34,6 +38,9 @@ function goToLogs() {
 function goToHome() {
   router.visit('/') // landing/login page
 }
+function goToAdminProf() {
+  router.visit('/use/profile') // admin profile page
+}
 
 onMounted(() => {
   window.addEventListener('click', () => {
@@ -52,43 +59,43 @@ onMounted(() => {
       </div>
       <nav class="space-y-2">
         <!-- Dashboard -->
-        <a href="#" @click="goToDashboard"
+        <a href="#" @click.prevent="goToDashboard"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-home"></i> Dashboard
         </a>
 
         <!-- Category -->
-        <a href="#" @click="goToCategory"
+        <a href="#" @click.prevent="goToCategory"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-tags"></i> Category
         </a>
 
         <!-- Facilities -->
-        <a href="#" @click="goToFacilities"
+        <a href="#" @click.prevent="goToFacilities"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-building"></i> Facilities
         </a>
 
         <!-- Booking -->
-        <a href="#" @click="goToBooking"
+        <a href="#" @click.prevent="goToBooking"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-calendar-check"></i> Booking
         </a>
 
         <!-- Reports -->
-        <a href="#" @click="goToReports"
+        <a href="#" @click.prevent="goToReports"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-chart-bar"></i> Reports
         </a>
 
         <!-- Accounts -->
-        <a href="#" @click="goToProfile"
+        <a href="#" @click.prevent="goToProfile"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-user-circle"></i> Accounts
         </a>
 
         <!-- Logs -->
-        <a href="#" @click="goToLogs"
+        <a href="#" @click.prevent="goToLogs"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-file-alt"></i> Logs
         </a>
@@ -97,11 +104,14 @@ onMounted(() => {
 
     <!-- Bottom Notification + Profile Section -->
     <div class="mt-6 relative">
+      <!-- Profile Row -->
       <div class="flex items-center justify-between px-2 mt-4">
-        <div class="flex items-center gap-3 cursor-pointer" @click="goToProfile">
-          <img src="https://i.pravatar.cc/300" alt="Profile"
+        <!-- Profile Left -->
+        <div class="flex items-center gap-3 cursor-pointer" @click="goToAdminProf">
+          <img :src="getProfilePictureUrl(admin?.profile_picture)"
             class="w-12 h-12 rounded-full border-2 border-white object-cover" />
-          <p class="text-sm">Admin</p>
+          <p class="text-sm">{{ $page.props.admin ? ($page.props.admin.first_name + ' ' + $page.props.admin.last_name) :
+            'Admin'}}</p>
         </div>
 
         <div class="relative">
@@ -139,7 +149,7 @@ onMounted(() => {
       <div class="border-t border-[#FFA600]/40 my-3"></div>
 
       <!-- Logout -->
-      <button @click="goToHome" type="button"
+      <button @click.prevent="goToHome" type="button"
         class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2 w-full">
         <i class="fas fa-power-off text-lg"></i> Log Out
       </button>

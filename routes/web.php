@@ -23,6 +23,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\NotificationController;
 use App\Models\Log;
 
 use App\Http\Controllers\PayPark\PayParkAdminReportController;
@@ -538,15 +539,20 @@ Route::get('/use/booking', function () {
 });
 
 Route::get('/use/reports', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_Reports');
+    return Inertia::render('UseFaci_ADMIN/AdReports');
 });
 Route::get('/use/accounts', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_Accounts');
+    return Inertia::render('UseFaci_ADMIN/AdAccount');
 });
 Route::get('/use/logs', function () {
     return Inertia::render('UseFaci_ADMIN/admin_Logs');
 });
-
+Route::get('/use/profile', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('UseFaci_ADMIN/adminMainProfile', [
+        'admin' => $admin
+    ]);
+})->name('adminsprofile');
 
 
 // Route::get('dashboard', function () {
@@ -584,49 +590,49 @@ Route::get('/userclients', function () {
 // Routes that require client login
 //Route::middleware('auth:userclient')->group(function () {
 
-    Route::get('/om-landing', fn() => Inertia::render('ClientChoice', [
-        'user' => Auth::guard('userclient')->user(),
-    ]))->name('client.landing');
+Route::get('/om-landing', fn() => Inertia::render('ClientChoice', [
+    'user' => Auth::guard('userclient')->user(),
+]))->name('client.landing');
 
-    Route::get('/clientSetting', fn() => Inertia::render('Client/clientSetting', [
-        'client' => tap(Auth::guard('userclient')->user(), function ($client) {
-            $client->image_url = $client->image_path
-                ? asset('storage/' . $client->image_path)
-                : '/images/default-profile.png';
-        }),
-    ]));
+Route::get('/clientSetting', fn() => Inertia::render('Client/clientSetting', [
+    'client' => tap(Auth::guard('userclient')->user(), function ($client) {
+        $client->image_url = $client->image_path
+            ? asset('storage/' . $client->image_path)
+            : '/images/default-profile.png';
+    }),
+]));
 
-    Route::post('/client/setting', [ClientProfileController::class, 'update'])->name('client.profile.update');
-    Route::get('/change-password', [ClientProfileController::class, 'showChangePasswordForm']);
-    Route::post('/change-password', [ClientProfileController::class, 'updatePassword']);
-    Route::post('/send-password-otp', [ClientProfileController::class, 'sendPasswordOtp']);
+Route::post('/client/setting', [ClientProfileController::class, 'update'])->name('client.profile.update');
+Route::get('/change-password', [ClientProfileController::class, 'showChangePasswordForm']);
+Route::post('/change-password', [ClientProfileController::class, 'updatePassword']);
+Route::post('/send-password-otp', [ClientProfileController::class, 'sendPasswordOtp']);
 
-    // Product Routes
-    Route::get('/fruits', [ProductController::class, 'showFruits'])->name('fruits.index');
-    Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry.index');
-    Route::get('/vegetables', [ProductController::class, 'showVegetables'])->name('vegetables.index');
+// Product Routes
+Route::get('/fruits', [ProductController::class, 'showFruits'])->name('fruits.index');
+Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry.index');
+Route::get('/vegetables', [ProductController::class, 'showVegetables'])->name('vegetables.index');
 
-    // Cart Routes
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
-    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+// Cart Routes
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
-    // Checkout Routes
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+// Checkout Routes
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-    // Buy History Routes
-    Route::get('/buy-history', [BuyHistoryController::class, 'index'])->name('buy.history');
-    Route::post('/orders/{orderId}/cancel', [BuyHistoryController::class, 'cancelOrder'])->name('orders.cancel');
-    Route::post('/cart/reorder', [BuyHistoryController::class, 'reorder'])->name('cart.reorder');
-    Route::get('/orders/{orderId}', [BuyHistoryController::class, 'show'])->name('orders.show');
-    Route::get('/api/order-stats', [BuyHistoryController::class, 'getOrderStats'])->name('api.order.stats');
+// Buy History Routes
+Route::get('/buy-history', [BuyHistoryController::class, 'index'])->name('buy.history');
+Route::post('/orders/{orderId}/cancel', [BuyHistoryController::class, 'cancelOrder'])->name('orders.cancel');
+Route::post('/cart/reorder', [BuyHistoryController::class, 'reorder'])->name('cart.reorder');
+Route::get('/orders/{orderId}', [BuyHistoryController::class, 'show'])->name('orders.show');
+Route::get('/api/order-stats', [BuyHistoryController::class, 'getOrderStats'])->name('api.order.stats');
 
-    // Order History (Optional - for future implementation)
-    // Route::get('/orders', [CheckoutController::class, 'orderHistory'])->name('orders.history');
-    // Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
+// Order History (Optional - for future implementation)
+// Route::get('/orders', [CheckoutController::class, 'orderHistory'])->name('orders.history');
+// Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
 
 
 // Logs
@@ -665,6 +671,13 @@ Route::middleware(['web'])->group(function () {
     Route::post('/bookings', [BookingController::class, 'store']);
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+
+    // Notification routes (public access for admin panel)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 });
 
 require __DIR__ . '/settings.php';

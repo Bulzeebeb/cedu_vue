@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('facility_id')->constrained()->onDelete('cascade');
             $table->string('customer_name');
             $table->string('customer_email');
@@ -28,6 +29,7 @@ return new class extends Migration
             $table->timestamps();
             
             // Add indexes
+            $table->index('user_id');
             $table->index('facility_id');
             $table->index('status');
             $table->index('check_in');

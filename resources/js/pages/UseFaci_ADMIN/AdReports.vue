@@ -180,8 +180,8 @@
 
 <script setup>
 import { ref, computed } from "vue"
-import AdminSidebar from "./admin_Sidebar.vue"
-import * as XLSX from "xlsx"
+import AdminSidebar from "./adminSidebar.vue"
+//import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 

@@ -193,9 +193,54 @@ function updateBookingStatus(id, status) {
   })
   .then(res => res.json())
   .then(data => {
+    // Find the booking in our local array
+    const booking = bookings.value.find(b => b.id === id)
+    if (booking) {
+      createNotification(id, status, booking)
+    }
     fetchBookings()
   })
   .catch(error => console.error('Error updating booking:', error))
+}
+
+function createNotification(bookingId, status, booking) {
+  const userId = booking.user_id || booking.userId || booking.customer_id;
+  
+  if (!userId) {
+    console.warn('Cannot create notification: no user_id found in booking', booking);
+    return;
+  }
+
+  const notificationData = {
+    booking_id: bookingId,
+    user_id: userId,
+    title: `Booking ${status}`,
+    message: `Your booking for ${booking.facility} has been ${status.toLowerCase()}.`,
+    type: 'booking_status',
+    read: 0
+  }
+  
+  console.log('Creating notification with data:', notificationData);
+  
+  fetch('/notifications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify(notificationData)
+  })
+  .then(res => {
+    console.log('Notification response status:', res.status);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return res.json();
+  })
+  .then(data => {
+    console.log('✓ Notification created successfully:', data);
+  })
+  .catch(error => {
+    console.error('✗ Error creating notification:', error);
+  })
 }
 
 function viewDetails(booking) {
