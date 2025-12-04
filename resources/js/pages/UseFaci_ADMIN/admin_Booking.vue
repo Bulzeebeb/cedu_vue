@@ -149,7 +149,7 @@ onMounted(() => {
 })
 
 function fetchBookings() {
-  fetch('/bookings')
+  return fetch('/bookings')
     .then(res => res.json())
     .then(data => {
       bookings.value = data
@@ -193,18 +193,13 @@ function updateBookingStatus(id, status) {
   })
   .then(res => res.json())
   .then(data => {
-    // Find the booking in our local array
-    const booking = bookings.value.find(b => b.id === id)
-    if (booking) {
-      createNotification(id, status, booking)
-    }
-    fetchBookings()
+    fetchBookings() // Refresh the bookings list
   })
   .catch(error => console.error('Error updating booking:', error))
 }
 
 function createNotification(bookingId, status, booking) {
-  const userId = booking.user_id || booking.userId || booking.customer_id;
+  const userId = booking.user_id;
   
   if (!userId) {
     console.warn('Cannot create notification: no user_id found in booking', booking);
@@ -217,10 +212,8 @@ function createNotification(bookingId, status, booking) {
     title: `Booking ${status}`,
     message: `Your booking for ${booking.facility} has been ${status.toLowerCase()}.`,
     type: 'booking_status',
-    read: 0
+    read: false
   }
-  
-  console.log('Creating notification with data:', notificationData);
   
   fetch('/notifications', {
     method: 'POST',
@@ -231,7 +224,6 @@ function createNotification(bookingId, status, booking) {
     body: JSON.stringify(notificationData)
   })
   .then(res => {
-    console.log('Notification response status:', res.status);
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     return res.json();
   })
