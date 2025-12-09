@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, toRef } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { usePage } from '@inertiajs/vue3'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AdminSidebarP2P from './adminSidebarP2P.vue'
@@ -13,6 +14,10 @@ const props = defineProps({
   }
 })
 const entries = toRef(props, 'entries')
+
+// Get admin data from page props
+const page = usePage()
+const admin = computed(() => page.props.admin)
 
 // Sidebar toggle
 const sidebarOpen = ref(false)
@@ -77,8 +82,8 @@ const paginatedReports = computed(() => {
 // Visible page numbers
 const visiblePages = computed(() => {
   const pages = []
-  let start = Math.max(1, currentPage.value - 2)
-  let end = Math.min(totalPages.value, currentPage.value + 2)
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
@@ -250,7 +255,7 @@ function downloadFilteredPDF() {
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
-    <AdminSidebarP2P />
+    <AdminSidebarP2P :admin="admin" />
     <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
       <header class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">

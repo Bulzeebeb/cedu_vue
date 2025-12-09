@@ -9,6 +9,8 @@ class OrderItem extends Model
 {
     use HasFactory;
 
+    protected $table = 'order_items';
+
     protected $fillable = [
         'order_id',
         'product_id',
@@ -25,31 +27,14 @@ class OrderItem extends Model
         'subtotal' => 'decimal:2'
     ];
 
-    /**
-     * Get the order that owns the order item.
-     */
+    // Relationships
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    /**
-     * Get the product that this order item refers to.
-     */
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    /**
-     * Calculate subtotal automatically when saving.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function ($orderItem) {
-            $orderItem->subtotal = $orderItem->quantity * $orderItem->unit_price;
-        });
     }
 }

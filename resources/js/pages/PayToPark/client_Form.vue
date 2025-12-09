@@ -1,13 +1,137 @@
 <script setup>
 import { router } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
+import { ref } from 'vue'
+
+const client = ref({
+  firstName: '',
+  lastName: '',
+  plateNumber: '',
+  date: '',
+  time: '',
+  ampm: 'AM',
+})
 
 function staff_Dashboard() {
-  router.visit('/staff_Dashboard')
+  Swal.fire({
+    title: 'Going Back?',
+    text: 'Are you sure you want to return to the staff dashboard?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#650000',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Go Back',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.visit('/staff_Dashboard')
+    }
+  })
 }
 
 function deleteClient(index) {
-  if (confirm('Are you sure you want to delete this client?')) {
-    alert(`Client #${index + 1} will be deleted.`)
+  Swal.fire({
+    title: 'Delete Client?',
+    text: `Are you sure you want to delete client #${index + 1}? This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#650000',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Delete',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: 'Deleted!',
+        text: `Client #${index + 1} has been deleted.`,
+        icon: 'success',
+        confirmButtonColor: '#650000',
+        timer: 2000
+      })
+    }
+  })
+}
+
+async function addClient() {
+  // Validate form
+  if (!client.value.firstName || !client.value.lastName || !client.value.plateNumber || !client.value.date || !client.value.time) {
+    await Swal.fire({
+      title: 'Validation Error',
+      text: 'Please fill in all required fields.',
+      icon: 'error',
+      confirmButtonColor: '#650000'
+    })
+    return
+  }
+
+  // Confirmation dialog
+  const result = await Swal.fire({
+    title: 'Add New Client?',
+    html: `<div class="text-left">
+      <p><strong>Name:</strong> ${client.value.firstName} ${client.value.lastName}</p>
+      <p><strong>Plate:</strong> ${client.value.plateNumber}</p>
+      <p><strong>Date:</strong> ${client.value.date}</p>
+      <p><strong>Time:</strong> ${client.value.time} ${client.value.ampm}</p>
+    </div>`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#650000',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Add Client',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  })
+
+  if (result.isConfirmed) {
+    // Show success message
+    await Swal.fire({
+      title: 'Success!',
+      text: 'Client has been added successfully.',
+      icon: 'success',
+      confirmButtonColor: '#650000',
+      timer: 2000
+    })
+    
+    console.log('Client added:', client.value)
+    clearForm()
+  }
+}
+
+async function clearFormWithAlert() {
+  const result = await Swal.fire({
+    title: 'Clear Form?',
+    text: 'Are you sure you want to clear all fields?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#650000',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Clear',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  })
+
+  if (result.isConfirmed) {
+    clearForm()
+    await Swal.fire({
+      title: 'Cleared!',
+      text: 'All fields have been cleared.',
+      icon: 'success',
+      confirmButtonColor: '#650000',
+      timer: 1500
+    })
+  }
+}
+
+function clearForm() {
+  client.value = {
+    firstName: '',
+    lastName: '',
+    plateNumber: '',
+    date: '',
+    time: '',
+    ampm: 'AM',
   }
 }
 
@@ -38,33 +162,33 @@ function deleteClient(index) {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- First Name -->
             <div>
-              <label class="block text-sm font-medium mb-1">Client’s First Name</label>
-              <input v-model="client.firstName" type="text" class="w-full border border-red-400 px-3 py-2 rounded" />
+              <label class="block text-sm font-medium mb-1">Client's First Name</label>
+              <input v-model="client.firstName" type="text" class="w-full border border-red-400 px-3 py-2 rounded" required />
             </div>
 
             <!-- Last Name -->
             <div>
-              <label class="block text-sm font-medium mb-1">Client’s Last Name</label>
-              <input v-model="client.lastName" type="text" class="w-full border border-red-400 px-3 py-2 rounded" />
+              <label class="block text-sm font-medium mb-1">Client's Last Name</label>
+              <input v-model="client.lastName" type="text" class="w-full border border-red-400 px-3 py-2 rounded" required />
             </div>
 
             <!-- Plate Number -->
             <div class="sm:col-span-2">
-              <label class="block text-sm font-medium mb-1">Client’s Plate Number</label>
-              <input v-model="client.plateNumber" type="text" class="w-full border border-red-400 px-3 py-2 rounded" />
+              <label class="block text-sm font-medium mb-1">Client's Plate Number</label>
+              <input v-model="client.plateNumber" type="text" class="w-full border border-red-400 px-3 py-2 rounded" required />
             </div>
 
             <!-- Date -->
             <div>
               <label class="block text-sm font-medium mb-1">Date</label>
-              <input v-model="client.date" type="date" class="w-full border px-3 py-2 rounded" />
+              <input v-model="client.date" type="date" class="w-full border px-3 py-2 rounded" required />
             </div>
 
             <!-- Time and AM/PM -->
             <div class="flex gap-2 flex-col sm:flex-row">
               <div class="flex-1">
                 <label class="block text-sm font-medium mb-1">Time</label>
-                <input v-model="client.time" type="time" class="w-full border px-3 py-2 rounded" />
+                <input v-model="client.time" type="time" class="w-full border px-3 py-2 rounded" required />
               </div>
               <div class="w-full sm:w-28">
                 <label class="block text-sm font-medium mb-1">AM/PM</label>
@@ -84,7 +208,7 @@ function deleteClient(index) {
 
             <!-- Clear Button -->
             <div>
-              <button type="button" @click="clearForm" class="w-full bg-yellow-500 text-white font-semibold py-2 rounded hover:bg-yellow-600 mt-2 sm:mt-6">
+              <button type="button" @click="clearFormWithAlert" class="w-full bg-yellow-500 text-white font-semibold py-2 rounded hover:bg-yellow-600 mt-2 sm:mt-6">
                 CLEAR
               </button>
             </div>
@@ -125,41 +249,6 @@ function deleteClient(index) {
     </footer>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'AddNewClient',
-  data() {
-    return {
-      client: {
-        firstName: '',
-        lastName: '',
-        plateNumber: '',
-        date: '',
-        time: '',
-        ampm: 'AM',
-      },
-    };
-  },
-  methods: {
-    addClient() {
-      console.log('Client added:', this.client);
-      alert('Client added successfully!');
-      this.clearForm();
-    },
-    clearForm() {
-      this.client = {
-        firstName: '',
-        lastName: '',
-        plateNumber: '',
-        date: '',
-        time: '',
-        ampm: 'AM',
-      };
-    },
-  },
-};
-</script>
 
 <style scoped>
 .bg-maroon {

@@ -1,123 +1,382 @@
 <template>
-  <div class="min-h-screen flex font-sans bg-gray-100">
+  <div class="min-h-screen flex font-sans bg-gray-50">
     <AdminSidebar />
 
-    <main class="ml-64 flex-1 p-6 pt-4 text-[#5F1213]">
-      <!-- Page Title -->
-      <div class="bg-white rounded-xl p-6 mb-6 shadow border">
-        <div class="flex items-center space-x-4">
-          <i class="i-icon-park-outline-dashboard text-3xl text-black"></i>
-          <h1 class="text-2xl font-semibold">Dashboard</h1>
+    <main class="lg:ml-64 flex-1 p-4 lg:p-6 pt-4 text-[#5F1213] transition-all duration-300">
+      <!-- Page Header -->
+      <div class="bg-white rounded-xl p-4 lg:p-6 mb-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex items-center space-x-4">
+            <div class="p-3 bg-gradient-to-br from-[#5F1213] to-[#7d1a1e] rounded-lg">
+              <i class="fas fa-tachometer-alt text-2xl text-white"></i>
+            </div>
+            <div>
+              <h1 class="text-xl lg:text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+              <p class="text-sm text-gray-600">Welcome back! Here's what's happening with your online market.</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div v-if="stats.pendingOrders > 0" class="relative">
+              <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                {{ stats.pendingOrders }}
+              </div>
+              <button @click="showOrdersModal = true" class="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200">
+                <i class="fas fa-bell text-sm"></i>
+                <span class="hidden sm:inline">Orders Alert</span>
+              </button>
+            </div>
+            <button @click="refreshDashboard" class="flex items-center space-x-2 px-4 py-2 bg-[#5F1213] text-white rounded-lg hover:bg-[#441011] transition-colors duration-200">
+              <i class="fas fa-sync-alt text-sm"></i>
+              <span class="hidden sm:inline">Refresh</span>
+            </button>
+            <div class="text-sm text-gray-500">
+              Last updated: {{ lastUpdated }}
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Stat Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Total Sales</h2>
-          <p class="text-3xl font-bold mt-2">₱{{ totalSales?.toLocaleString() ?? 0 }}</p>
-          <p v-if="stats.totalSalesGrowth !== null"
-             :class="stats.totalSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'"
-             class="text-sm mt-1">
-            {{ stats.totalSalesGrowth >= 0 ? '+' : '' }}{{ stats.totalSalesGrowth }}% since last week
-          </p>
+      <!-- Quick Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+        <!-- Total Sales Card -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg group-hover:scale-110 transition-transform duration-200">
+              <i class="fas fa-dollar-sign text-xl text-white"></i>
+            </div>
+            <div v-if="stats.totalSalesGrowth !== null" class="flex items-center space-x-1">
+              <i :class="stats.totalSalesGrowth >= 0 ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500'" class="text-sm"></i>
+              <span :class="stats.totalSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
+                {{ stats.totalSalesGrowth >= 0 ? '+' : '' }}{{ stats.totalSalesGrowth }}%
+              </span>
+            </div>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Sales</h3>
+          <p class="text-2xl lg:text-3xl font-bold text-gray-800 mt-2">₱{{ totalSales?.toLocaleString() ?? 0 }}</p>
+          <p class="text-xs text-gray-500 mt-1">This month</p>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Crop Sales</h2>
-          <p class="text-3xl font-bold mt-2">₱{{ stats.cropSales?.toLocaleString() ?? 0 }}</p>
-          <p v-if="stats.cropSalesGrowth !== null"
-             :class="stats.cropSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'"
-             class="text-sm mt-1">
-            {{ stats.cropSalesGrowth >= 0 ? '+' : '' }}{{ stats.cropSalesGrowth }}% from last week
-          </p>
+
+        <!-- Crop Sales Card -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg group-hover:scale-110 transition-transform duration-200">
+              <i class="fas fa-leaf text-xl text-white"></i>
+            </div>
+            <div v-if="stats.cropSalesGrowth !== null" class="flex items-center space-x-1">
+              <i :class="stats.cropSalesGrowth >= 0 ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500'" class="text-sm"></i>
+              <span :class="stats.cropSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
+                {{ stats.cropSalesGrowth >= 0 ? '+' : '' }}{{ stats.cropSalesGrowth }}%
+              </span>
+            </div>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Crop Sales</h3>
+          <p class="text-2xl lg:text-3xl font-bold text-gray-800 mt-2">₱{{ stats.cropSales?.toLocaleString() ?? 0 }}</p>
+          <p class="text-xs text-gray-500 mt-1">Fruits & Vegetables</p>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Poultry Sales</h2>
-          <p class="text-3xl font-bold mt-2">₱{{ stats.poultrySales?.toLocaleString() ?? 0 }}</p>
-          <p v-if="stats.poultrySalesGrowth !== null"
-             :class="stats.poultrySalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'"
-             class="text-sm mt-1">
-            {{ stats.poultrySalesGrowth >= 0 ? '+' : '' }}{{ stats.poultrySalesGrowth }}% from last week
-          </p>
+
+        <!-- Poultry Sales Card -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg group-hover:scale-110 transition-transform duration-200">
+              <i class="fas fa-drumstick-bite text-xl text-white"></i>
+            </div>
+            <div v-if="stats.poultrySalesGrowth !== null" class="flex items-center space-x-1">
+              <i :class="stats.poultrySalesGrowth >= 0 ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500'" class="text-sm"></i>
+              <span :class="stats.poultrySalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
+                {{ stats.poultrySalesGrowth >= 0 ? '+' : '' }}{{ stats.poultrySalesGrowth }}%
+              </span>
+            </div>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Poultry Sales</h3>
+          <p class="text-2xl lg:text-3xl font-bold text-gray-800 mt-2">₱{{ stats.poultrySales?.toLocaleString() ?? 0 }}</p>
+          <p class="text-xs text-gray-500 mt-1">Meat & Poultry</p>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Total Orders</h2>
-          <p class="text-3xl font-bold mt-2">{{ stats.totalOrders?.toLocaleString() ?? 0 }}</p>
-          <p class="text-sm text-blue-600 mt-1">{{ stats.pendingOrders }} pending • {{ stats.completedOrders }} completed</p>
+
+        <!-- Orders Overview Card -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg group-hover:scale-110 transition-transform duration-200">
+              <i class="fas fa-shopping-cart text-xl text-white"></i>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-gray-500">This Month</div>
+            </div>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Orders</h3>
+          <p class="text-2xl lg:text-3xl font-bold text-gray-800 mt-2">{{ stats.totalOrders?.toLocaleString() ?? 0 }}</p>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-xs text-yellow-600 font-medium">{{ stats.pendingOrders }} pending</span>
+            <span class="text-xs text-green-600 font-medium">{{ stats.completedOrders }} completed</span>
+          </div>
         </div>
       </div>
 
-      <!-- Charts -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <!-- Line Chart -->
-        <div class="bg-white rounded-xl p-6 shadow-lg h-[400px]">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Sales Report</h3>
+      <!-- Quick Actions & Alerts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-bolt text-[#5F1213] mr-2"></i>
+            Quick Actions
+          </h3>
+          <div class="space-y-3">
+            <button @click="goToProducts" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+              <div class="flex items-center">
+                <i class="fas fa-plus-circle text-green-600 mr-3"></i>
+                <span class="text-sm font-medium">Add New Product</span>
+              </div>
+              <i class="fas fa-chevron-right text-gray-400"></i>
+            </button>
+            <button @click="goToOrders" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+              <div class="flex items-center">
+                <i class="fas fa-list text-blue-600 mr-3"></i>
+                <span class="text-sm font-medium">Manage Orders</span>
+              </div>
+              <i class="fas fa-chevron-right text-gray-400"></i>
+            </button>
+            <button @click="goToReports" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+              <div class="flex items-center">
+                <i class="fas fa-chart-bar text-purple-600 mr-3"></i>
+                <span class="text-sm font-medium">View Reports</span>
+              </div>
+              <i class="fas fa-chevron-right text-gray-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
+            Low Stock Alert
+          </h3>
+          <div v-if="lowStockItems.length === 0" class="text-center py-4 text-gray-500">
+            <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
+            <p class="text-sm">All products are well-stocked!</p>
+          </div>
+          <div v-else class="space-y-2 max-h-32 overflow-y-auto">
+            <div v-for="item in lowStockItems" :key="item.id" class="flex items-center justify-between p-2 bg-red-50 rounded-lg">
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                <span class="text-sm font-medium text-gray-800">{{ item.name }}</span>
+              </div>
+              <span class="text-xs text-red-600 font-semibold">{{ item.stock }} left</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-history text-indigo-600 mr-2"></i>
+            Recent Activity
+          </h3>
+          <div class="space-y-3 max-h-32 overflow-y-auto">
+            <div v-for="activity in recentActivities" :key="activity.id" class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                  <i :class="activity.icon" :style="{ color: activity.color }" class="text-sm"></i>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-800">{{ activity.message }}</p>
+                <p class="text-xs text-gray-500">{{ activity.time }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders Alert Modal -->
+      <div v-if="showOrdersModal" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i class="fas fa-bell text-white text-xl"></i>
+              <h2 class="text-xl font-bold text-white">Orders Alert</h2>
+              <span v-if="pendingOrdersAlert.length > 0" class="ml-2 bg-white text-red-600 rounded-full px-3 py-1 text-sm font-bold">
+                {{ pendingOrdersAlert.length }}
+              </span>
+            </div>
+            <button @click="showOrdersModal = false" class="text-white hover:text-gray-200 transition-colors">
+              <i class="fas fa-times text-2xl"></i>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div v-if="pendingOrdersAlert.length === 0" class="text-center py-12">
+              <i class="fas fa-check-circle text-green-500 text-5xl mb-4"></i>
+              <p class="text-lg font-semibold text-gray-800">No Pending Orders</p>
+              <p class="text-gray-600 mt-1">All caught up! No orders pending.</p>
+            </div>
+
+            <div v-else class="space-y-4">
+              <div v-for="order in pendingOrdersAlert" :key="order.id" 
+                   class="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg hover:bg-red-100 transition-colors duration-200">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-red-100 rounded-lg">
+                      <i class="fas fa-exclamation-circle text-red-600 text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold text-gray-800 text-lg">Order #{{ order.id.toString().padStart(3, '0') }}</p>
+                      <p class="text-sm text-gray-600">{{ order.first_name }} {{ order.last_name }}</p>
+                    </div>
+                  </div>
+                  <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">
+                    {{ formatStatus(order.status) }}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-3 text-center">
+                  <div class="bg-white rounded-lg p-2">
+                    <p class="text-xs text-gray-600">Amount</p>
+                    <p class="font-bold text-red-600">₱{{ order.total_amount?.toLocaleString() ?? 0 }}</p>
+                  </div>
+                  <div class="bg-white rounded-lg p-2">
+                    <p class="text-xs text-gray-600">Order Date</p>
+                    <p class="font-bold text-gray-800 text-sm">{{ formatDate(order.created_at) }}</p>
+                  </div>
+                  <div class="bg-white rounded-lg p-2">
+                    <p class="text-xs text-gray-600">Items</p>
+                    <p class="font-bold text-gray-800">{{ order.items_count ?? 0 }}</p>
+                  </div>
+                </div>
+
+                <button @click="viewOrderDetails(order.id)" class="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
+                  View Details →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <button @click="showOrdersModal = false" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+              Close
+            </button>
+            <button v-if="pendingOrdersAlert.length > 0" @click="goToOrdersAndClose" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium">
+              Manage All Orders
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Charts -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+        <!-- Sales Trend Chart -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-200">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                <i class="fas fa-chart-line text-[#5F1213] mr-2"></i>
+                Sales Trend
+              </h3>
+              <p class="text-sm text-gray-600">Revenue performance over time</p>
+            </div>
             <div class="flex items-center space-x-2">
               <select v-model="lineChartFilter"
-                class="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-0">
-                <option value="monthly">Monthly</option>
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5F1213] focus:border-transparent bg-white">
+                <option value="monthly">Last 7 Days</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
+              <button @click="exportChart('line')" class="p-2 text-gray-500 hover:text-[#5F1213] hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-download text-sm"></i>
+              </button>
             </div>
           </div>
-          <canvas id="lineChart" class="w-full h-full"></canvas>
+          <div class="relative h-[300px] lg:h-[350px]">
+            <canvas id="lineChart" class="w-full h-full"></canvas>
+            <div v-if="isLoadingCharts" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+              <div class="flex items-center space-x-2">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#5F1213]"></div>
+                <span class="text-sm text-gray-600">Loading chart...</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Donut Chart -->
-        <div class="bg-white rounded-xl p-6 shadow-lg h-[400px]">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Category Breakdown</h3>
+        <!-- Category Distribution Chart -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-200">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                <i class="fas fa-chart-pie text-[#5F1213] mr-2"></i>
+                Category Breakdown
+              </h3>
+              <p class="text-sm text-gray-600">Sales distribution by category</p>
+            </div>
             <div class="flex items-center space-x-2">
-              <select v-model="pieChartFilter" class="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-0">
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
+              <select v-model="pieChartFilter"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5F1213] focus:border-transparent bg-white">
+                <option value="monthly">This Month</option>
+                <option value="quarterly">This Quarter</option>
+                <option value="yearly">This Year</option>
               </select>
+              <button @click="exportChart('pie')" class="p-2 text-gray-500 hover:text-[#5F1213] hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-download text-sm"></i>
+              </button>
             </div>
           </div>
-          <canvas id="donutChart" class="w-full h-full"></canvas>
+          <div class="relative h-[300px] lg:h-[350px]">
+            <canvas id="donutChart" class="w-full h-full"></canvas>
+            <div v-if="isLoadingCharts" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+              <div class="flex items-center space-x-2">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#5F1213]"></div>
+                <span class="text-sm text-gray-600">Loading chart...</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Recent Orders Table -->
-      <div class="bg-white rounded-xl p-6 shadow-lg">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Recent Orders</h3>
-          <button @click="refreshOrders" class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">
-            Refresh
-          </button>
-        </div>
+      <!-- Top Products & Recent Orders -->
+      <div class="bg-white rounded-xl p-4 lg:p-6 mb-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+        <!-- Recent Orders Table -->
+        <div class="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-gray-100">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                <i class="fas fa-receipt text-blue-500 mr-2"></i>
+                Recent Orders
+              </h3>
+              <p class="text-sm text-gray-600">Latest orders from customers</p>
+            </div>
+            <button @click="refreshOrders" class="text-[#5F1213] hover:text-[#441011] text-sm font-medium transition-colors duration-200">
+              Refresh
+            </button>
+          </div>
 
-        <div v-if="recentOrders.length === 0" class="text-center py-8 text-gray-500">
-          No orders found.
-        </div>
+          <div v-if="recentOrders.length === 0" class="text-center py-8 text-gray-500">
+            <i class="fas fa-inbox text-3xl mb-2"></i>
+            <p>No orders found</p>
+          </div>
 
-        <table v-else class="w-full text-sm text-left">
-          <thead>
-            <tr class="border-b border-gray-200 font-semibold text-gray-700">
-              <th class="py-2 px-2">ID</th>
-              <th class="py-2 px-2">Name</th>
-              <th class="py-2 px-2">Amount</th>
-              <th class="py-2 px-2">Order Date</th>
-              <th class="py-2 px-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="order in recentOrders" :key="order.id" class="hover:bg-gray-50">
-              <td class="py-2 px-2">#{{ order.id.toString().padStart(3, '0') }}</td>
-              <td class="py-2 px-2">{{ order.first_name }} {{ order.last_name }}</td>
-              <td class="py-2 px-2">₱{{ order.total_amount }}</td>
-              <td class="py-2 px-2">{{ formatDate(order.display_date || order.created_at) }}</td>
-              <td class="py-2 px-2">
-                <span :class="getStatusClass(order.status)" class="px-2 py-1 rounded-full text-xs font-medium">
+          <div v-else class="space-y-3 max-h-64 overflow-y-auto">
+            <div v-for="order in recentOrders.slice(0, 5)" :key="order.id" 
+                 class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer border-l-4 border-[#5F1213]"
+                 @click="viewOrderDetails(order.id)">
+              <div class="flex items-center justify-between mb-2">
+                <p class="font-semibold text-gray-800">#{{ order.id.toString().padStart(3, '0') }}</p>
+                <span :class="getStatusClass(order.status)" class="px-2 py-1 rounded text-xs font-medium">
                   {{ formatStatus(order.status) }}
                 </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+              <p class="text-sm text-gray-600">{{ order.first_name }} {{ order.last_name }}</p>
+              <div class="flex justify-between items-center mt-2">
+                <p class="text-xs text-gray-500">{{ formatDate(order.created_at) }}</p>
+                <p class="text-sm font-bold text-[#5F1213]">₱{{ order.total_amount?.toLocaleString() ?? 0 }}</p>
+              </div>
+            </div>
+          </div>
+
+          <button @click="goToOrders" class="w-full mt-4 py-2 text-sm font-medium text-[#5F1213] hover:text-[#441011] border border-[#5F1213] hover:border-[#441011] rounded-lg transition-colors duration-200">
+            View All Orders →
+          </button>
+        </div>
       </div>
     </main>
   </div>
@@ -146,6 +405,7 @@ const stats = computed(() => ({
 
 const totalSales = computed(() => stats.value.totalSales)
 const recentOrders = ref(page.props.recentOrders ?? [])
+const topProducts = ref(page.props.topProducts ?? [])
 const chartData = page.props.chartData ?? {
   lineChart: {
     monthly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] },
@@ -161,6 +421,17 @@ const chartData = page.props.chartData ?? {
 
 const lineChartFilter = ref('monthly')
 const pieChartFilter = ref('monthly')
+const isLoadingCharts = ref(false)
+const lastUpdated = ref(new Date().toLocaleTimeString())
+const lowStockItems = ref([])
+const recentActivities = ref([
+  { id: 1, message: 'New order placed by Maria Santos', time: '2 minutes ago', icon: 'fas fa-shopping-cart', color: '#10B981' },
+  { id: 2, message: 'Product "Fresh Tomatoes" restocked', time: '15 minutes ago', icon: 'fas fa-plus-circle', color: '#3B82F6' },
+  { id: 3, message: 'Payment received for Order #1023', time: '1 hour ago', icon: 'fas fa-credit-card', color: '#8B5CF6' },
+  { id: 4, message: 'Low stock alert: Chicken Breast', time: '2 hours ago', icon: 'fas fa-exclamation-triangle', color: '#F59E0B' }
+])
+const pendingOrdersAlert = ref([])
+const showOrdersModal = ref(false)
 
 let lineChartInstance = null
 let donutChartInstance = null
@@ -279,6 +550,16 @@ function renderLineChart() {
   })
 }
 
+function goToOrders() {
+  router.visit('/admins/orders')
+}
+function goToProducts() {
+  router.visit('/admins/products')
+}
+function goToReports() {
+  router.visit('/admin/reports')
+}
+
 function renderDonutChart() {
   const ctx = document.getElementById('donutChart')
   if (donutChartInstance) donutChartInstance.destroy()
@@ -347,8 +628,40 @@ function renderDonutChart() {
 onMounted(() => {
   renderLineChart()
   renderDonutChart()
+  loadPendingOrders()
 })
 
+function loadPendingOrders() {
+  // Filter orders with pending status
+  const pending = recentOrders.value.filter(order => {
+    const statusLower = order.status?.toLowerCase() || ''
+    return statusLower === 'pending'
+  })
+  pendingOrdersAlert.value = pending.slice(0, 5) // Show top 5 pending orders
+}
+
+function refreshDashboard() {
+  router.reload({ only: ['recentOrders', 'stats', 'topProducts'] })
+  loadPendingOrders()
+}
+
+function viewOrderDetails(orderId) {
+  if (!orderId) {
+    console.error('Order ID is required')
+    return
+  }
+  showOrdersModal.value = false
+  // Navigate to orders list and let the user select the order
+  // Or use the edit route if available
+  router.visit(`/admins/orders`)
+}
+
+function goToOrdersAndClose() {
+  showOrdersModal.value = false
+  router.visit('/admins/orders')
+}
+
+watch(recentOrders, loadPendingOrders)
 watch(lineChartFilter, renderLineChart)
 watch(pieChartFilter, renderDonutChart)
 

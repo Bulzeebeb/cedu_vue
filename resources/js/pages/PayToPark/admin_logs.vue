@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex font-sans bg-gray-100">
     <!-- Sidebar -->
-    <AdminSidebarP2P />
+    <AdminSidebarP2P :admin="admin" />
 
     <!-- Main Content -->
     <main class="ml-64 flex-1 p-6 text-[#5F1213]">
@@ -86,6 +86,10 @@ const props = defineProps({
   logs: { type: Array, required: true }
 })
 const logs = ref(props.logs.data || props.logs) // support pagination
+
+// Get admin data from page props
+const page = usePage()
+const admin = computed(() => page.props.admin)
 
 // Search filter
 const searchQuery = ref('')

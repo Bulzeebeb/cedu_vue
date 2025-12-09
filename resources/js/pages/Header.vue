@@ -70,7 +70,7 @@ function goToAboutUs() {
                     class="absolute right-0 mt-2 w-56 bg-white text-[#650000] font-medium border rounded-lg shadow-lg z-50 animate-fade-in p-4 space-y-3">
                     <!-- Greeting -->
                     <div class="bg-yellow-400 px-3 py-2 rounded text-[#650000] font-medium text-sm">
-                        Hello, <span class="font-bold">User</span>
+                        Hello, <span class="font-bold">User!</span>
                     </div>
 
                     <!-- Options -->
@@ -106,15 +106,10 @@ function goToAboutUs() {
 
             <!-- Profile Section -->
             <div class="pt-6 border-t border-white/20">
-                <div class="flex items-center space-x-3 mb-2">
-                    <img src="/images/profile.jpg" alt="Profile"
-                        class="h-10 w-10 rounded-full border-2 border-yellow-400" />
-                    <p class="text-sm font-semibold">John Doe</p>
-                </div>
+                
                 <div class="space-y-1 pl-12 text-sm">
-                    <a href="#" class="block hover:underline">Hello, User</a>
+                    <a href="#" class="block hover:underline">Hello, User!</a>
                     <button @click="goToSignIn" class="block hover:underline w-full text-left">Sign In</button>
-                    <a href="#" class="block hover:underline">Log Out</a>
                 </div>
             </div>
         </div>

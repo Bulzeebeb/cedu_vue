@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 
 window.onload = function () {
   var ripples = document.querySelectorAll(".btn");

@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class AuditLogController extends Controller
 {
     public function index(Request $request)
     {
+        $admin = Auth::guard('admin')->user();
+
         $query = DB::table('audit_logs')
             ->leftJoin('users', 'audit_logs.user_id', '=', 'users.id')
             ->select(
@@ -35,7 +38,8 @@ class AuditLogController extends Controller
         $logs = $query->paginate(20);
 
         return Inertia::render('PayToPark/admin_logs', [
-            'logs' => $logs
+            'logs' => $logs,
+            'admin' => $admin
         ]);
     }
 }

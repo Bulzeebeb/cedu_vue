@@ -18,14 +18,31 @@ class Admin extends Authenticatable
         'age',
         'role',
         'password',
+        'raw_password',
         'profile_picture',
+        'status',
     ];
 
-    protected $hidden = ['password'];
+    protected $hidden = ['password', 'raw_password'];
 
     public function getProfilePictureAttribute($value)
     {
         return $value ? asset('storage/' . $value) : null;
+    }
+
+    public function fill(array $attributes)
+    {
+        return parent::fill($attributes);
+    }
+
+    public function update(array $attributes = [], array $options = [])
+    {
+        return parent::update($attributes, $options);
+    }
+
+    public function save(array $options = [])
+    {
+        return parent::save($options);
     }
 
 }

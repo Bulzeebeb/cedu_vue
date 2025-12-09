@@ -1,13 +1,14 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-    <div class="bg-white text-black rounded-xl shadow-lg w-full max-w-4xl max-h-[95vh] overflow-y-auto p-4 sm:p-6 lg:p-8 relative border border-gray-300 mx-4">
+  <!-- Debug: Show if modal should be visible -->
+  <div v-if="props.isOpen" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50 overflow-auto">
+    <div class="bg-white text-black rounded-xl shadow-lg w-full max-w-4xl my-8 p-4 sm:p-6 lg:p-8 relative border border-gray-300 mx-4 max-h-[90vh] overflow-y-auto">
 
       <!-- Header Title and Close -->
       <div class="flex items-center gap-2 mb-4">
         <div class="w-1 h-6 bg-maroon rounded-sm"></div>
         <h2 class="text-xl font-semibold text-yellow-600">GENERATED POS</h2>
-        <button @click="close" class="absolute top-4 right-4 text-xl font-bold text-gray-600 hover:text-red-500">
-          &times;
+        <button @click="handleClose" class="absolute top-4 right-4 text-xl font-bold text-gray-600 hover:text-red-500 transition">
+          ✕
         </button>
       </div>
 
@@ -27,7 +28,7 @@
         <div class="text-sm mb-4 space-y-1 border p-3">
           <p><span class="font-semibold">Payor/Name:</span> {{ orderData?.customerName || '__________________________' }}</p>
           <p><span class="font-semibold">Organization:</span> CEDU CROP PRODUCTION PROJECT</p>
-          <p><span class="font-semibold">Date:</span> {{ orderData?.orderDate || '__________________________' }}</p>
+          <p><span class="font-semibold">Date:</span> {{ formatDate(orderData?.orderDate) || '__________________________' }}</p>
           <p>OTHER BUSINESS INCOME</p>
         </div>
 
@@ -71,7 +72,7 @@
                   {{ item.qty || 0 }}
                 </td>
                 <td class="px-2 py-1 text-center border-r border-gray-300">
-                  {{ item.unitCost || 0 }}
+                  {{ Number(item.unitCost || 0).toFixed(2) }}
                 </td>
                 <td class="px-2 py-1 text-center">
                   {{ (item.qty * item.unitCost).toFixed(2) }}
@@ -105,7 +106,7 @@
                   {{ item.qty || 0 }}
                 </td>
                 <td class="px-2 py-1 text-center border-r border-gray-300">
-                  {{ item.unitCost || 0 }}
+                  {{ Number(item.unitCost || 0).toFixed(2) }}
                 </td>
                 <td class="px-2 py-1 text-center">
                   {{ (item.qty * item.unitCost).toFixed(2) }}
@@ -133,13 +134,13 @@
       <div class="mt-6 flex flex-col sm:flex-row justify-center gap-4">
         <button
           @click="downloadPOS"
-          class="w-full sm:w-auto bg-maroon text-white py-2 px-6 rounded-full hover:bg-red-800 font-medium text-sm sm:text-base"
+          class="w-full sm:w-auto bg-maroon text-white py-2 px-6 rounded-full hover:bg-red-800 font-medium text-sm sm:text-base transition"
         >
           Download POS
         </button>
         <button
-          @click="goToLanding"
-          class="w-full sm:w-auto bg-gray-600 text-white py-2 px-6 rounded-full hover:bg-gray-700 font-medium text-sm sm:text-base"
+          @click="handleClose"
+          class="w-full sm:w-auto bg-gray-600 text-white py-2 px-6 rounded-full hover:bg-gray-700 font-medium text-sm sm:text-base transition"
         >
           Back to Market
         </button>
@@ -149,7 +150,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 
 // Props from Laravel
@@ -157,18 +158,54 @@ const props = defineProps({
   orderData: {
     type: Object,
     default: () => ({})
+  },
+  isOpen: {
+    type: Boolean,
+    default: false
   }
 })
 
-const close = () => router.visit('/om-landing')
-const goToLanding = () => router.visit('/om-landing')
+const emit = defineEmits(['close'])
+
+// Remove the local isOpen ref - use prop directly
+
+const handleClose = () => {
+  console.log('Closing modal')
+  emit('close')
+}
+
+const closeModal = () => {
+  handleClose()
+}
+
+const goToLanding = () => {
+  handleClose()
+  setTimeout(() => {
+    router.visit('/om-landing')
+  }, 300)
+}
+
+// Add this new function to help debug
+const logOrderData = () => {
+  console.log('Current orderData:', JSON.stringify(props.orderData, null, 2))
+  console.log('Sections:', JSON.stringify(sections, null, 2))
+}
+
+// Date formatting function
+const formatDate = (date) => {
+  if (!date) return ''
+  try {
+    const d = new Date(date)
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch (e) {
+    return ''
+  }
+}
 
 // Download as PDF function using jsPDF
 const downloadPOS = async () => {
   try {
-    // Check if jsPDF is already loaded
     if (!window.jspdf) {
-      // Load jsPDF library
       await new Promise((resolve, reject) => {
         const script = document.createElement('script')
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
@@ -180,17 +217,14 @@ const downloadPOS = async () => {
 
     const { jsPDF } = window.jspdf
 
-    // Create new PDF document
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
     })
 
-    // Set font
     doc.setFont('helvetica')
 
-    // Header
     let yPos = 15
     doc.setFontSize(10)
     doc.text('Republic of the Philippines', 105, yPos, { align: 'center' })
@@ -212,9 +246,9 @@ const downloadPOS = async () => {
 
     yPos += 7
     doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
     doc.text('Control No.: ' + (props.orderData?.orderId || '______'), 190, yPos, { align: 'right' })
 
-    // Basic Info Box
     yPos += 5
     const boxHeight = 25
     doc.rect(15, yPos, 180, boxHeight)
@@ -234,14 +268,13 @@ const downloadPOS = async () => {
     doc.setFont('helvetica', 'bold')
     doc.text('Date: ', 18, yPos)
     doc.setFont('helvetica', 'normal')
-    doc.text(props.orderData?.orderDate || '__________________________', 30, yPos)
+    doc.text(formatDate(props.orderData?.orderDate) || '__________________________', 30, yPos)
 
     yPos += 6
+    doc.setFont('helvetica', 'normal')
     doc.text('OTHER BUSINESS INCOME', 18, yPos)
 
-    // Table
     yPos += 8
-    const tableStartY = yPos
 
     // Table headers
     doc.setFillColor(240, 240, 240)
@@ -269,6 +302,7 @@ const downloadPOS = async () => {
     doc.setFillColor(245, 245, 245)
     doc.rect(15, yPos, 180, 6, 'FD')
     doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
     doc.text('CEDU TAGUM - CROP PRODUCTION', 18, yPos + 4)
 
     // Draw vertical lines for section header
@@ -278,6 +312,7 @@ const downloadPOS = async () => {
     yPos += 6
 
     doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
     sections[0].products.forEach(item => {
       const rowHeight = 6
 
@@ -290,14 +325,11 @@ const downloadPOS = async () => {
       doc.line(165, yPos, 165, yPos + rowHeight) // After Unit Cost
       doc.line(195, yPos, 195, yPos + rowHeight) // Right vertical
 
-      // Draw checkbox
-      const checkboxX = 20
-      const checkboxY = yPos + 1.5
-      const checkboxSize = 3
-      doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
-
-      // Draw checkmark if selected
       if (item.selected) {
+        const checkboxX = 20
+        const checkboxY = yPos + 1.5
+        const checkboxSize = 3
+        doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
         doc.setLineWidth(0.5)
         doc.line(checkboxX + 0.3, checkboxY + 1.5, checkboxX + 1.2, checkboxY + 2.5)
         doc.line(checkboxX + 1.2, checkboxY + 2.5, checkboxX + 2.7, checkboxY + 0.5)
@@ -307,9 +339,10 @@ const downloadPOS = async () => {
       let productName = item.name
       if (item.bananaType) productName += ' ' + item.bananaType
       if (item.otherDetails) productName += ' ' + item.otherDetails
+      
       doc.text(productName, 33, yPos + 4)
       doc.text(String(item.qty || 0), 125, yPos + 4, { align: 'center' })
-      doc.text(String(item.unitCost || 0), 150, yPos + 4, { align: 'center' })
+      doc.text(Number(item.unitCost || 0).toFixed(2), 150, yPos + 4, { align: 'center' })
       doc.text((item.qty * item.unitCost).toFixed(2), 180, yPos + 4, { align: 'center' })
 
       yPos += rowHeight
@@ -322,6 +355,7 @@ const downloadPOS = async () => {
     doc.setFillColor(245, 245, 245)
     doc.rect(15, yPos, 180, 6, 'FD')
     doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
     doc.text('CEDU MABINI - CROP PRODUCTION', 18, yPos + 4)
 
     // Draw vertical lines for section header
@@ -331,6 +365,7 @@ const downloadPOS = async () => {
     yPos += 6
 
     doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
     sections[1].products.forEach(item => {
       const rowHeight = 6
 
@@ -343,14 +378,11 @@ const downloadPOS = async () => {
       doc.line(165, yPos, 165, yPos + rowHeight) // After Unit Cost
       doc.line(195, yPos, 195, yPos + rowHeight) // Right vertical
 
-      // Draw checkbox
-      const checkboxX = 20
-      const checkboxY = yPos + 1.5
-      const checkboxSize = 3
-      doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
-
-      // Draw checkmark if selected
       if (item.selected) {
+        const checkboxX = 20
+        const checkboxY = yPos + 1.5
+        const checkboxSize = 3
+        doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize)
         doc.setLineWidth(0.5)
         doc.line(checkboxX + 0.3, checkboxY + 1.5, checkboxX + 1.2, checkboxY + 2.5)
         doc.line(checkboxX + 1.2, checkboxY + 2.5, checkboxX + 2.7, checkboxY + 0.5)
@@ -360,9 +392,10 @@ const downloadPOS = async () => {
       let productName = item.name
       if (item.bananaType) productName += ' ' + item.bananaType
       if (item.otherDetails) productName += ' ' + item.otherDetails
+      
       doc.text(productName, 33, yPos + 4)
       doc.text(String(item.qty || 0), 125, yPos + 4, { align: 'center' })
-      doc.text(String(item.unitCost || 0), 150, yPos + 4, { align: 'center' })
+      doc.text(Number(item.unitCost || 0).toFixed(2), 150, yPos + 4, { align: 'center' })
       doc.text((item.qty * item.unitCost).toFixed(2), 180, yPos + 4, { align: 'center' })
 
       yPos += rowHeight
@@ -389,7 +422,6 @@ const downloadPOS = async () => {
     yPos += 6
     doc.text('OR No.: _________________________', 18, yPos)
 
-    // Save the PDF
     doc.save(`POS_${props.orderData?.orderId || 'Order'}_${new Date().toISOString().split('T')[0]}.pdf`)
   } catch (error) {
     console.error('Error generating PDF:', error)
@@ -402,17 +434,12 @@ function getProductSection(productName) {
   const tagumProducts = ['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra']
   const mabiniProducts = ['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo']
 
-  // Normalize product name for comparison
   const normalizedName = productName.toLowerCase()
-
-  // Check if it matches any known products
   const matchesTagum = tagumProducts.some(product => normalizedName.includes(product.toLowerCase()))
   const matchesMabini = mabiniProducts.some(product => normalizedName.includes(product.toLowerCase()))
 
   if (matchesTagum) return 'tagum'
   if (matchesMabini) return 'mabini'
-
-  // Default to tagum for unknown products
   return 'tagum'
 }
 
@@ -430,28 +457,37 @@ function generateProducts(names) {
 const sections = reactive([
   {
     title: 'CEDU TAGUM – CROP PRODUCTION',
-    products: generateProducts([
-      'Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango',
-      'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra', 'Others:'
-    ])
+    products: generateProducts(['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Okra', 'Others:'])
   },
   {
     title: 'CEDU MABINI – CROP PRODUCTION',
-    products: generateProducts([
-      'Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango',
-      'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo', 'Others:'
-    ])
+    products: generateProducts(['Banana', 'Coconut', 'Corn', 'Bamboo', 'Mango', 'Durian', 'Mangosteen', 'Lanzones', 'Rambutan', 'Siling Labuyo', 'Others:'])
   }
 ])
 
-// Populate order data when component mounts
-onMounted(() => {
-  if (props.orderData && props.orderData.items) {
+const populateOrderData = () => {
+  // Validate orderData is an object, not HTML string
+  if (typeof props.orderData === 'string') {
+    console.error('orderData is a string, expected object. Possible HTML response:', props.orderData)
+    alert('Error: Invalid order data received. Please refresh and try again.')
+    return
+  }
+
+  sections.forEach(section => {
+    section.products.forEach(product => {
+      product.selected = false
+      product.qty = 0
+      product.unitCost = 0
+      product.bananaType = product.name === 'Banana' ? '' : undefined
+      product.otherDetails = product.name === 'Others:' ? '' : undefined
+    })
+  })
+
+  if (props.orderData && props.orderData.items && Array.isArray(props.orderData.items)) {
     props.orderData.items.forEach(orderItem => {
       const sectionType = getProductSection(orderItem.title)
       const sectionIndex = sectionType === 'tagum' ? 0 : 1
 
-      // Try to find matching product in the section
       let productFound = false
 
       sections[sectionIndex].products.forEach(product => {
@@ -465,14 +501,12 @@ onMounted(() => {
           product.unitCost = parseFloat(orderItem.price) || 0
           productFound = true
 
-          // Handle banana type specification
-          if (product.name === 'Banana' && orderItem.title.toLowerCase() !== 'banana') {
+          if (product.name === 'Banana' && orderItemLower !== 'banana') {
             product.bananaType = orderItem.title.replace(/banana/i, '').trim()
           }
         }
       })
 
-      // If no matching product found, put it in "Others:"
       if (!productFound) {
         const othersProduct = sections[sectionIndex].products.find(p => p.name === 'Others:')
         if (othersProduct) {
@@ -484,7 +518,21 @@ onMounted(() => {
       }
     })
   }
+}
+
+onMounted(() => {
+  console.log('POS Modal mounted, isOpen:', props.isOpen)
+  populateOrderData()
 })
+
+watch(() => props.orderData, () => {
+  console.log('OrderData changed:', props.orderData)
+  if (typeof props.orderData === 'object' && props.orderData !== null) {
+    populateOrderData()
+  } else {
+    console.error('Invalid orderData type:', typeof props.orderData)
+  }
+}, { deep: true })
 
 const grandTotal = computed(() => {
   return sections.reduce((total, section) => {
@@ -492,7 +540,7 @@ const grandTotal = computed(() => {
       total +
       section.products
         .filter(item => item.selected)
-        .reduce((subtotal, item) => subtotal + item.qty * item.unitCost, 0)
+        .reduce((subtotal, item) => subtotal + (item.qty * item.unitCost), 0)
     )
   }, 0).toFixed(2)
 })
@@ -502,9 +550,11 @@ const grandTotal = computed(() => {
 .bg-maroon {
   background-color: #800000;
 }
+
 .bg-maroon:hover {
   background-color: #a30000;
 }
+
 div {
   color: black;
 }
@@ -513,9 +563,11 @@ div {
   h2.text-xl {
     font-size: 1.125rem;
   }
+
   .text-sm {
     font-size: 0.875rem;
   }
+
   .text-lg {
     font-size: 1rem;
   }

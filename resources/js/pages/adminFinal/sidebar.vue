@@ -98,29 +98,6 @@ function logout() { router.visit('/logout') }
           <i class="fas fa-home"></i> Dashboard
         </button>
 
-        <!-- Update Group -->
-        <div class="group">
-          <button type="button"
-            class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3"><i class="fas fa-arrows-rotate"></i> Update</span>
-            <i class="fas fa-caret-down"></i>
-          </button>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
-            <button @click="goToPayToParkUpdate"
-              class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
-              <i class="fas fa-parking"></i> Pay-to-Park
-            </button>
-            <button @click="goToOnlineMarketUpdate"
-              class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
-              <i class="fas fa-store"></i> Online Market
-            </button>
-            <button @click="goToRentalFacilityUpdate"
-              class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
-              <i class="fas fa-building"></i> Use-of-Facilities
-            </button>
-          </div>
-        </div>
-
         <!-- Reports Group -->
         <div class="group">
           <button type="button"
@@ -179,49 +156,6 @@ function logout() { router.visit('/logout') }
                class="rounded-full w-10 h-10 border-2 border-white cursor-pointer transition-transform duration-200 ease-in-out 
                       group-hover:scale-110 group-hover:border-yellow-400 group-hover:shadow-lg active:scale-95"/>
           <p class="text-sm">Super Admin</p>
-        </div>
-
-        <!-- Notification Bell -->
-        <button @click="toggleNotif" class="relative focus:outline-none hover:text-red-600 transition duration-200">
-          <i class="fas fa-bell text-xl"></i>
-        </button>
-
-        <!-- Notification Dropdown -->
-        <div v-if="showNotif" ref="notifDropdown"
-             class="absolute bottom-16 left-0 w-80 bg-white rounded-xl shadow-2xl z-50 overflow-hidden border border-gray-200">
-          <!-- Header -->
-          <div class="bg-gradient-to-r from-[#FFA600] to-[#ffcc66] text-[#5F1213] font-semibold px-4 py-3 text-sm">
-            Notifications Center
-          </div>
-
-          <!-- List -->
-          <ul class="max-h-60 overflow-y-auto divide-y divide-gray-100">
-            <li v-for="item in notifItems.filter(i => !i.read)" :key="item.id"
-                @click="markAsRead(item)"
-                class="flex items-start gap-3 px-4 py-4 hover:bg-gray-50 cursor-pointer transition">
-              <div :class="['rounded-full p-2', getIconBg(item.status)]">
-                <i :class="getIconClass(item.status) + ' text-white text-sm'"></i>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-[#5F1213]">
-                  <span v-if="item.status==='completed'">Order completed by</span>
-                  <span v-else-if="item.status==='cancelled'">Order cancelled by</span>
-                  <span v-else>New order placed by</span>
-                  {{ item.first_name }} {{ item.last_name }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  Date: {{ new Date(item.order_date).toLocaleString() }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  Status: {{ item.status }} | Total: ₱{{ item.total_amount ? Number(item.total_amount).toFixed(2) : '0.00' }}
-                </p>
-              </div>
-            </li>
-          </ul>
-
-          <!-- Footer -->
-          <div class="text-center text-xs text-gray-600 bg-gray-50 py-2 hover:bg-gray-100 transition cursor-pointer">
-          </div>
         </div>
       </div>
 

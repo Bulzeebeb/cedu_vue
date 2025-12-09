@@ -121,7 +121,7 @@ const form = useForm({
 
 function onContactInput(e) {
   // Only allow numbers, max 11 digits
-  let val = e.target.value.replace(/\D/g, '').slice(0, 10)
+  const val = e.target.value.replace(/\D/g, '').slice(0, 10)
   form.contactNum = val
 }
 

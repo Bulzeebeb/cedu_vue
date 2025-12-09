@@ -141,7 +141,7 @@
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import Chart from 'chart.js/auto'
-import AdminSidebar from './adminSidebar.vue'
+import AdminSidebar from '../UseFaci_ADMIN/adminSidebar.vue'
 import { usePage, router } from '@inertiajs/vue3'
 
 const page = usePage()

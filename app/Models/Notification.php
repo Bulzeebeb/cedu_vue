@@ -11,6 +11,7 @@ class Notification extends Model
 
     protected $fillable = [
         'user_id',
+        'admin_id',
         'booking_id',
         'title',
         'message',
@@ -26,7 +27,7 @@ class Notification extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(UserClient::class, 'user_id');
     }
 
     public function booking()

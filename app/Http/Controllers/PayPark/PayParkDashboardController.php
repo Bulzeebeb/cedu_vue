@@ -53,6 +53,7 @@ class PayParkDashboardController extends Controller
             'newUsersThisMonth' => $stats['newUsers'],
             'chart' => $chart,
             'months' => $hoverBars,
+            'admin' => Auth::guard('admin')->user(),
             'filters' => [
                 'mode' => $mode,
                 'year' => $year ? (int) $year : null,

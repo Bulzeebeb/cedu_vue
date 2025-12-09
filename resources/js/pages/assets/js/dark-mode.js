@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 
 export function activateDarkMode() {
   const body = document.getElementsByTagName("body")[0];

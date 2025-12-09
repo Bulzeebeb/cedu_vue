@@ -1,27 +1,13 @@
 <script setup>
-import { router } from '@inertiajs/vue3'
-
-function client_Form() {
-  router.visit('/omLandingPage')
-}
-
-function omLandingPage() {
-  router.visit('/omLandingPage')
-}
-
-function goToFacilities() {
-  router.visit('/facilities')
-}
-import Header from '@/pages/lp_header.vue'
-import Footer from '@/pages/footer.vue'
+import Header from './lp_header.vue'
+import Footer from '../footer.vue'
 </script>
-
 
 <template>
   <div class="min-h-screen bg-[#f9f9f9] font-sans text-gray-800">
     <!-- HEADER -->
-    
-<Header />
+
+    <Header />
 
     <!-- HERO SECTION -->
     <section class="text-center py-14 bg-white shadow-sm">
@@ -45,18 +31,15 @@ import Footer from '@/pages/footer.vue'
             <p class="text-sm text-gray-600">Instant entry using secure QR code</p>
           </div>
           <div class="card">
-            <img src="/images/PayToPark/Image3.png" alt="Security" class="w-full h-auto object-contain mb-3 rounded-md" />
+            <img src="/images/PayToPark/Image3.png" alt="Security"
+              class="w-full h-auto object-contain mb-3 rounded-md" />
             <h4 class="text-lg font-semibold text-[#650000]">Secure Area</h4>
             <p class="text-sm text-gray-600">Monitored 24/7 for peace of mind</p>
           </div>
         </div>
       </div>
     </section>
-
-  
-
-<Footer />
-
+    <Footer />
   </div>
 </template>
 
@@ -68,14 +51,19 @@ import Footer from '@/pages/footer.vue'
   border-radius: 4px;
   transition: background-color 0.3s ease;
 }
+
 .nav-link:hover {
   background-color: #ffcc00;
   color: #650000;
 }
+
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-6px);
   }
@@ -85,14 +73,14 @@ import Footer from '@/pages/footer.vue'
   background-color: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   animation: float 3s ease-in-out infinite;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
   transform: translateY(-8px) scale(1.03);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .card img {
@@ -102,6 +90,4 @@ import Footer from '@/pages/footer.vue'
 .card:hover img {
   transform: rotate(-1deg) scale(1.05);
 }
-
-
 </style>

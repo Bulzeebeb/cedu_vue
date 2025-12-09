@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 
 class AdminReportsController extends Controller
@@ -119,6 +120,7 @@ class AdminReportsController extends Controller
             if ($lastWeekPoultrySales > 0) {
                 $poultrySalesGrowth = round((($thisWeekPoultrySales - $lastWeekPoultrySales) / $lastWeekPoultrySales) * 100, 1);
             }
+            
 
             // Recent Orders with their items - Updated to show proper timestamps
             // Step 1: Update order_date for records that don't have it yet
@@ -198,6 +200,76 @@ class AdminReportsController extends Controller
                     ]
                 ],
             ]);
+        }
+    }
+
+    public function getReportsData(Request $request)
+    {
+        try {
+            $categoryId = $request->query('cat');
+            $period = $request->query('period', 'daily');
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
+
+            // Get all categories for the dropdown
+            $categories = DB::table('products')
+                ->select('category as id', 'category as name')
+                ->distinct()
+                ->whereNotNull('category')
+                ->where('category', '!=', '')
+                ->get();
+
+            // Build query for order items
+            $query = DB::table('order_items')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->leftJoin('user_clients', 'orders.user_client_id', '=', 'user_clients.id')
+                ->select(
+                    'orders.created_at as date',
+                    DB::raw('TIME(orders.created_at) as time'),
+                    DB::raw('CONCAT(user_clients.firstName, " ", user_clients.lastName) as client'),
+                    'products.name as product',
+                    'products.category',
+                    'order_items.quantity',
+                    'order_items.unit_price as price',
+                    DB::raw('order_items.quantity * order_items.unit_price as total')
+                )
+                ->where('orders.status', 'paid'); // Only show completed orders
+
+            if ($categoryId) {
+                $query->where('products.category', $categoryId);
+            }
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('orders.created_at', [$startDate, $endDate]);
+            }
+
+            $reportData = $query->get()->map(function ($item) {
+                return [
+                    'date' => Carbon::parse($item->date)->format('Y-m-d'),
+                    'time' => $item->time,
+                    'client' => $item->client ?: 'N/A',
+                    'product' => $item->product,
+                    'category' => $item->category,
+                    'quantity' => (int) $item->quantity,
+                    'price' => (float) $item->price,
+                    'total' => (float) $item->total,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $reportData,
+                'categories' => $categories
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Reports data error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'data' => [],
+                'categories' => []
+            ], 500);
         }
     }
 

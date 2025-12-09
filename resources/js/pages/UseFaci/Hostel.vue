@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import Swal from 'sweetalert2'
 import Header from './header.vue'
 import Footer from './footer.vue'
+
+// Email validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Props from backend
 const props = defineProps({
@@ -129,7 +132,7 @@ function confirmBooking() {
 function submitBooking() {
   // Validate inputs
   formErrors.value.fullName = !fullName.value.trim()
-  formErrors.value.email = !email.value.includes('@')
+  formErrors.value.email = !emailRegex.test(email.value)
   formErrors.value.contact = contact.value.length !== 11 || !/^\d+$/.test(contact.value)
   formErrors.value.startDateTime = !startDate.value
   formErrors.value.endDateTime = !endDate.value
@@ -159,34 +162,6 @@ function submitBooking() {
     return
   }
 
-  // Prepare FormData for file upload
-  const formData = new FormData()
-  formData.append('facility_id', selectedRoom.value.id)
-  formData.append('customer_name', fullName.value)
-  formData.append('customer_email', email.value)
-  formData.append('customer_contact', contact.value)
-  formData.append('check_in', startDate.value)
-  formData.append('check_out', endDate.value)
-  formData.append('booking_type', 'Hostel')
-  formData.append('number_of_guests', numberOfGuests.value)
-  formData.append('additional_notes', '')
-  formData.append('usep_affiliation', usepAffiliation.value)
-  if (usepIdFile.value) {
-    formData.append('usep_id_file', usepIdFile.value)
-  }
-
-  // Get CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-  
-  if (!csrfToken) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'CSRF token not found. Please refresh the page.'
-    })
-    return
-  }
-
   // Show loading state
   Swal.fire({
     title: 'Processing...',
@@ -194,19 +169,25 @@ function submitBooking() {
     didOpen: async () => {
       Swal.showLoading()
       
-      try {
-        const res = await fetch('/bookings', {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-          }
-        })
-        
-        const data = await res.json()
-        
-        if (res.ok || res.status === 201) {
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('facility_id', selectedRoom.value.id)
+      formData.append('customer_name', fullName.value)
+      formData.append('customer_email', email.value)
+      formData.append('customer_contact', contact.value)
+      formData.append('check_in', startDate.value)
+      formData.append('check_out', endDate.value)
+      formData.append('booking_type', 'Hostel')
+      formData.append('number_of_guests', numberOfGuests.value)
+      formData.append('additional_notes', '')
+      formData.append('usep_affiliation', usepAffiliation.value)
+      if (usepIdFile.value) {
+        formData.append('usep_id_file', usepIdFile.value)
+      }
+      
+      // Use Inertia router to submit the form
+      router.post('/bookings', formData, {
+        onSuccess: () => {
           Swal.fire({
             icon: 'success',
             title: 'Booking Successful!',
@@ -215,21 +196,15 @@ function submitBooking() {
           }).then(() => {
             closeModal()
           })
-        } else {
+        },
+        onError: (errors) => {
           Swal.fire({
             icon: 'error',
             title: 'Booking Failed',
-            text: data.message || 'An error occurred while processing your booking.'
+            text: errors.message || 'An error occurred while processing your booking.'
           })
         }
-      } catch (error) {
-        console.error('Booking error:', error)
-        Swal.fire({
-          icon: 'error',
-          title: 'Network Error',
-          text: 'Failed to connect to server. Please check your internet connection and try again.'
-        })
-      }
+      })
     }
   })
 }
@@ -240,7 +215,7 @@ watch(fullName, val => {
 })
 
 watch(email, val => {
-  formErrors.value.email = !val.includes('@gmail.com')
+  formErrors.value.email = !emailRegex.test(val)
 })
 
 watch(contact, val => {

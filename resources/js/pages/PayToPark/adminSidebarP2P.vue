@@ -1,10 +1,14 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 
+const showNotif = ref(false)
 const sidebarOpen = ref(false)
 const mainContent = ref(null)
-const showNotif = ref(false)
+const page = usePage()
+const admin = computed(() => page.props.admin)
 
 function toggleNotif(event) {
   event.stopPropagation()
@@ -28,8 +32,8 @@ const months = ref([
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
 }
-function goToHome() {
-  router.visit('/landingpage')
+function goToMainMenu() {
+  router.visit('/adminchoice')
 }
 function goToDashboard() {
   router.visit('/dashboard')
@@ -45,12 +49,18 @@ function goToLogs() {
   router.visit('/logs')
 }
 
+// Helper to get the correct profile picture URL
+function getProfilePictureUrl(path) {
+  if (!path) return 'https://i.pravatar.cc/300';
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('storage/')) path = path.replace('storage/', '');
+  return `/storage/${path}`;
+}
+
 onMounted(() => {
-  setTimeout(() => {
-    if (mainContent.value) {
-      mainContent.value.classList.remove('opacity-0', 'translate-y-6')
-    }
-  }, 100)
+  window.addEventListener('click', () => {
+    showNotif.value = false
+  })
 })
 </script>
 
@@ -59,7 +69,7 @@ onMounted(() => {
     <!-- Top Logo and Navigation -->
     <div>
       <div class="mb-10">
-        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-500">iCentral</span></h1>
+        <h1 class="text-lg font-bold">Pay to Park <span class="text-yellow-500">Admin</span></h1>
       </div>
       <nav class="space-y-4">
         <a href="#" @click="goToDashboard"
@@ -86,10 +96,10 @@ onMounted(() => {
       <!-- Profile Row -->
       <div class="flex items-center justify-between px-2 mt-4">
         <!-- Profile Left -->
-        <div class="flex items-center gap-3 cursor-pointer" @click="goToProfile">
-          <img src="https://i.pravatar.cc/300" alt="Profile"
+        <div class="flex items-center gap-3 cursor-pointer">
+          <img :src="getProfilePictureUrl(admin?.profile_picture)"
             class="w-12 h-12 rounded-full border-2 border-white object-cover" />
-          <p class="text-sm">Admin</p>
+          <p class="text-sm">{{ admin ? (admin.first_name + ' ' + admin.last_name) : 'Admin' }}</p>
         </div>
 
         <!-- Bell Right -->
@@ -128,9 +138,13 @@ onMounted(() => {
       <div class="border-t border-[#FFA600]/40 my-3"></div>
 
       <!-- Logout -->
-      <a href="#" @click="goToHome" class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2">
-        <i class="fas fa-power-off text-lg"></i> Log Out
-      </a>
+      <button @click.prevent="goToMainMenu" type="button"
+        class="flex items-center gap-3 text-sm text-white-400 hover:text-white transition px-2 w-full">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.841 15.681l7.07-7.07m0 0l-7.07-7.07m7.07 7.07H3m10 10v-2a6 6 0 00-6-6H5a6 6 0 00-6 6v2" />
+          </svg>
+         Main Menu
+      </button>
     </div>
   </aside>
 </template>

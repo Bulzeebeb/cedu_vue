@@ -4,12 +4,15 @@ namespace App\Http\Controllers\PayPark;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PayParkAdminReportController extends Controller
 {
     public function index()
     {
+        $admin = Auth::guard('admin')->user();
+
         $reports = DB::table('pay_park_clients as c')
             ->leftJoin('paypark_transactions as t', 'c.id', '=', 't.client_id')
             ->select(
@@ -41,8 +44,11 @@ class PayParkAdminReportController extends Controller
             });
 
         return Inertia::render('PayToPark/admin_parking_reports', [
-            'entries' => $reports
+            'entries' => $reports,
+            'admin' => $admin
         ]);
+
+         
     }
     
 }

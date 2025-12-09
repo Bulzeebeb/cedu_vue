@@ -10,21 +10,28 @@ use Illuminate\Support\Facades\Log;
 class NotificationController extends Controller
 {
     /**
-     * Get all notifications for a user
+     * Get all notifications for a user or admin
      */
     public function index(Request $request)
     {
-        // Get user_id from query param or authenticated user
-        $userId = $request->query('user_id') ?? Auth::id();
-        
-        if (!$userId) {
-            Log::warning('Notification fetch attempt without user_id');
+        // Get user_id or admin_id from query params
+        $userId = $request->query('user_id');
+        $adminId = $request->query('admin_id');
+
+        if (!$userId && !$adminId) {
+            Log::warning('Notification fetch attempt without user_id or admin_id');
             return response()->json([]);
         }
 
-        $notifications = Notification::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Notification::orderBy('created_at', 'desc');
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } elseif ($adminId) {
+            $query->where('admin_id', $adminId);
+        }
+
+        $notifications = $query->get();
 
         return response()->json($notifications);
     }
@@ -35,7 +42,8 @@ class NotificationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
+            'user_id' => 'nullable|integer|exists:user_clients,id',
+            'admin_id' => 'nullable|integer|exists:admins,id',
             'booking_id' => 'required|integer|exists:bookings,id',
             'title' => 'required|string|max:255',
             'message' => 'required|string',
@@ -43,9 +51,15 @@ class NotificationController extends Controller
             'read' => 'nullable|boolean'
         ]);
 
+        // Ensure either user_id or admin_id is provided
+        if (!$validated['user_id'] && !$validated['admin_id']) {
+            return response()->json(['error' => 'Either user_id or admin_id must be provided'], 422);
+        }
+
         try {
             $notification = Notification::create([
-                'user_id' => $validated['user_id'],
+                'user_id' => $validated['user_id'] ?? null,
+                'admin_id' => $validated['admin_id'] ?? null,
                 'booking_id' => $validated['booking_id'],
                 'title' => $validated['title'],
                 'message' => $validated['message'],
@@ -56,6 +70,7 @@ class NotificationController extends Controller
             Log::info('Notification created successfully', [
                 'notification_id' => $notification->id,
                 'user_id' => $notification->user_id,
+                'admin_id' => $notification->admin_id,
                 'booking_id' => $notification->booking_id,
                 'title' => $notification->title
             ]);
@@ -76,9 +91,14 @@ class NotificationController extends Controller
     public function markAsRead($id)
     {
         $notification = Notification::findOrFail($id);
-        
-        // Check if user owns this notification or is authenticated
-        if ($notification->user_id !== Auth::id() && Auth::id() !== null) {
+
+        // Check if user owns this notification (for userclient guard)
+        if ($notification->user_id && $notification->user_id !== Auth::guard('userclient')->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if admin owns this notification (for admin guard)
+        if ($notification->admin_id && $notification->admin_id !== Auth::guard('admin')->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -88,19 +108,32 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark all notifications as read for the user
+     * Mark all notifications as read for the user or admin
      */
     public function markAllAsRead(Request $request)
     {
-        $userId = $request->query('user_id') ?? Auth::id();
-        
-        if (!$userId) {
-            return response()->json(['error' => 'User not found'], 422);
+        $userId = $request->input('user_id');
+        $adminId = $request->input('admin_id');
+
+        if (!$userId && !$adminId) {
+            // Try to get from authenticated user
+            $userId = Auth::guard('userclient')->id();
+            $adminId = Auth::guard('admin')->id();
         }
 
-        Notification::where('user_id', $userId)
-            ->where('read', false)
-            ->update(['read' => true]);
+        if (!$userId && !$adminId) {
+            return response()->json(['error' => 'User or Admin not found'], 422);
+        }
+
+        $query = Notification::where('read', false);
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } elseif ($adminId) {
+            $query->where('admin_id', $adminId);
+        }
+
+        $query->update(['read' => true]);
 
         return response()->json(['message' => 'All notifications marked as read']);
     }

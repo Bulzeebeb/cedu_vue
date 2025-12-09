@@ -24,13 +24,17 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UseFaciDashboardController;
+use App\Http\Controllers\UseFaciReportsController;
+use App\Http\Controllers\OnlineMarketReportsController;
 use App\Models\Log;
-
 use App\Http\Controllers\PayPark\PayParkAdminReportController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\PayPark\PayParkClientController;
 use App\Http\Controllers\PayPark\PayParkTransactionController;
 use App\Http\Controllers\PayPark\PayParkHistoryController;
+use Illuminate\Http\Request;
+use App\Models\Order;
 
 
 Route::post('/admin/account/store', [AdminAccountController::class, 'store']);
@@ -67,17 +71,44 @@ Route::get('/aboutus', function () {
     return Inertia::render('AboutUs');
 })->name('aboutus');
 
-use App\Models\Admin;
-Route::get('/adminchoice', function () {
-    $admin = Auth::guard('admin')->user();
-    return Inertia::render('AdminChoice', [
-        'admin' => $admin
-    ]);
-})->name('adminchoice');
 
 Route::get('/clientchoice', function () {
     return Inertia::render('ClientChoice');
 })->name('clientchoice');
+
+Route::get('/accounts', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('AdAccount', [
+        'admin' => $admin
+    ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Choice Page Route
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/adminchoice', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('zAdminChoicePage/AdminChoice', [
+        'admin' => $admin
+    ]);
+})->name('adminchoice');
+
+Route::get('/accounts', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('zAdminChoicePage/AdAccount', [
+        'admin' => $admin
+    ]);
+});
+
+Route::get('/adminprofile', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('zAdminChoicePage/adminMainProfile', [
+        'admin' => $admin
+    ]);
+})->name('adminsprofile');
 
 /*
 |--------------------------------------------------------------------------
@@ -129,7 +160,7 @@ Route::prefix('admins')->group(function () {
 Route::get('/admin/account/list', [AdminAccountController::class, 'list']);
 Route::get('/admin/accounts', [AdminAccountController::class, 'fetch']);
 Route::get('/admin/profile', [AdminAccountController::class, 'profile']);
-Route::post('/admin/profile/update', [AdminAccountController::class, 'updateProfile']);
+Route::put('/admin/profile/update', [AdminAccountController::class, 'updateProfile']);
 
 // Activity Logs Routes
 Route::prefix('admin')->group(function () {
@@ -248,6 +279,7 @@ Route::get('/admins/profile', function () {
 
 // Updated dashboard route to use AdminReportsController
 Route::get('/admin/reports', [AdminReportsController::class, 'index'])->name('reportsOnlineMarketAdmin');
+Route::get('/admin/reportsdata', [AdminReportsController::class, 'getReportsData'])->name('admin.reportsdata');
 
 Route::get('/logsOnlineMarketAdmin', function () {
     $admin = Auth::guard('admin')->user();
@@ -302,15 +334,16 @@ Route::prefix('admin')->group(function () {
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/userclients', [AdminUserClientController::class, 'index']);
-    Route::delete('/userclients/{id}', [AdminUserClientController::class, 'destroy']);
-});
+// Moved userclients routes out of sanctum middleware to use session auth like other admin routes
+Route::get('/userclients', [AdminUserClientController::class, 'index']);
+Route::put('/userclients/{id}/status', [AdminUserClientController::class, 'updateStatus']);
+Route::delete('/userclients/{id}', [AdminUserClientController::class, 'destroy']);
 Route::get('/adminlogs', function () {
     return Inertia::render('Admin/adminLogs');
 })->name('admindashlogs');
 
 
+Route::get('/onlinemarket/reportsdata', [OnlineMarketReportsController::class, 'getReportsData']);
 
 // ==============================//
 // ONLINE MARKET ROUTES CLIENT   //
@@ -350,14 +383,6 @@ Route::get('/poultry', [ProductController::class, 'showPoultry'])->name('poultry
 Route::get('/vegetable', [ProductController::class, 'showVegetables'])->name('vegetables.index');
 
 
-
-
-
-
-
-
-
-
 // ======================
 // 🔐 LOGIN/LOGOUT CLIENT AUTH ROUTES
 // ======================
@@ -381,8 +406,10 @@ Route::get('/use-of-facilities/rental', [FacilityController::class, 'showRental'
 
 
 
-Route::get('/logs', [AuditLogController::class, 'index'])
-    ->name('admin.audit.logs');
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/logs', [AuditLogController::class, 'index'])
+        ->name('admin.audit.logs');
+});
 
 
 Route::post('/paytopark/clients', [PayParkClientController::class, 'store']);
@@ -398,11 +425,16 @@ Route::get('/paypark_transactions/{id}', [PayParkTransactionController::class, '
 use App\Http\Controllers\PayPark\ParkingSettingsController;
 Route::post('/parking-settings', [ParkingSettingsController::class, 'store'])->name('parking-settings.store');
 
-Route::get('/reports', [PayParkAdminReportController::class, 'index'])
-    ->name('admin.reports');
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/reports', [PayParkAdminReportController::class, 'index'])
+        ->name('admin.reports');
+});
 
 Route::get('/managep2p', function () {
-    return Inertia::render('PayToPark/admin_ManageParking');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('PayToPark/admin_ManageParking', [
+        'admin' => $admin
+    ]);
 })->name('managep2p');
 
 // Main dashboard route
@@ -518,41 +550,58 @@ Route::get('/rentallandingpage', function () {
     return Inertia::render('UseFaci/uf_home');
 });
 
-
 // ======================
 // 🔧 RENTAL FACILITY ADMIN ROUTES
 // ======================
-Route::get('/use/facidashboard', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_FaciDashboard');
+Route::get('/use/facidashboard', [UseFaciDashboardController::class, 'index']);
+// UseFaci Reports API
+Route::get('/use/reportsdata', [UseFaciReportsController::class, 'getReportsData']);
+
+// Booking Action Routes (Admin Protected)
+Route::middleware('auth:admin')->group(function () {
+    Route::post('/use/bookings/{bookingId}/approve', [UseFaciDashboardController::class, 'approveBooking']);
+    Route::post('/use/bookings/{bookingId}/cancel', [UseFaciDashboardController::class, 'cancelBooking']);
+    Route::get('/use/bookings/{bookingId}', [UseFaciDashboardController::class, 'viewBooking']);
+    Route::post('/use/bookings/approve-all-pending', [UseFaciDashboardController::class, 'approveAllPending']);
+    Route::get('/use/bookings', [UseFaciDashboardController::class, 'getBookings']);
+    Route::get('/use/bookings-calendar', [UseFaciDashboardController::class, 'getBookingsForCalendar']);
 });
 
 Route::get('/use/category', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_Category');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('UseFaci_ADMIN/admin_Category', [
+        'admin' => $admin
+    ]);
 });
 
 Route::get('/use/facilities', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_Facilities');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('UseFaci_ADMIN/admin_Facilities', [
+        'admin' => $admin
+    ]);
 });
 
 Route::get('/use/booking', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_Booking');
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('UseFaci_ADMIN/admin_Booking', [
+        'admin' => $admin
+    ]);
 });
 
 Route::get('/use/reports', function () {
-    return Inertia::render('UseFaci_ADMIN/AdReports');
-});
-Route::get('/use/accounts', function () {
-    return Inertia::render('UseFaci_ADMIN/AdAccount');
-});
-Route::get('/use/logs', function () {
-    return Inertia::render('UseFaci_ADMIN/admin_Logs');
-});
-Route::get('/use/profile', function () {
     $admin = Auth::guard('admin')->user();
-    return Inertia::render('UseFaci_ADMIN/adminMainProfile', [
+    return Inertia::render('UseFaci_ADMIN/AdReports', [
         'admin' => $admin
     ]);
-})->name('adminsprofile');
+});
+
+Route::get('/use/logs', function () {
+    $admin = Auth::guard('admin')->user();
+    return Inertia::render('UseFaci_ADMIN/admin_Logs', [
+        'admin' => $admin
+    ]);
+});
+
 
 
 // Route::get('dashboard', function () {
@@ -581,16 +630,12 @@ Route::get('/client.landing', fn() => Inertia::render('ClientChoice'))->name('cl
 
 Route::get('/pos', [CheckoutController::class, 'displayPOS'])->name('pos.display');
 
-Route::get('/userclients', function () {
-    return UserClient::all();
-});
-
 //Route::get('/userclients', [ClientLoginController::class, 'profile'])->name('client.profile');
 
 // Routes that require client login
 //Route::middleware('auth:userclient')->group(function () {
 
-Route::get('/om-landing', fn() => Inertia::render('ClientChoice', [
+Route::get('/om-landing', fn() => Inertia::render('zClientChoicePage/ClientChoice', [
     'user' => Auth::guard('userclient')->user(),
 ]))->name('client.landing');
 
@@ -623,12 +668,17 @@ Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear')
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
+
 // Buy History Routes
 Route::get('/buy-history', [BuyHistoryController::class, 'index'])->name('buy.history');
 Route::post('/orders/{orderId}/cancel', [BuyHistoryController::class, 'cancelOrder'])->name('orders.cancel');
 Route::post('/cart/reorder', [BuyHistoryController::class, 'reorder'])->name('cart.reorder');
 Route::get('/orders/{orderId}', [BuyHistoryController::class, 'show'])->name('orders.show');
 Route::get('/api/order-stats', [BuyHistoryController::class, 'getOrderStats'])->name('api.order.stats');
+
+// Booking History Routes
+Route::get('/booking-history', [BookingController::class, 'getClientBookingHistory'])->name('booking.history');
+Route::post('/booking/{id}/cancel', [BookingController::class, 'cancelBooking'])->name('booking.cancel');
 
 // Order History (Optional - for future implementation)
 // Route::get('/orders', [CheckoutController::class, 'orderHistory'])->name('orders.history');
@@ -663,7 +713,9 @@ Route::prefix('facilities')->group(function () {
     Route::get('/{id}', [FacilityController::class, 'show']);
     Route::post('/{id}', [FacilityController::class, 'update']);
     Route::patch('/{id}/toggle-status', [FacilityController::class, 'toggleStatus']);
+    Route::patch('/bulk-status', [FacilityController::class, 'bulkStatusUpdate']);
     Route::delete('/{id}', [FacilityController::class, 'destroy']);
+    Route::delete('/bulk-delete', [FacilityController::class, 'bulkDelete']);
 });
 
 Route::middleware(['web'])->group(function () {
@@ -671,6 +723,9 @@ Route::middleware(['web'])->group(function () {
     Route::post('/bookings', [BookingController::class, 'store']);
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+    Route::put('/bookings/{id}', [BookingController::class, 'update']);
+    Route::patch('/bookings/bulk-status', [BookingController::class, 'bulkUpdateStatus']);
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 
     // Notification routes (public access for admin panel)
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -680,6 +735,17 @@ Route::middleware(['web'])->group(function () {
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+    Route::patch('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead']);
+    Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+});
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/api.php';
+require __DIR__ . '/console.php';
+
+

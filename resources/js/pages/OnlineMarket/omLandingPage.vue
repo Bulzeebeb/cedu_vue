@@ -1,6 +1,11 @@
 <script setup>
+import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+import SiteHeader from './header.vue'
+import SiteFooter from './footer.vue'
 
+const searchQuery = ref('')
+const newsletterEmail = ref('')
 
 function goToVegetable() {
   router.visit('/vegetable')
@@ -10,6 +15,18 @@ function goToFruit() {
 }
 function goToPoultry() {
   router.visit('/poultry')
+}
+function handleSearch() {
+  if (searchQuery.value.trim()) {
+    router.visit(`/search?q=${encodeURIComponent(searchQuery.value)}`)
+  }
+}
+function subscribeNewsletter() {
+  if (newsletterEmail.value.trim()) {
+    // Mock subscription - in real app, send to backend
+    alert('Thank you for subscribing!')
+    newsletterEmail.value = ''
+  }
 }
 </script>
 
@@ -30,6 +47,7 @@ function goToPoultry() {
         <p class="text-xl mb-8 max-w-2xl mx-auto animate-fade-in delay-200 text-gray-100">
           Fresh produce and poultry straight from the campus – supporting local farmers and student-led initiatives.
         </p>
+        
         <button @click="goToVegetable"
           class="bg-yellow-400 text-[#5F1213] font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-yellow-300 transition duration-300">
           Shop Now
@@ -90,73 +108,116 @@ function goToPoultry() {
       </div>
     </section>
 
+    <!-- FEATURES SECTION -->
+    <section class="bg-[#fff3e6] py-24 px-6 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-4xl font-bold text-[#650000] mb-6">Why Choose Us?</h2>
+        <p class="mb-12 text-gray-700 max-w-xl mx-auto text-lg">
+          Discover the benefits of shopping with CEDU Online Market – fresh, local, and convenient.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-orange-100 p-8 rounded-2xl shadow-lg">
+            <div class="text-6xl mb-4">🚚</div>
+            <h3 class="text-2xl font-bold text-[#650000] mb-4">Fast Delivery</h3>
+            <p class="text-gray-700">Get your fresh produce delivered right to your campus residence within hours.</p>
+          </div>
+          <div class="bg-orange-100 p-8 rounded-2xl shadow-lg">
+            <div class="text-6xl mb-4">💰</div>
+            <h3 class="text-2xl font-bold text-[#650000] mb-4">Affordable Prices</h3>
+            <p class="text-gray-700">Student-friendly pricing on all our organic fruits, vegetables, and poultry.</p>
+          </div>
+          <div class="bg-orange-100 p-8 rounded-2xl shadow-lg">
+            <div class="text-6xl mb-4">🌱</div>
+            <h3 class="text-2xl font-bold text-[#650000] mb-4">Support Local Farmers</h3>
+            <p class="text-gray-700">Every purchase helps sustain our campus farming community and initiatives.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS SECTION -->
+    <section class="bg-white py-24 px-6 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-4xl font-bold text-[#650000] mb-6">How It Works</h2>
+        <p class="mb-12 text-gray-700 max-w-xl mx-auto text-lg">
+          Ordering fresh produce has never been easier. Follow these simple steps.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="flex flex-col items-center">
+            <div class="w-16 h-16 bg-yellow-400 text-[#5F1213] rounded-full flex items-center justify-center text-2xl font-bold mb-4">1</div>
+            <h3 class="text-xl font-bold text-[#650000] mb-2">Browse</h3>
+            <p class="text-gray-700 text-center">Explore our categories and find your favorite fresh items.</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-16 h-16 bg-yellow-400 text-[#5F1213] rounded-full flex items-center justify-center text-2xl font-bold mb-4">2</div>
+            <h3 class="text-xl font-bold text-[#650000] mb-2">Order</h3>
+            <p class="text-gray-700 text-center">Add items to your cart and place your order securely.</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-16 h-16 bg-yellow-400 text-[#5F1213] rounded-full flex items-center justify-center text-2xl font-bold mb-4">3</div>
+            <h3 class="text-xl font-bold text-[#650000] mb-2">Pay</h3>
+            <p class="text-gray-700 text-center">Complete payment through our secure checkout system.</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-16 h-16 bg-yellow-400 text-[#5F1213] rounded-full flex items-center justify-center text-2xl font-bold mb-4">4</div>
+            <h3 class="text-xl font-bold text-[#650000] mb-2">Enjoy</h3>
+            <p class="text-gray-700 text-center">Receive fresh delivery and enjoy your healthy meal!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section class="bg-[#fff3e6] py-24 px-6 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-4xl font-bold text-[#650000] mb-6">What Our Customers Say</h2>
+        <p class="mb-12 text-gray-700 max-w-xl mx-auto text-lg">
+          Hear from students who love shopping with CEDU Online Market.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <div class="text-yellow-400 text-4xl mb-4">★★★★★</div>
+            <p class="text-gray-700 mb-4">"The freshest vegetables I've ever had! Delivery is always on time."</p>
+            <p class="font-bold text-[#650000]">- Sarah, Computer Science Student</p>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <div class="text-yellow-400 text-4xl mb-4">★★★★★</div>
+            <p class="text-gray-700 mb-4">"Great variety of fruits and the prices are unbeatable for students."</p>
+            <p class="font-bold text-[#650000]">- Mike, Engineering Student</p>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <div class="text-yellow-400 text-4xl mb-4">★★★★★</div>
+            <p class="text-gray-700 mb-4">"Supporting local farmers while getting quality poultry – perfect!"</p>
+            <p class="font-bold text-[#650000]">- Emma, Business Student</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWSLETTER SECTION -->
+    <section class="bg-[#650000] py-24 px-6 text-center text-white">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-4xl font-bold mb-6">Stay Updated</h2>
+        <p class="mb-8 text-xl max-w-2xl mx-auto">
+          Subscribe to our newsletter for the latest offers, seasonal specials, and campus farming updates.
+        </p>
+        <form @submit.prevent="subscribeNewsletter" class="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
+          <input v-model="newsletterEmail" type="email" placeholder="Enter your email address" class="flex-1 px-4 py-3 rounded-full text-white shadow-lg" required>
+          <button type="submit" class="bg-yellow-400 text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-yellow-300 transition duration-300">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </section>
+
     <SiteFooter />
   </div>
 </template>
 
-<script>
-import SiteHeader from './header.vue';
-import SiteFooter from './footer.vue';
 
-export default {
-  name: 'omLandingPage',
-  components: {
-    SiteHeader,
-    SiteFooter,
-  },
-  data() {
-    return {
-      slides: [
-        {
-          image: '/images/OnlineMarket/Carousel1.png',
-          subtitle: 'WELCOME TO CEDU ONLINE MARKET!',
-          title: 'Fresh & Healthy Organic Goods',
-          description: 'Free shipping on all your order, we deliver, you enjoy',
-        },
-        {
-          image: '/images/OnlineMarket/Carousel2.png',
-          subtitle: 'JOIN THE HEALTHY CHOICE',
-          title: 'Organic Fruits & Veggies Delivered',
-          description: 'Shop seasonal picks and enjoy doorstep delivery.',
-        },
-        {
-          image: '/images/OnlineMarket/Carousel3.png',
-          subtitle: 'SUPPORT LOCAL FARMERS',
-          title: 'Eat Fresh, Eat Local',
-          description: 'Your trusted source for farm-to-table goodness.',
-        },
-      ],
-      currentSlide: 0,
-    };
-  },
-  methods: {
-    nextSlide() {
-      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-    },
-    prevSlide() {
-      this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-    },
-    handleShopNow() {
-      if (this.currentSlide === 0) {
-        this.goToVegetable();
-      } else if (this.currentSlide === 1) {
-        this.goToFruit();
-      } else if (this.currentSlide === 2) {
-        this.goToPoultry();
-      }
-    },
-    goToVegetable() {
-      this.$inertia.visit('/vegetable');
-    },
-    goToFruit() {
-      this.$inertia.visit('/fruit');
-    },
-    goToPoultry() {
-      this.$inertia.visit('/poultry');
-    },
-  },
-};
-</script>
 
 <style scoped>
 .bg-maroon {
@@ -165,5 +226,27 @@ export default {
 
 button {
   cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-zoom-bg {
+  animation: zoomBg 10s ease-in-out infinite alternate;
+}
+
+@keyframes zoomBg {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
 }
 </style>

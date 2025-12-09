@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen flex font-sans bg-gray-100">
+  <div class="min-h-screen flex font-sans bg-gray-50">
     <!-- Sidebar -->
     <AdminSidebar />
 
     <!-- Main Dashboard -->
-    <main class="ml-64 flex-1 p-6 text-[#5F1213]">
+    <main class="ml-64 flex-1 p-4 md:p-6 lg:p-8 text-[#5F1213] transition-all duration-300">
 
       <!-- Page Title -->
       <div class="bg-white rounded-xl p-6 mb-6 shadow border flex items-center space-x-4">
@@ -23,65 +23,90 @@
       </div>
 
       <!-- Category Table -->
-      <div class="bg-white rounded-xl shadow border p-6 overflow-x-auto">
-        <h2 class="text-lg font-semibold mb-4">Available Categories</h2>
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-800">Available Categories</h2>
+          <p class="text-gray-600 text-sm mt-1">View and manage all facility categories</p>
+        </div>
 
         <!-- No data message -->
-        <div v-if="!loading && categories.length === 0" class="text-center py-8 text-gray-500">
-          <i class="fas fa-inbox text-4xl mb-2"></i>
-          <p>No categories found. Click "Add Category" to create one.</p>
+        <div v-if="!loading && categories.length === 0" class="text-center py-16 px-6">
+          <div class="max-w-md mx-auto">
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
+            <p class="text-gray-500 mb-6">Get started by creating your first category.</p>
+            <button
+              @click="openAddModal"
+              class="px-6 py-3 bg-[#5F1213] text-white rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              <i class="fas fa-plus mr-2"></i>Add Category
+            </button>
+          </div>
         </div>
 
         <!-- Table -->
-        <table v-else class="w-full text-sm text-left border-collapse">
-          <thead>
-            <tr class="border-b border-gray-200 font-semibold text-gray-700">
-              <th class="py-2 px-3">ID</th>
-              <th class="py-2 px-3">Name</th>
-              <th class="py-2 px-3">Description</th>
-              <th class="py-2 px-3">Status</th>
-              <th class="py-2 px-3">Date Added</th>
-              <th class="py-2 px-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="cat in categories"
-              :key="cat.id"
-              class="border-b border-gray-100 hover:bg-gray-50"
-              :class="{ 'opacity-60': !cat.is_active }"
-            >
-              <td class="py-2 px-3">{{ cat.id }}</td>
-              <td class="py-2 px-3">{{ cat.name }}</td>
-              <td class="py-2 px-3">{{ cat.description }}</td>
-              <td class="py-2 px-3">
-                <span
-                  :class="cat.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-                  class="inline-block text-xs px-2 py-1 rounded"
-                >
-                  {{ cat.is_active ? 'Active' : 'Disabled' }}
-                </span>
-              </td>
-              <td class="py-2 px-3">{{ formatDate(cat.created_at) }}</td>
-              <td class="py-2 px-3 space-x-2">
-                <button
-                  class="px-3 py-1 bg-[#FFA600] text-white rounded hover:bg-[#e69500] transition"
-                  @click="editCategory(cat)"
-                >
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button
-                  :class="cat.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
-                  class="px-3 py-1 text-white rounded transition"
-                  @click="toggleCategoryStatus(cat)"
-                  :title="cat.is_active ? 'Disable category' : 'Enable category'"
-                >
-                  <i :class="cat.is_active ? 'fas fa-ban' : 'fas fa-check'"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="py-4 px-6 font-semibold text-gray-700 uppercase tracking-wider">ID</th>
+                <th class="py-4 px-6 font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                <th class="py-4 px-6 font-semibold text-gray-700 uppercase tracking-wider">Description</th>
+                <th class="py-4 px-6 font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                <th class="py-4 px-6 font-semibold text-gray-700 uppercase tracking-wider">Date Added</th>
+                <th class="py-4 px-6 font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr
+                v-for="(cat, index) in categories"
+                :key="cat.id"
+                :class="[
+                  'hover:bg-gray-50 transition-colors duration-150',
+                  { 'bg-gray-50': index % 2 === 0 },
+                  { 'opacity-60': !cat.is_active }
+                ]"
+              >
+                <td class="py-4 px-6 text-gray-900 font-medium">{{ cat.id }}</td>
+                <td class="py-4 px-6 text-gray-900 font-medium">{{ cat.name }}</td>
+                <td class="py-4 px-6 text-gray-600 max-w-xs truncate" :title="cat.description">{{ cat.description }}</td>
+                <td class="py-4 px-6">
+                  <span
+                    :class="cat.is_active
+                      ? 'bg-green-100 text-green-800 border-green-200'
+                      : 'bg-red-100 text-red-800 border-red-200'"
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                  >
+                    <i :class="cat.is_active ? 'fas fa-check-circle mr-1' : 'fas fa-times-circle mr-1'"></i>
+                    {{ cat.is_active ? 'Active' : 'Disabled' }}
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-gray-600">{{ formatDate(cat.created_at) }}</td>
+                <td class="py-4 px-6">
+                  <div class="flex items-center space-x-2">
+                    <button
+                      class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-200"
+                      @click="editCategory(cat)"
+                      title="Edit category"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      :class="cat.is_active
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700'
+                        : 'bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700'"
+                      class="p-2 rounded-lg transition-all duration-200"
+                      @click="toggleCategoryStatus(cat)"
+                      :title="cat.is_active ? 'Disable category' : 'Enable category'"
+                    >
+                      <i :class="cat.is_active ? 'fas fa-ban' : 'fas fa-check'"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Add/Edit Category Modal -->
@@ -147,9 +172,13 @@
       </div>
 
       <!-- Loading Overlay -->
-      <div v-if="loading" class="fixed inset-0 bg-black/20 flex items-center justify-center z-40">
-        <div class="bg-white rounded-lg p-4 shadow-lg">
-          <i class="fas fa-spinner fa-spin text-2xl text-[#5F1213]"></i>
+      <div v-if="loading" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-40">
+        <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center space-y-4">
+          <div class="relative">
+            <i class="fas fa-spinner fa-spin text-3xl text-[#5F1213]"></i>
+            <div class="absolute inset-0 rounded-full border-4 border-[#FFA600]/20"></div>
+          </div>
+          <p class="text-gray-600 font-medium">Loading categories...</p>
         </div>
       </div>
     </main>
@@ -176,8 +205,6 @@ const loading = ref(false)
 
 const categories = ref([])
 const newCategory = ref({ name: '', description: '' })
-
-const mainCategories = ['Rental', 'Hostel', 'Commercial']
 
 // Fetch all categories
 async function fetchCategories() {
@@ -378,10 +405,7 @@ async function toggleCategoryStatus(cat) {
   }
 }
 
-// Check if category is main category
-function isMainCategory(name) {
-  return mainCategories.includes(name)
-}
+
 
 // Format date
 function formatDate(dateString) {
@@ -416,8 +440,74 @@ onMounted(() => {
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 @import url('https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css');
 
+/* Custom scrollbar for table */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Button hover effects */
 button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+/* Table row animations */
+tbody tr {
+  transition: all 0.2s ease-in-out;
+}
+
+tbody tr:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal animations */
+.modal-enter-active, .modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from, .modal-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  th, td {
+    padding: 0.75rem 0.5rem;
+  }
 }
 </style>

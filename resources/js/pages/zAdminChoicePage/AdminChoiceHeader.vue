@@ -1,12 +1,12 @@
 <template>
   <div>
     <!-- HEADER -->
-    <header class="bg-gradient-to-r from-[#650000] to-[#8b1e1e] text-white shadow-lg sticky top-0 z-50">
-      <div class="max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between">
+    <header class="bg-gradient-to-r from-[#650000] to-[#8b1e1e] text-white shadow-lg fixed top-0 z-50 left-0 right-0">
+      <div class="px-6 py-4 flex items-center justify-between">
         <!-- Logo + Title -->
         <div class="flex items-center space-x-3">
           <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
-          <h1 class="text-2xl font-bold tracking-tight">CEDU <span class="text-yellow-400">iCentral</span></h1>
+          <h1 class="text-2xl font-bold tracking-tight">CEDU <span class="text-yellow-400">iCentral </span>Admin</h1>
         </div>
 
 
@@ -30,68 +30,52 @@
             </svg>
           </button>
           <div v-if="showDropdown"
-            class="absolute right-0 mt-2 w-56 bg-white text-[#650000] font-medium border rounded-lg shadow-lg z-50 animate-fade-in p-4 space-y-3">
+            class="absolute right-0 mt-2 w-56 bg-white text-[#650000] font-medium border rounded-lg shadow-lg z-60 animate-fade-in p-4 space-y-3">
             <!-- Greeting -->
-            <div class="bg-yellow-400 px-3 py-2 rounded text-[#650000] font-medium text-sm">
-                Hello, <span class="font-bold">{{ ($page.props.user?.firstName || 'User') + '!' }}</span>
+            <div class="bg-yellow-400 px-3 py-2 rounded text-[#650000] font-large text-sm">
+              Hello, <span class="font-bold">{{ 'Admin ' + ($page.props.admin?.first_name || 'Admin') + '!' }}</span>
             </div>
-
-            <button @click="goToHome"
+            <!-- Profile Button -->
+            <button @click="goToMyProfile"
               class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M15 12h.01M12 15h.01M9 12h.01M12 9h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
               </svg>
-              <span class="text-sm">Logout</span>
+              <span class="text-sm">My Profile</span>
             </button>
-
-
+            <!-- User Accounts Button -->
+            <button @click="goToUserAccounts"
+              class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15 12h.01M12 15h.01M9 12h.01M12 9h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+              </svg>
+              <span class="text-sm">User Accounts</span>
+            </button>
+            <!-- Main Menu Button -->
+            <button @click="goToMainMenu"
+              class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
+              <Menu class="w-5 h-5" /> Main Menu
+            </button>
+            <!-- Logout Button -->
+            <button @click="logOut"
+              class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
+              <LogOut class="w-5 h-5" /> Log Out
+            </button>
           </div>
-
         </div>
       </div>
     </header>
-
-    <!-- SECTION 1: CEDU HIGHLIGHTS -->
-    <section class="relative bg-cover bg-center text-white py-24 px-8 text-center"
-      style="background-image: url('/images/eagle.jpg')">
-      <div class="absolute inset-0 bg-[#650000]/80 backdrop-blur-sm"></div>
-      <div class="relative z-10 max-w-6xl mx-auto">
-        <h2 class="text-4xl font-bold mb-4 animate-fade-in">Welcome to <span class="text-yellow-400">CEDU
-            iCentral</span></h2>
-        <p class="text-lg mb-12 max-w-2xl mx-auto animate-fade-in delay-200">Easy shopping and fast booking!</p>
-        <div class="grid sm:grid-cols-3 gap-8 text-left">
-          <div @click="goToOnlineMarket"
-            class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
-            <img src="/images/market-icon.png" class="h-50 mb-4 mx-auto" />
-            <h3 class="text-xl font-bold mb-1 text-center">Online Market</h3>
-          </div>
-          <div @click="goToPayToPark"
-            class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
-            <img src="/images/park-icon.png" class="h-50 mb-4 mx-auto" />
-            <h3 class="text-xl font-bold mb-1 text-center">Pay to Park</h3>
-          </div>
-          <div @click="goToRental"
-            class="bg-white text-[#650000] rounded-lg p-6 shadow-lg hover:scale-105 hover:shadow-2xl transition duration-300 ease-in-out">
-            <img src="/images/rent-icon.png" class="h-50 mb-4 mx-auto" />
-            <h3 class="text-xl font-bold mb-1 text-center">Use of Facilities</h3>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- FOOTER -->
-    <Footer />
   </div>
 </template>
 
 
 <script>
-import Footer from './footer.vue'
 import { router } from '@inertiajs/vue3'
 
 export default {
   components: {
-    Footer
   },
   data() {
     return {
@@ -137,18 +121,19 @@ export default {
 
 <script setup>
 import { router } from '@inertiajs/vue3'
+import { Menu, LogOut } from 'lucide-vue-next'
 
-function goToHome() {
+function logOut() {
   router.visit('/landingpage')
 }
-function goToOnlineMarket() {
-  router.visit('/onlinemarketlandingpageclient')
+function goToMyProfile() {
+  router.visit('/adminprofile')
 }
-function goToPayToPark() {
-  router.visit('/paytoparklandingpage')
+function goToUserAccounts() {
+  router.visit('/accounts')
 }
-function goToRental() {
-  router.visit('/rentallandingpage')
+function goToMainMenu() {
+  router.visit('/adminchoice')
 }
 
 </script>

@@ -12,12 +12,9 @@ class ActivityLog extends Model
     protected $table = 'activity_logs'; // Table name in DB
 
     protected $fillable = [
-        'user_id',       // The ID of the user who performed the action
-        'user_type',     // admin, client, etc.
-        'target_type',   // what entity was affected (order, product, etc.)
-        'target_id',     // optional: ID of the affected entity
-        'description',   // short summary of what happened
-        'details',       // more details about the action
+        'name',          // The name of the user who performed the action
+        'role',          // The role of the user (Admin, Staff, etc.)
+        'action',        // The action performed
     ];
 
     protected $casts = [

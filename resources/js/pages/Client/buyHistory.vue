@@ -1,20 +1,19 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-100">
+  <div class="flex flex-col min-h-screen py-32 bg-gray-100">
     <SiteHeader />
 
-    <main class="flex-grow py-8">
-      <div class="max-w-6xl mx-auto px-4">
-        <!-- Page Header -->
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-3xl font-bold text-maroon">Purchase History</h1>
-          <button
+    <main class="flex-1 p-6 pt-4 text-[#5F1213] flex flex-col items-center justify-center">
+      <div class="bg-gray-100 w-full max-w-7xl rounded-xl p-6 mb-6 shadow border text-left">
+        <h1 class="text-3xl font-semibold mb-1">Purchase History</h1>
+        <p class="text-gray-500">You may download your POS.</p>
+        <button
             @click="goBack"
             class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
             ← Back to Profile
           </button>
-        </div>
-
+      </div>
+      <div class="max-w-6xl mx-auto px-4">
         <!-- No Orders Message -->
         <div v-if="orders.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
           <div class="text-gray-400 mb-4">
@@ -135,8 +134,7 @@
           <button
             @click="loadMoreOrders"
             :disabled="isLoadingMore"
-            class="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50"
-          >
+            class="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50">
             <span v-if="isLoadingMore">Loading...</span>
             <span v-else>Load More Orders</span>
           </button>
@@ -151,8 +149,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
-import SiteHeader from './header.vue'
-import SiteFooter from './footer.vue'
+import SiteHeader from '../zClientChoicePage/cHeader.vue'
+import SiteFooter from '../footer.vue'
 
 // Props from backend
 const props = defineProps({

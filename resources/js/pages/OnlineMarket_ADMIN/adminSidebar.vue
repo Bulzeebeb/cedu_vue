@@ -27,17 +27,11 @@ function goToOrders() {
 function goToLogs() {
   router.visit('/logsOnlineMarketAdmin')
 }
-function goToManageAccount() {
-  router.visit('/admins/manageacc')
-}
-function goToProfile() {
-  router.visit('/admins/profile')
-}
 function goToReports() {
   router.visit('/admin/reports')
 }
-function goToHome() {
-  router.visit('/landingpage')
+function goToMainMenu() {
+  router.visit('/adminchoice')
 }
 
 // Helper to get the correct profile picture URL
@@ -60,8 +54,7 @@ onMounted(() => {
     <!-- Top Logo and Navigation -->
     <div>
       <div class="mb-10">
-        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-500">iCentral</span></h1>
-        <h1 class="text-sm text-yellow-500">Online Market Admin</h1>
+        <h1 class="text-lg font-bold">Online Market <span class="text-yellow-500">Admin</span></h1>
       </div>
       <nav class="space-y-4">
         <a href="#" @click="goToDashboard"
@@ -84,14 +77,6 @@ onMounted(() => {
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-chart-bar"></i> Reports
         </a>
-        <a href="#" @click="goToManageAccount"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-user-circle"></i> Accounts
-        </a>
-        <a href="#" @click="goToLogs"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-file-alt"></i> Logs
-        </a>
         <a href="#" @click="goToEditStore"
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-store"></i> Online Market
@@ -104,42 +89,11 @@ onMounted(() => {
       <!-- Profile Row -->
       <div class="flex items-center justify-between px-2 mt-4">
         <!-- Profile Left -->
-        <div class="flex items-center gap-3 cursor-pointer" @click="goToProfile">
+        <div class="flex items-center gap-3 cursor-pointer">
           <img :src="getProfilePictureUrl(admin?.profile_picture)"
             class="w-12 h-12 rounded-full border-2 border-white object-cover" />
           <p class="text-sm">{{ $page.props.admin ? ($page.props.admin.first_name + ' ' + $page.props.admin.last_name) :
             'Admin'}}</p>
-        </div>
-
-        <!-- Bell Right -->
-        <div class="relative">
-          <button @click.stop="toggleNotif" class="focus:outline-none">
-            <i class="fas fa-bell text-base"></i>
-            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
-            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Notification Dropdown -->
-      <div v-if="showNotif"
-        class="absolute bottom-16 left-0 w-72 bg-white rounded-xl shadow-2xl z-50 overflow-hidden border border-gray-200">
-        <div class="bg-gradient-to-r from-[#FFA600] to-[#ffcc66] text-[#5F1213] font-semibold px-4 py-3 text-sm">
-          Notifications Center
-        </div>
-        <ul class="max-h-60 overflow-y-auto divide-y divide-gray-100">
-          <li class="flex items-start gap-3 px-4 py-4 hover:bg-gray-50 cursor-pointer transition">
-            <div class="bg-[#FFA600] rounded-full p-2">
-              <i class="fas fa-shopping-cart text-white text-sm"></i>
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-[#5F1213]">New order placed by Maria Santos</p>
-              <p class="text-xs text-gray-500">Just now</p>
-            </div>
-          </li>
-        </ul>
-        <div class="text-center text-xs text-gray-600 bg-gray-50 py-2 hover:bg-gray-100 transition cursor-pointer">
-          View all notifications
         </div>
       </div>
 
@@ -147,9 +101,12 @@ onMounted(() => {
       <div class="border-t border-[#FFA600]/40 my-3"></div>
 
       <!-- Logout -->
-      <button @click="goToHome" type="button"
-        class="flex items-center gap-3 text-sm text-red-400 hover:text-white transition px-2 w-full">
-        <i class="fas fa-power-off text-lg"></i> Log Out
+      <button @click.prevent="goToMainMenu" type="button"
+        class="flex items-center gap-3 text-sm text-white-400 hover:text-white transition px-2 w-full">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.841 15.681l7.07-7.07m0 0l-7.07-7.07m7.07 7.07H3m10 10v-2a6 6 0 00-6-6H5a6 6 0 00-6 6v2" />
+          </svg>
+         Main Menu
       </button>
     </div>
   </aside>

@@ -1,438 +1,448 @@
 <template>
-  <div class="min-h-screen flex font-sans bg-gray-100">
+  <div class="min-h-screen flex font-sans bg-gray-50">
     <!-- Sidebar -->
     <AdminSidebar />
 
-    <!-- Main Dashboard -->
-    <main class="ml-64 flex-1 p-6 pt-4 text-[#5F1213]">
-      <!-- Page Title -->
-      <div class="bg-white rounded-xl p-6 mb-6 shadow border">
-        <div class="flex items-center space-x-4">
-          <i class="i-icon-park-outline-dashboard text-3xl text-black"></i>
-          <h1 class="text-2xl font-semibold">Reports</h1>
-        </div>
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 p-8 text-[#5F1213]">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-[#5F1213]">Sales Reports</h1>
+        <p class="text-gray-600 mt-1">Track and analyze your online market sales performance</p>
       </div>
 
-      <!-- Stat Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Total Sales</h2>
-          <p class="text-3xl font-bold mt-2">₱{{ totalSales?.toLocaleString() ?? 0 }}</p>
-          <p v-if="stats.totalSalesGrowth !== null"
-            :class="stats.totalSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm mt-1">
-            {{ stats.totalSalesGrowth >= 0 ? '+' : '' }}{{ stats.totalSalesGrowth }}% since last week
-          </p>
-        </div>
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Crop Sales</h2>
-          <p class="text-3xl font-bold mt-2">₱{{ stats.cropSales?.toLocaleString() ?? 0 }}</p>
-          <p v-if="stats.cropSalesGrowth !== null"
-            :class="stats.cropSalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm mt-1">
-            {{ stats.cropSalesGrowth >= 0 ? '+' : '' }}{{ stats.cropSalesGrowth }}% from last week
-          </p>
-        </div>
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Poultry Sales</h2>
-          <p class="text-3xl font-bold mt-2">₱{{ stats.poultrySales?.toLocaleString() ?? 0 }}</p>
-          <p v-if="stats.poultrySalesGrowth !== null"
-            :class="stats.poultrySalesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="text-sm mt-1">
-            {{ stats.poultrySalesGrowth >= 0 ? '+' : '' }}{{ stats.poultrySalesGrowth }}% from last week
-          </p>
-        </div>
-        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-          <h2 class="text-sm font-medium uppercase">Total Orders</h2>
-          <p class="text-3xl font-bold mt-2">{{ stats.totalOrders?.toLocaleString() ?? 0 }}</p>
-          <p class="text-sm text-blue-600 mt-1">{{ stats.pendingOrders }} pending • {{ stats.completedOrders }}
-            completed</p>
-        </div>
-      </div>
-
-      <!-- Charts -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <!-- Line Chart -->
-        <div class="bg-white rounded-xl p-6 shadow-lg h-[400px]">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Sales Report</h3>
-            <div class="flex items-center space-x-2">
-              <select v-model="lineChartFilter"
-                class="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-0">
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-              <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
-              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button>
-            </div>
-          </div>
-          <canvas id="lineChart" class="w-full h-full"></canvas>
-        </div>
-
-        <!-- Donut Chart -->
-        <div class="bg-white rounded-xl p-6 shadow-lg h-[400px]">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Category Breakdown</h3>
-            <div class="flex items-center space-x-2">
-              <select v-model="pieChartFilter" class="border rounded px-3 py-1 text-sm focus:outline-none focus:ring-0">
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-              <button class="bg-[#FFA600] text-white px-3 py-1 text-sm rounded hover:bg-[#e29400]">Print</button>
-              <button class="bg-[#5F1213] text-white px-3 py-1 text-sm rounded hover:bg-[#441011]">Export</button>
-            </div>
-          </div>
-          <canvas id="donutChart" class="w-full h-full"></canvas>
-        </div>
-      </div>
-
-      <!-- Inventory Table -->
-      <div class="bg-white rounded-xl p-6 shadow-lg mt-6">
-        <h3 class="text-lg font-semibold mb-4">All Inventory Items</h3>
-
-        <!-- Filters -->
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-          <div class="flex gap-4">
-            <select v-model="selectedBranch"
-              class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-[#FFA600] focus:border-[#FFA600]">
-              <option value="">All Branches</option>
-              <option value="Tagum">Tagum</option>
-              <option value="Mabini">Mabini</option>
-            </select>
-
-            <select v-model="selectedCategory"
-              class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-[#FFA600] focus:border-[#FFA600]">
-              <option value="">All Categories</option>
-              <option value="Fruit">Fruit</option>
-              <option value="Vegetable">Vegetable</option>
-              <option value="Poultry">Poultry</option>
+      <!-- Filters Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
+        <h2 class="text-lg font-semibold text-[#5F1213] mb-4">Filters</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Category Filter -->
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-gray-700 mb-2">Category</label>
+            <select
+              v-model="selectedReport"
+              @change="fetchReportsData"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFA600] transition"
+            >
+              <option value="all">All Categories</option>
+              <option v-for="cat in allCategories" :key="cat.id" :value="cat.id">
+                {{ cat.name }}
+              </option>
             </select>
           </div>
 
-          <input type="text" v-model="searchQuery" placeholder="Search product..."
-            class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-full max-w-xs focus:ring-[#FFA600] focus:border-[#FFA600]" />
+          <!-- Period Filter -->
+          <div class="flex flex-col" v-if="selectedReport">
+            <label class="font-semibold text-sm text-gray-700 mb-2">Period</label>
+            <select
+              v-model="selectedPeriod"
+              @change="fetchReportsData"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFA600] transition"
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+
+          <!-- Date Range: From -->
+          <div class="flex flex-col" v-if="selectedReport">
+            <label class="font-semibold text-sm text-gray-700 mb-2">From Date</label>
+            <input
+              type="date"
+              v-model="startDate"
+              @change="fetchReportsData"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFA600] transition"
+            />
+          </div>
+
+          <!-- Date Range: To -->
+          <div class="flex flex-col" v-if="selectedReport">
+            <label class="font-semibold text-sm text-gray-700 mb-2">To Date</label>
+            <input
+              type="date"
+              v-model="endDate"
+              @change="fetchReportsData"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFA600] transition"
+            />
+          </div>
+
+          <!-- Sort By -->
+          <div class="flex flex-col" v-if="selectedReport">
+            <label class="font-semibold text-sm text-gray-700 mb-2">Sort By</label>
+            <select
+              v-model="sortKey"
+              @change="applySort"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFA600] transition"
+            >
+              <option value="">Default (Date)</option>
+              <option value="price_high">Price: High to Low</option>
+              <option value="price_low">Price: Low to High</option>
+              <option value="quantity_high">Quantity: High to Low</option>
+              <option value="total_high">Total: High to Low</option>
+            </select>
+          </div>
+
+          <!-- Search -->
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-gray-700 mb-2">Search</label>
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search product or client..."
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FFA600] transition"
+            />
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-end gap-2 col-span-1 md:col-span-2 lg:col-span-1">
+            <button
+              @click="clearFilters"
+              class="flex-1 bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-500 transition"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Statistics -->
+      <div v-if="selectedReport && reportData.length > 0" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <!-- Total Sales -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-[#FFA600]">
+          <p class="text-gray-600 text-sm font-medium">Total Sales</p>
+          <p class="text-2xl font-bold text-[#5F1213] mt-2">₱{{ formatCurrency(totalSales) }}</p>
+          <p class="text-xs text-gray-500 mt-1">{{ reportData.length }} transactions</p>
+        </div>
+
+        <!-- Total Quantity -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <p class="text-gray-600 text-sm font-medium">Total Quantity</p>
+          <p class="text-2xl font-bold text-[#5F1213] mt-2">{{ totalQuantity }}</p>
+          <p class="text-xs text-gray-500 mt-1">Units sold</p>
+        </div>
+
+        <!-- Average Sale -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+          <p class="text-gray-600 text-sm font-medium">Average Sale</p>
+          <p class="text-2xl font-bold text-[#5F1213] mt-2">₱{{ formatCurrency(averageSale) }}</p>
+          <p class="text-xs text-gray-500 mt-1">Per transaction</p>
+        </div>
+
+        <!-- Highest Sale -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+          <p class="text-gray-600 text-sm font-medium">Highest Sale</p>
+          <p class="text-2xl font-bold text-[#5F1213] mt-2">₱{{ formatCurrency(highestSale) }}</p>
+          <p class="text-xs text-gray-500 mt-1">Single transaction</p>
+        </div>
+      </div>
+
+      <!-- Report Table Section -->
+      <div
+        v-if="selectedReport && filteredData.length > 0"
+        class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
+      >
+        <!-- Header with Title and Download -->
+        <div class="bg-gradient-to-r from-[#5F1213] to-[#8B1A1C] text-white p-6 flex justify-between items-center">
+          <div>
+            <h3 class="text-xl font-bold">{{ reportTitle }}</h3>
+            <p class="text-sm text-gray-200 mt-1">{{ filteredData.length }} records</p>
+          </div>
+
+          <!-- Download Dropdown -->
+          <div class="relative">
+            <button
+              @click="toggleDropdown"
+              class="bg-[#FFA600] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#e29400] transition flex items-center gap-2 shadow-md"
+            >
+              <span>📥 Download</span>
+              <span :class="['transition', { 'rotate-180': showDropdown }]">▼</span>
+            </button>
+            <div
+              v-show="showDropdown"
+              class="absolute right-0 mt-3 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden"
+            >
+              <button
+                v-for="format in formats"
+                :key="format"
+                @click="exportReport(format)"
+                class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm font-medium text-gray-700 transition border-b last:border-b-0"
+              >
+                📄 {{ formatLabel(format) }}
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Table -->
-        <div class="bg-white rounded-xl shadow border overflow-x-auto">
-          <table class="min-w-full text-sm text-left text-gray-700">
-            <thead class="bg-[#FFA600] text-white text-center">
+        <div class="overflow-x-auto">
+          <table id="report-table" class="w-full border-collapse">
+            <thead class="bg-gray-100 border-b border-gray-200">
               <tr>
-                <th class="px-6 py-3">Image</th>
-                <th class="px-6 py-3">Product</th>
-                <th class="px-6 py-3">Category</th>
-                <th class="px-6 py-3">Branch</th>
-                <th class="px-6 py-3">Price</th>
-                <th class="px-6 py-3">Stock</th>
-                <th class="px-6 py-3">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">#</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Time</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Client</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Category</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700">Quantity</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700">Unit Price</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700">Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="product in paginatedProducts" :key="product.id"
-                class="border-b border-gray-100 hover:bg-gray-50 text-center">
-                <td class="py-2 px-2 text-center">
-                  <div class="flex justify-center items-center">
-                    <img :src="getProductImage(product.image)" class="w-10 h-10 object-cover rounded" />
-                  </div>
-                </td>
-
-                <td class="py-2 px-2">{{ product.name }}</td>
-                <td class="py-2 px-2">{{ product.category }}</td>
-                <td class="py-2 px-2">{{ product.branch }}</td>
-                <td class="py-2 px-2">₱{{ product.price }} <span class="text-xs text-gray-500">{{ product.unit }}</span>
-                </td>
-                <td class="py-2 px-2">{{ product.stock }} <span class="text-xs text-gray-500">{{ product.unit }}</span>
-                </td>
-                <td class="py-2 px-2">
-                  <span :class="getStatusClass(product.status)" class="px-2 py-1 rounded-full text-xs font-medium">
-                    {{ formatStatus(product.status) }}
+              <tr
+                v-for="(item, index) in filteredData"
+                :key="index"
+                class="border-b border-gray-200 hover:bg-gray-50 transition"
+              >
+                <td class="px-6 py-4 text-sm text-gray-700 font-medium">{{ index + 1 }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ formatDate(item.date) }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ item.time }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700 font-medium">{{ item.client }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ item.product }}</td>
+                <td class="px-6 py-4 text-sm">
+                  <span class="inline-block bg-[#FFA600] bg-opacity-20 text-[#5F1213] px-3 py-1 rounded-full text-xs font-medium">
+                    {{ item.category }}
                   </span>
                 </td>
-
+                <td class="px-6 py-4 text-sm text-gray-700 text-center font-medium">{{ item.quantity }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700 text-right">₱{{ formatCurrency(item.price) }}</td>
+                <td class="px-6 py-4 text-sm text-right font-semibold text-[#5F1213]">₱{{ formatCurrency(item.total) }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Pagination -->
-        <div class="flex justify-end mt-4 space-x-2 text-sm">
-          <button @click="currentPage--" :disabled="currentPage === 1"
-            class="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50">Prev</button>
-          <span class="px-3 py-1">{{ currentPage }} / {{ totalPages }}</span>
-          <button @click="currentPage++" :disabled="currentPage === totalPages"
-            class="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50">Next</button>
+        <!-- Table Footer -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-8">
+          <div>
+            <p class="text-sm text-gray-600">Total Quantity:</p>
+            <p class="text-lg font-bold text-[#5F1213]">{{ totalQuantity }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Total Amount:</p>
+            <p class="text-lg font-bold text-[#5F1213]">₱{{ formatCurrency(totalSales) }}</p>
+          </div>
         </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-else
+        class="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200"
+      >
+        <div class="text-5xl mb-4">📊</div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">No Data Available</h3>
+        <p class="text-gray-600">
+          Select a category and set a date range to view detailed sales reports.
+        </p>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
-import Chart from 'chart.js/auto'
-import AdminSidebar from './adminSidebar.vue'
-import { usePage, router } from '@inertiajs/vue3'
+import { ref, computed, onMounted } from "vue"
+import AdminSidebar from "./adminSidebar.vue"
+import axios from "axios"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
-const page = usePage()
-const props = defineProps({
-  products: Array
+const selectedReport = ref("all")
+const selectedPeriod = ref("monthly")
+const searchQuery = ref("")
+const sortKey = ref("")
+const showDropdown = ref(false)
+const formats = ["pdf", "excel", "csv"]
+
+const startDate = ref("")
+const endDate = ref("")
+const reportData = ref([])
+const allCategories = ref([
+  { id: 'fruit', name: 'Fruit' },
+  { id: 'vegetables', name: 'Vegetables' },
+  { id: 'poultry', name: 'Poultry' }
+])
+
+// Fetch reports data from backend
+const fetchReportsData = async () => {
+  try {
+    const params = {}
+    if (selectedReport.value) params.cat = selectedReport.value
+    if (selectedPeriod.value) params.period = selectedPeriod.value
+    if (startDate.value) params.start_date = startDate.value
+    if (endDate.value) params.end_date = endDate.value
+
+    const response = await axios.get('/onlinemarket/reportsdata', { params })
+    if (response.data.success) {
+      reportData.value = response.data.data || []
+      if (response.data.categories) {
+        allCategories.value = response.data.categories
+      }
+    } else {
+      reportData.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching reports data:', error)
+    reportData.value = []
+  }
+}
+
+const reportTitle = computed(() => {
+  if (!selectedReport.value) return "All Categories Report"
+  if (selectedReport.value === "all") return `All Categories Report - ${selectedPeriod.value.charAt(0).toUpperCase() + selectedPeriod.value.slice(1)}`
+  const selectedCat = allCategories.value.find(cat => cat.id === selectedReport.value)
+  const catName = selectedCat ? selectedCat.name : selectedReport.value
+  const period = selectedPeriod.value.charAt(0).toUpperCase() + selectedPeriod.value.slice(1)
+  return `${catName} Report - ${period}`
 })
 
-const selectedIds = ref([])
+const filteredData = computed(() => {
+  let data = [...reportData.value]
 
-const selectedProduct = ref(null)
-const currentPage = ref(1)
-const perPage = 5
-
-const allSelected = computed(() => selectedIds.value.length === props.products.length)
-const toggleSelectAll = () => {
-  selectedIds.value = allSelected.value ? [] : props.products.map(p => p.id)
-}
-
-const totalPages = computed(() => Math.ceil(props.products.length / perPage))
-
-const sortKey = ref('')
-const sortAsc = ref(true)
-
-const sortBy = (key) => {
-  if (sortKey.value === key) {
-    sortAsc.value = !sortAsc.value
-  } else {
-    sortKey.value = key
-    sortAsc.value = true
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    data = data.filter(
+      (item) =>
+        (item.product?.toLowerCase().includes(query)) ||
+        (item.client?.toLowerCase().includes(query))
+    )
   }
-}
 
-const getSortIcon = (key) => {
-  if (sortKey.value !== key) return '⇅'
-  return sortAsc.value ? '↑' : '↓'
-}
+  if (startDate.value && endDate.value) {
+    data = data.filter(
+      (item) => item.date >= startDate.value && item.date <= endDate.value
+    )
+  }
 
-const sortedProducts = computed(() => {
-  const list = [...props.products]
-  if (!sortKey.value) return list
-  return list.sort((a, b) => {
-    const aVal = a[sortKey.value]
-    const bVal = b[sortKey.value]
-    return typeof aVal === 'number'
-      ? (sortAsc.value ? aVal - bVal : bVal - aVal)
-      : (sortAsc.value ? String(aVal).localeCompare(bVal) : String(bVal).localeCompare(aVal))
-  })
+  applySort(data)
+  return data
 })
 
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return sortedProducts.value.slice(start, start + perPage)
+const totalSales = computed(() => {
+  return filteredData.value.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0)
 })
 
+const totalQuantity = computed(() => {
+  return filteredData.value.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0)
+})
 
-const stats = computed(() => ({
-  totalSales: page.props.stats?.total_sales ?? 0,
-  cropSales: page.props.stats?.crop_sales ?? 0,
-  poultrySales: page.props.stats?.poultry_sales ?? 0,
-  completedOrders: page.props.stats?.completed_orders ?? 0,
-  pendingOrders: page.props.stats?.pending_orders ?? 0,
-  totalOrders: page.props.stats?.total_orders ?? 0,
-  // Comparison data from backend
-  totalSalesGrowth: page.props.stats?.total_sales_growth ?? null,
-  cropSalesGrowth: page.props.stats?.crop_sales_growth ?? null,
-  poultrySalesGrowth: page.props.stats?.poultry_sales_growth ?? null,
-  ordersGrowth: page.props.stats?.orders_growth ?? null
-}))
+const averageSale = computed(() => {
+  if (filteredData.value.length === 0) return 0
+  return totalSales.value / filteredData.value.length
+})
 
-const totalSales = computed(() => stats.value.totalSales)
-const chartData = page.props.chartData ?? {
-  lineChart: {
-    monthly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] },
-    quarterly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] },
-    yearly: { labels: [], totalSales: [], cropSales: [], poultrySales: [] }
-  },
-  pieChart: {
-    monthly: [0, 0, 0],
-    quarterly: [0, 0, 0],
-    yearly: [0, 0, 0]
+const highestSale = computed(() => {
+  if (filteredData.value.length === 0) return 0
+  return Math.max(...filteredData.value.map(item => parseFloat(item.total) || 0))
+})
+
+function applySort(data = null) {
+  const arrayToSort = data || filteredData.value
+  
+  if (sortKey.value === "price_high") {
+    arrayToSort.sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+  } else if (sortKey.value === "price_low") {
+    arrayToSort.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+  } else if (sortKey.value === "quantity_high") {
+    arrayToSort.sort((a, b) => parseInt(b.quantity) - parseInt(a.quantity))
+  } else if (sortKey.value === "total_high") {
+    arrayToSort.sort((a, b) => parseFloat(b.total) - parseFloat(a.total))
   }
+  
+  return arrayToSort
 }
 
-const lineChartFilter = ref('monthly')
-const pieChartFilter = ref('monthly')
-
-let lineChartInstance = null
-let donutChartInstance = null
-
-
-function getProductImage(image) {
-  if (!image) return '/images/no-image.png'
-  // If image is a full URL or Laravel Storage::url output
-  if (image.startsWith('http') || image.startsWith('/storage/')) return image
-  // If image is a relative path like './storage/products/...'
-  if (image.startsWith('./storage/')) return image.replace('./', '/')
-  // Otherwise, fallback to default
-  return '/images/no-image.png'
+function formatCurrency(value) {
+  const num = parseFloat(value) || 0
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 }
 
-function formatStatus(status) {
-  return status.charAt(0).toUpperCase() + status.slice(1)
+function formatDate(dateString) {
+  if (!dateString) return ""
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-function getStatusClass(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'paid':
-      return 'bg-green-100 text-green-800'
-    case 'cancelled':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
+function formatLabel(format) {
+  return format.charAt(0).toUpperCase() + format.slice(1).toUpperCase()
 }
 
-function renderLineChart() {
-  const ctx = document.getElementById('lineChart')
-  if (lineChartInstance) lineChartInstance.destroy()
+function toggleDropdown() {
+  showDropdown.value = !showDropdown.value
+}
 
-  const currentData = chartData.lineChart[lineChartFilter.value]
-  const labels = currentData.labels
-  const totalSalesData = currentData.totalSales
-  const cropSalesData = currentData.cropSales
-  const poultrySalesData = currentData.poultrySales
-
-  lineChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Total Sales',
-          data: totalSalesData,
-          borderColor: '#FFA600',
-          backgroundColor: 'rgba(255,166,0,0.2)',
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Crop Sales',
-          data: cropSalesData,
-          borderColor: '#4CAF50',
-          backgroundColor: 'rgba(76,175,80,0.2)',
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Poultry Sales',
-          data: poultrySalesData,
-          borderColor: '#2196F3',
-          backgroundColor: 'rgba(33,150,243,0.2)',
-          fill: true,
-          tension: 0.4
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: 20 },
-      plugins: {
-        legend: { position: 'top' }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: function (value) {
-              return '₱' + value.toLocaleString()
-            }
-          }
-        }
+function exportReport(format) {
+  if (format === "pdf") {
+    const doc = new jsPDF()
+    doc.setFontSize(16)
+    doc.text(reportTitle.value, 14, 15)
+    doc.setFontSize(10)
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 22)
+    
+    autoTable(doc, {
+      html: "#report-table",
+      startY: 30,
+      didDrawPage: function(data) {
+        const pageCount = doc.internal.getPages().length
+        doc.setFontSize(9)
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.getHeight() - 10)
       }
-    }
+    })
+    doc.save(`${reportTitle.value.replace(/\s+/g, '_')}.pdf`)
+  } else if (format === "excel") {
+    exportToExcel()
+  } else if (format === "csv") {
+    exportToCSV()
+  }
+  showDropdown.value = false
+}
+
+function exportToExcel() {
+  const table = document.getElementById("report-table")
+  const workbook = XLSX.utils.table_to_book(table)
+  XLSX.writeFile(workbook, `${reportTitle.value.replace(/\s+/g, '_')}.xlsx`)
+}
+
+function exportToCSV() {
+  const table = document.getElementById("report-table")
+  let csv = []
+  const rows = table.querySelectorAll("tr")
+  
+  rows.forEach(row => {
+    const cols = row.querySelectorAll("td, th")
+    const csvRow = []
+    cols.forEach(col => {
+      csvRow.push('"' + col.innerText.replace(/"/g, '""') + '"')
+    })
+    csv.push(csvRow.join(","))
   })
+  
+  const csvContent = csv.join("\n")
+  const blob = new Blob([csvContent], { type: "text/csv" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `${reportTitle.value.replace(/\s+/g, '_')}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
-function renderDonutChart() {
-  const ctx = document.getElementById('donutChart')
-  if (donutChartInstance) donutChartInstance.destroy()
-
-  const currentData = chartData.pieChart[pieChartFilter.value]
-  const total = currentData.reduce((sum, val) => sum + val, 0)
-
-  // Show actual values if there's data, otherwise show empty chart
-  const hasData = total > 0
-
-  donutChartInstance = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Fruits', 'Vegetables', 'Poultry'],
-      datasets: [{
-        data: hasData ? currentData : [1, 1, 1], // Show equal segments if no data
-        backgroundColor: hasData ? ['#FFA600', '#5F1213', '#FF6384'] : ['#e5e5e5', '#e5e5e5', '#e5e5e5'],
-        borderWidth: hasData ? 0 : 2,
-        borderColor: '#fff'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '60%',
-      layout: {
-        padding: { top: 20, bottom: 30, left: 10, right: 10 }
-      },
-      plugins: {
-        legend: {
-          display: hasData,
-          position: 'bottom'
-        },
-        tooltip: {
-          enabled: hasData,
-          callbacks: hasData ? {
-            label: function (context) {
-              const value = context.parsed
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
-              return `${context.label}: ₱${value.toLocaleString()} (${percentage}%)`
-            }
-          } : { label: () => 'No data available' }
-        }
-      }
-    }
-  })
-
-  // Add "No Data" text in center if no data
-  if (!hasData) {
-    const centerText = {
-      id: 'centerText',
-      beforeDraw: function (chart) {
-        const ctx = chart.ctx
-        ctx.save()
-        ctx.font = '16px Arial'
-        ctx.fillStyle = '#666'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        const centerX = (chart.chartArea.left + chart.chartArea.right) / 2
-        const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2
-        ctx.fillText('No Data Available', centerX, centerY)
-        ctx.restore()
-      }
-    }
-    Chart.register(centerText)
-  }
+function clearFilters() {
+  selectedReport.value = "all"
+  selectedPeriod.value = "monthly"
+  searchQuery.value = ""
+  sortKey.value = ""
+  startDate.value = ""
+  endDate.value = ""
+  fetchReportsData()
 }
 
 onMounted(() => {
-  renderLineChart()
-  renderDonutChart()
-})
-
-watch(lineChartFilter, renderLineChart)
-watch(pieChartFilter, renderDonutChart)
-
-onBeforeUnmount(() => {
-  if (lineChartInstance) lineChartInstance.destroy()
-  if (donutChartInstance) donutChartInstance.destroy()
+  fetchReportsData()
 })
 </script>
 
-<style scoped>
-canvas {
-  box-sizing: border-box;
-}
-</style>

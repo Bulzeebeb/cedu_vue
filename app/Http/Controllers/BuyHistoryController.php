@@ -58,6 +58,17 @@ class BuyHistoryController extends Controller
             ];
         });
 
+        // Check if this is an AJAX request (for modal loading)
+        if ($request->expectsJson() || $request->ajax() || $request->header('X-Inertia')) {
+            return response()->json([
+                'orders' => $transformedOrders,
+                'hasMoreOrders' => $orders->hasMorePages(),
+                'currentPage' => $orders->currentPage(),
+                'totalOrders' => $orders->total()
+            ]);
+        }
+
+        // Return Inertia view for full page load
         return Inertia::render('Client/buyHistory', [
             'orders' => $transformedOrders,
             'hasMoreOrders' => $orders->hasMorePages(),

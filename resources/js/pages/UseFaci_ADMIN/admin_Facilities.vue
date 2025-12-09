@@ -12,13 +12,24 @@
         <h1 class="text-2xl font-semibold">Facilities</h1>
       </div>
 
-      <!-- Filter and Add Button Row -->
-      <div class="mb-4 flex justify-between items-center">
-        <!-- Filter -->
-        <div class="flex space-x-2">
+      <!-- Search, Filter and Actions Row -->
+      <div class="mb-4 space-y-4">
+        <!-- Search and Filters -->
+        <div class="flex flex-wrap gap-4 items-center">
+          <!-- Search -->
+          <div class="flex-1 min-w-[200px]">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search facilities by name..."
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFA600] bg-white"
+            />
+          </div>
+
+          <!-- Filters -->
           <select
             v-model="filterCategory"
-            @change="fetchFacilities"
+            @change="resetPagination"
             class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFA600] bg-white"
           >
             <option value="">All Categories</option>
@@ -29,22 +40,49 @@
 
           <select
             v-model="filterStatus"
-            @change="fetchFacilities"
+            @change="resetPagination"
             class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFA600] bg-white"
           >
             <option value="">All Status</option>
             <option value="1">Active</option>
             <option value="0">Inactive</option>
           </select>
+
+          <!-- Add Button -->
+          <button
+            @click="openAddModal"
+            class="px-4 py-2 bg-[#5F1213] text-white rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition"
+          >
+            + Add Facility
+          </button>
         </div>
 
-        <!-- Add Button -->
-        <button
-          @click="openAddModal"
-          class="px-4 py-2 bg-[#5F1213] text-white rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition"
-        >
-          + Add Facility
-        </button>
+        <!-- Bulk Actions (only show when items are selected) -->
+        <div v-if="selectedFacilities.length > 0" class="flex items-center gap-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <span class="text-sm font-medium text-blue-800">
+            {{ selectedFacilities.length }} facility(ies) selected
+          </span>
+          <div class="flex gap-2">
+            <button
+              @click="bulkToggleStatus(1)"
+              class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
+            >
+              <i class="fas fa-play mr-1"></i>Activate
+            </button>
+            <button
+              @click="bulkToggleStatus(0)"
+              class="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition"
+            >
+              <i class="fas fa-pause mr-1"></i>Deactivate
+            </button>
+            <button
+              @click="bulkDeleteFacilities"
+              class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition"
+            >
+              <i class="fas fa-trash mr-1"></i>Delete
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Facilities Table -->
@@ -52,7 +90,7 @@
         <h2 class="text-lg font-semibold mb-4">Available Facilities</h2>
 
         <!-- No data message -->
-        <div v-if="!loading && facilities.length === 0" class="text-center py-8 text-gray-500">
+        <div v-if="!loading && totalItems === 0" class="text-center py-8 text-gray-500">
           <i class="fas fa-inbox text-4xl mb-2"></i>
           <p>No facilities found. Click "Add Facility" to create one.</p>
         </div>
@@ -71,7 +109,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="facility in facilities"
+              v-for="facility in paginatedFacilities"
               :key="facility.id"
               class="border-b border-gray-100 hover:bg-gray-50"
             >
@@ -120,6 +158,44 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="flex items-center justify-between mt-4">
+          <div class="text-sm text-gray-700">
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} facilities
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              @click="goToPage(currentPage - 1)"
+              :disabled="currentPage === 1"
+              class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              @click="typeof page === 'number' ? goToPage(page) : null"
+              :class="[
+                'px-3 py-1 text-sm border rounded hover:bg-gray-50',
+                page === currentPage ? 'bg-[#5F1213] text-white border-[#5F1213]' : '',
+                typeof page !== 'number' ? 'cursor-default' : ''
+              ]"
+              :disabled="typeof page !== 'number'"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              @click="goToPage(currentPage + 1)"
+              :disabled="currentPage === totalPages"
+              class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Add/Edit Facility Modal -->
@@ -270,7 +346,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import AdminSidebar from './adminSidebar.vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
@@ -294,6 +370,15 @@ const activeCategories = ref([])
 const filterCategory = ref('')
 const filterStatus = ref('')
 
+// New reactive variables for enhanced functionality
+const searchQuery = ref('')
+const sortBy = ref('id')
+const sortOrder = ref('asc')
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const selectedFacilities = ref([])
+const selectAll = ref(false)
+
 const newFacility = ref({
   name: '',
   category_id: '',
@@ -303,6 +388,64 @@ const newFacility = ref({
 
 const previewImages = ref([])
 const selectedCategory = ref(null)
+
+// Computed properties for enhanced functionality
+const filteredFacilities = computed(() => {
+  let filtered = facilities.value
+
+  // Apply search filter
+  if (searchQuery.value) {
+    filtered = filtered.filter(facility =>
+      facility.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  // Apply category filter
+  if (filterCategory.value) {
+    filtered = filtered.filter(facility => facility.category_id == filterCategory.value)
+  }
+
+  // Apply status filter
+  if (filterStatus.value !== '') {
+    filtered = filtered.filter(facility => facility.is_active == filterStatus.value)
+  }
+
+  // Apply sorting
+  filtered.sort((a, b) => {
+    let aVal = a[sortBy.value]
+    let bVal = b[sortBy.value]
+
+    if (sortBy.value === 'category') {
+      aVal = a.category?.name || ''
+      bVal = b.category?.name || ''
+    }
+
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase()
+      bVal = bVal.toLowerCase()
+    }
+
+    if (sortOrder.value === 'asc') {
+      return aVal > bVal ? 1 : -1
+    } else {
+      return aVal < bVal ? 1 : -1
+    }
+  })
+
+  return filtered
+})
+
+const paginatedFacilities = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredFacilities.value.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredFacilities.value.length / itemsPerPage.value)
+})
+
+const totalItems = computed(() => filteredFacilities.value.length)
 
 // Category field definitions
 const categoryFields = {
@@ -366,22 +509,18 @@ async function fetchActiveCategories() {
     const data = response.data.data || response.data
     // Filter out Commercial category
     activeCategories.value = Array.isArray(data)
-      ? data.filter(cat => cat.name !== 'Commercial')
+      ? data.filter(cat => cat.name !== '')
       : []
   } catch (error) {
     console.error('Error fetching active categories:', error)
   }
 }
 
-// Fetch facilities with filters
+// Fetch all facilities (filtering done on frontend)
 async function fetchFacilities() {
   try {
     loading.value = true
-    const params = {}
-    if (filterCategory.value) params.category_id = filterCategory.value
-    if (filterStatus.value !== '') params.is_active = filterStatus.value
-
-    const response = await axios.get(API_URL, { params })
+    const response = await axios.get(API_URL)
     const data = response.data.data || response.data
     facilities.value = Array.isArray(data) ? data : []
   } catch (error) {
@@ -789,6 +928,170 @@ function resetForm() {
   isEditing.value = false
   if (fileInput.value) {
     fileInput.value.value = ''
+  }
+}
+
+// Sorting functions
+function sortFacilities(field) {
+  if (sortBy.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortOrder.value = 'asc'
+  }
+  currentPage.value = 1 // Reset to first page when sorting
+}
+
+function getSortIcon(field) {
+  if (sortBy.value !== field) return 'fas fa-sort text-gray-300'
+  return sortOrder.value === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'
+}
+
+// Pagination functions
+function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+function resetPagination() {
+  currentPage.value = 1
+  selectedFacilities.value = []
+  selectAll.value = false
+}
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const delta = 2
+  const range = []
+  const rangeWithDots = []
+
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    range.push(i)
+  }
+
+  if (current - delta > 2) {
+    rangeWithDots.push(1, '...')
+  } else {
+    rangeWithDots.push(1)
+  }
+
+  rangeWithDots.push(...range)
+
+  if (current + delta < total - 1) {
+    rangeWithDots.push('...', total)
+  } else if (total > 1) {
+    rangeWithDots.push(total)
+  }
+
+  return rangeWithDots.filter(item => item !== '...' || rangeWithDots.indexOf(item) === rangeWithDots.lastIndexOf(item))
+})
+
+// Selection functions
+function toggleSelectAll() {
+  selectAll.value = !selectAll.value
+  if (selectAll.value) {
+    selectedFacilities.value = paginatedFacilities.value.map(f => f.id)
+  } else {
+    selectedFacilities.value = []
+  }
+}
+
+function toggleFacilitySelection(facilityId) {
+  const index = selectedFacilities.value.indexOf(facilityId)
+  if (index > -1) {
+    selectedFacilities.value.splice(index, 1)
+  } else {
+    selectedFacilities.value.push(facilityId)
+  }
+  selectAll.value = selectedFacilities.value.length === paginatedFacilities.value.length && paginatedFacilities.value.length > 0
+}
+
+// Status toggle functions
+async function toggleFacilityStatus(id, status) {
+  try {
+    loading.value = true
+    const response = await axios.patch(`${API_URL}/${id}/status`, {
+      is_active: status
+    })
+
+    if (response.data.success) {
+      await fetchFacilities()
+      Swal.fire({
+        title: 'Success!',
+        text: `Facility ${status ? 'activated' : 'deactivated'} successfully!`,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      })
+    }
+  } catch (error) {
+    console.error('Error toggling facility status:', error)
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update facility status',
+      icon: 'error',
+      confirmButtonColor: '#5F1213'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+// Bulk actions
+async function bulkToggleStatus(status) {
+  if (selectedFacilities.value.length === 0) return
+
+  try {
+    loading.value = true
+    const response = await axios.patch(`${API_URL}/bulk-status`, {
+      facility_ids: selectedFacilities.value,
+      is_active: status
+    })
+
+    if (response.data.success) {
+      await fetchFacilities()
+      selectedFacilities.value = []
+      selectAll.value = false
+    }
+  } catch (error) {
+    console.error('Error bulk toggling status:', error)
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update facility status',
+      icon: 'error',
+      confirmButtonColor: '#5F1213'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+async function bulkDeleteFacilities() {
+  if (selectedFacilities.value.length === 0) return
+
+  try {
+    loading.value = true
+    const response = await axios.delete(`${API_URL}/bulk-delete`, {
+      data: { facility_ids: selectedFacilities.value }
+    })
+
+    if (response.data.success) {
+      await fetchFacilities()
+      selectedFacilities.value = []
+      selectAll.value = false
+    }
+  } catch (error) {
+    console.error('Error bulk deleting facilities:', error)
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to delete facilities',
+      icon: 'error',
+      confirmButtonColor: '#5F1213'
+    })
+  } finally {
+    loading.value = false
   }
 }
 

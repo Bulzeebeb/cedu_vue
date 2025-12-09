@@ -14,6 +14,19 @@ class AdminUserClientController extends Controller
         return response()->json($clients);
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $user = UserClient::findOrFail($id);
+        $user->status = $request->status;
+        $user->save();
+
+        return response()->json(['message' => 'User status updated successfully', 'status' => $user->status]);
+    }
+
     public function destroy($id)
     {
         $user = UserClient::findOrFail($id);

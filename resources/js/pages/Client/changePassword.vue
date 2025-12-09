@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white flex flex-col text-gray-800 font-sans">
+  <div class="min-h-screen bg-white py-32 flex flex-col text-gray-800 font-sans">
     <SiteHeader />
 
     <div class="flex-grow flex items-center justify-center py-12 px-4">
@@ -86,8 +86,8 @@
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import axios from 'axios'
-import SiteHeader from './header.vue'
-import SiteFooter from './footer.vue'
+import SiteHeader from '../zClientChoicePage/cHeader.vue'
+import SiteFooter from '../footer.vue'
 
 const otpSent = ref(false)
 

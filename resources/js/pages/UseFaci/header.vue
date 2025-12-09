@@ -127,9 +127,10 @@ function goToRental() {
 }
 
 function markAsRead(id) {
-  fetch(`/notifications/${id}/read`, {
-    method: 'PATCH',
+  fetch(`/notifications/${id}/mark-read`, {
+    method: 'PUT',
     headers: {
+      'Content-Type': 'application/json',
       'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
     }
   })
@@ -154,11 +155,13 @@ function markAllAsRead() {
     return;
   }
   
-  fetch(`/notifications/mark-all-read?user_id=${userId}`, {
-    method: 'PATCH',
+  fetch(`/notifications/mark-all-read`, {
+    method: 'PUT',
     headers: {
+      'Content-Type': 'application/json',
       'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-    }
+    },
+    body: JSON.stringify({ user_id: userId })
   })
   .then(res => {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -171,7 +174,7 @@ function markAllAsRead() {
 }
 
 function logout() {
-  router.post('/logout')
+  router.visit('/om-landing')
 }
 </script>
 
@@ -263,7 +266,7 @@ function logout() {
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.841 15.681l7.07-7.07m0 0l-7.07-7.07m7.07 7.07H3m10 10v-2a6 6 0 00-6-6H5a6 6 0 00-6 6v2" />
           </svg>
-          <span class="text-sm">Logout</span>
+          <span class="text-sm">Main Menu</span>
         </button>
       </div>
     </div>
@@ -276,33 +279,9 @@ function logout() {
       <button @click="goToCommercial" class="block w-full text-left px-4 py-2">Commercial</button>
       <button @click="goToHostel" class="block w-full text-left px-4 py-2">Hostel</button>
       <button @click="goToRental" class="block w-full text-left px-4 py-2">Rental</button>
-
-      <!-- Profile Section -->
-      <div class="pt-6 border-t border-white/20">
-        <div class="flex items-center space-x-3 mb-2">
-          <img src="/images/profile.jpg" alt="Profile" class="h-10 w-10 rounded-full border-2 border-yellow-400" />
-          <p class="text-sm font-semibold">John Doe</p>
-        </div>
-        <div class="space-y-1 pl-12 text-sm">
-          <a href="#" class="block hover:underline">Hello, User</a>
-          <button @click="goToSignIn" class="block hover:underline w-full text-left">Sign In</button>
-          <a href="#" class="block hover:underline">Log Out</a>
-        </div>
-      </div>
     </div>
   </header>
 </template>
-
-<script>
-export default {
-  name: "Header",
-  data() {
-    return {
-      isMobileMenuOpen: false,
-    };
-  },
-};
-</script>
 
 <style scoped>
 @keyframes fade-in {

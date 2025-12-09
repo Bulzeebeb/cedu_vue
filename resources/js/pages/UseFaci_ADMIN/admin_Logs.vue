@@ -79,7 +79,7 @@ const actionTypes = computed(() => [...new Set(logs.value.map(l => l.action))])
 
 // Filter by action, then sort by date
 const filteredSortedLogs = computed(() => {
-  let filtered = actionFilter.value
+  const filtered = actionFilter.value
     ? logs.value.filter(l => l.action === actionFilter.value)
     : [...logs.value]
 

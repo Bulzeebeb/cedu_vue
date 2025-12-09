@@ -78,8 +78,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
-import SiteHeader from './header.vue'
-import SiteFooter from './footer.vue'
+import SiteHeader from '../OnlineMarket/header.vue'
+import SiteFooter from '../OnlineMarket/footer.vue'
 
 const showPassword = ref(false)
 

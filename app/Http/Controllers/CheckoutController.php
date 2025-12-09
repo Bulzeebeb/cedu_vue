@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -47,11 +48,15 @@ class CheckoutController extends Controller
     {
         // Check if user is authenticated
         if (!Auth::guard('userclient')->check()) {
-            return redirect()->route('client.login.form')->with('error', 'Please login to place an order.');
+            $message = 'Please login to place an order.';
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $message], 401);
+            }
+            return redirect()->route('client.login.form')->with('error', $message);
         }
 
         // Validate billing information
-        $request->validate([
+        $validated = $request->validate([
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'contact' => 'required|string|max:20',
@@ -61,7 +66,11 @@ class CheckoutController extends Controller
         $cart = Session::get('cart', []);
 
         if (empty($cart)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+            $message = 'Your cart is empty.';
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $message], 400);
+            }
+            return redirect()->route('cart.index')->with('error', $message);
         }
 
         $user = Auth::guard('userclient')->user();
@@ -112,11 +121,25 @@ class CheckoutController extends Controller
             // Store order data in session for POS display
             Session::put('pos_order_data', $orderData);
 
-            // Redirect to POS page
+            // Return JSON for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'orderId' => $order->id,
+                    'message' => 'Order placed successfully!'
+                ]);
+            }
+
+            // Redirect for non-AJAX requests
             return redirect()->route('pos.display')->with('success', 'Order placed successfully!');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to place order. Please try again.');
+            Log::error('Order creation failed: ' . $e->getMessage());
+            $message = 'Failed to place order. Please try again.';
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $message], 500);
+            }
+            return redirect()->back()->with('error', $message);
         }
     }
 

@@ -96,8 +96,8 @@
 </template>
 
 <script>
-import Header from './header.vue'
-import Footer from './footer.vue'
+import Header from '../OnlineMarket/header.vue'
+import Footer from '../OnlineMarket/footer.vue'
 
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/vue'

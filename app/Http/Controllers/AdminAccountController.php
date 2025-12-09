@@ -85,7 +85,7 @@ class AdminAccountController extends Controller
                 'email' => 'required|email|unique:admins,email',
                 'address' => 'nullable|string|max:255',
                 'contact' => 'nullable|string|min:5|max:20',
-                'gender' => 'nullable|in:Male,Female',
+                'gender' => 'nullable|in:Male,Female,Other',
                 'age' => 'nullable|integer|min:18|max:99',
                 'role' => 'required|in:Admin,Staff',
                 'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -185,14 +185,14 @@ class AdminAccountController extends Controller
                 'email' => ['required', 'email', Rule::unique('admins', 'email')->ignore($admin->id)],
                 'address' => 'nullable|string|max:255',
                 'contact' => 'nullable|string|min:5|max:20',
-                'gender' => 'nullable|in:Male,Female',
+                'gender' => 'nullable|in:Male,Female,Other',
                 'age' => 'nullable|integer|min:18|max:99',
                 'role' => 'required|in:Admin,Staff',
                 'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'password' => 'nullable|string|min:6',
             ]);
         } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
+            return redirect()->back()->withErrors($e->errors())->withInput();
         }
 
         // Handle profile picture upload
@@ -219,22 +219,10 @@ class AdminAccountController extends Controller
             // Log activity
             $this->logActivity('Super Admin', 'Admin', 'Updated account: ' . $admin->email);
 
-            // Transform profile picture URL for response
-            $admin->profile_picture = $admin->profile_picture
-                ? asset('storage/' . $admin->profile_picture)
-                : null;
-
-            return response()->json([
-                'message' => 'Admin updated successfully.',
-                'admin' => $admin
-            ], 200);
-
+            return redirect()->back()->with('success', 'Admin profile updated successfully.');
         } catch (\Exception $e) {
             Log::error('Error updating admin: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Failed to update admin. Please try again later.',
-                'error' => $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Failed to update admin profile. Please try again later.');
         }
     }
 
@@ -275,14 +263,14 @@ class AdminAccountController extends Controller
     {
         try {
             $admin = Admin::findOrFail($id);
-            $firstInitial = strtolower(substr($admin->first_name, 0, 1));
-            $lastName = strtolower($admin->last_name);
+            $firstInitial = strtolower(substr($admin->first_name, 0, 1) ?? 'x');
+            $lastName = strtolower($admin->last_name ?? 'x');
             $newPassword = "{$firstInitial}{$lastName}123";
 
-            $admin->update([
+            $admin->fill([
                 'password' => Hash::make($newPassword),
                 'raw_password' => $newPassword,
-            ]);
+            ])->save();
 
             $this->logActivity('Super Admin', 'Admin', 'Reset password for account: ' . $admin->email);
 
@@ -380,37 +368,65 @@ class AdminAccountController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $admin = Admin::findOrFail($request->id);
+        try {
+            $admin = auth('admin')->user();
 
-        $validated = $request->validate([
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'middle_initial' => 'nullable|string|max:1',
-            'email' => 'required|email',
-            'address' => 'required|string',
-            'contact_number' => 'required|string',
-            'gender' => 'required|string',
-            'age' => 'required|integer',
-            'password' => 'nullable|min:6',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240'
-        ]);
+            if (!$admin) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
 
-        if (!empty($validated['password'])) {
-            $admin->password = Hash::make($validated['password']);
-            $admin->raw_password = $validated['password'];
+            // Debug: Log the incoming request data
+            Log::info('UpdateProfile Request Data:', $request->all());
+            Log::info('UpdateProfile Form Data:', $request->input());
+
+            $validated = $request->validate([
+                'first_name' => 'required|string|max:50',
+                'last_name' => 'required|string|max:50',
+                'middle_initial' => 'nullable|string|max:1',
+                'email' => ['required', 'email', Rule::unique('admins', 'email')->ignore($admin->id)],
+                'address' => 'required|string|max:255',
+                'contact' => 'required|string|min:5|max:20',
+                'gender' => 'required|in:Male,Female,Other',
+                'age' => 'required|integer|min:18|max:99',
+                'password' => 'nullable|string|min:6',
+                'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240'
+            ]);
+
+            // Remove role from validated data since admins cannot change their own role
+            unset($validated['role']);
+
+            // Handle password update
+            if (!empty($validated['password'])) {
+                $validated['raw_password'] = $validated['password'];
+                $validated['password'] = Hash::make($validated['password']);
+            } else {
+                unset($validated['password']);
+            }
+
+            // Handle profile picture upload
+            if ($request->hasFile('profile_picture')) {
+                // Delete old profile picture if exists
+                if ($admin->profile_picture) {
+                    Storage::disk('public')->delete($admin->profile_picture);
+                }
+                $validated['profile_picture'] = $request->file('profile_picture')
+                    ->store('admin_profiles', 'public');
+            }
+
+            $admin->fill($validated)->save();
+
+            // Log activity
+            $this->logActivity($admin->first_name . ' ' . $admin->last_name, $admin->role, 'Updated own profile');
+
+            return redirect()->back()->with('success', 'Profile updated successfully');
+
+        } catch (ValidationException $ve) {
+            Log::error('Validation failed for updateProfile:', $ve->errors());
+            return redirect()->back()->withErrors($ve->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error updating admin profile: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Failed to update profile. Please try again.']);
         }
-
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/profile'), $filename);
-            $admin->photo_url = 'images/profile/' . $filename;
-        }
-
-        $admin->fill($validated)->save();
-        $this->logActivity($admin->first_name . ' ' . $admin->last_name, $admin->role, 'Updated own profile');
-
-        return response()->json(['message' => 'Profile updated successfully']);
     }
 
     public function uploadPhoto(Request $request)
@@ -423,12 +439,15 @@ class AdminAccountController extends Controller
         $user = Admin::findOrFail($request->id);
 
         if ($request->hasFile('photo')) {
-            $photoName = time() . '_' . $request->file('photo')->getClientOriginalName();
-            $request->file('photo')->move(public_path('images/profile'), $photoName);
-            $user->photo_url = 'images/profile/' . $photoName;
+            // Delete old profile picture if exists
+            if ($user->profile_picture) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+            $photoPath = $request->file('photo')->store('admin_profiles', 'public');
+            $user->profile_picture = $photoPath;
             $user->save();
 
-            return response()->json(['photo_url' => $user->photo_url]);
+            return response()->json(['photo_url' => asset('storage/' . $photoPath)]);
         }
 
         return response()->json(['error' => 'No photo uploaded.'], 422);
