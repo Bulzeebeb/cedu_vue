@@ -94,11 +94,14 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, reactive, watch } from "vue";
-import axios from "axios";
+import { defineProps, defineEmits, reactive, watch } from "vue"
+import axios from "axios"
 
-const props = defineProps({ show: Boolean });
-const emit = defineEmits(["update:show"]);
+const props = defineProps({
+  show: Boolean,
+  prefill: { type: Object, default: () => ({ firstName: "", lastName: "" }) }
+})
+const emit = defineEmits(["update:show"])
 
 const client = reactive({
   firstName: "",
@@ -106,72 +109,65 @@ const client = reactive({
   plateNumber: "",
   date: "",
   time: "",
-});
+})
 
-// Function to set the current date and time
 function setCurrentDateTime() {
-  const now = new Date();
-  client.date = now.toISOString().split("T")[0];
-  client.time = now.toTimeString().slice(0, 5);
+  const now = new Date()
+  client.date = now.toISOString().split("T")[0]
+  client.time = now.toTimeString().slice(0, 5)
 }
 
-// Watch modal visibility to update time on open
-watch(
-  () => props.show,
-  (newVal) => {
-    if (newVal) setCurrentDateTime();
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    setCurrentDateTime()
+    client.firstName = props.prefill.firstName || ""
+    client.lastName = props.prefill.lastName || ""
   }
-);
+})
 
-// Clear form fields and reset date/time
 function clearForm() {
-  client.firstName = "";
-  client.lastName = "";
-  client.plateNumber = "";
-  setCurrentDateTime();
+  client.firstName = ""
+  client.lastName = ""
+  client.plateNumber = ""
+  setCurrentDateTime()
 }
 
-// Add new client handler
 async function addClient() {
-  if (
-    !client.firstName ||
-    !client.lastName ||
-    !client.plateNumber
-  ) {
-    alert("Please fill in all required fields.");
-    return;
+  if (!client.firstName || !client.lastName || !client.plateNumber) {
+    alert("Please fill in all required fields.")
+    return
   }
 
-  const name = `${client.firstName} ${client.lastName}`.trim();
-  const timeIn = new Date(`${client.date}T${client.time}:00`);
+  const name = `${client.firstName} ${client.lastName}`.trim()
+const timeIn = `${client.date} ${client.time}`
 
-  if (isNaN(timeIn)) {
-    alert("Invalid date or time.");
-    return;
-  }
+  // Build PH time manually
+  const dateTimeString = `${client.date}T${client.time}` // add PH offset
+  const philippineTime = new Date(dateTimeString)
 
   try {
     await axios.post("/paytopark/clients", {
       name,
       plate: client.plateNumber,
-      time_in: timeIn.toISOString(),
+      time_in: timeIn, // will always respect +08:00 input
       status: "PENDING",
-    });
+    })
 
-    alert("Client successfully added!");
-    clearForm();
-    emit("update:show", false);
+    alert("Client successfully added!")
+    clearForm()
+    emit("update:show", false)
   } catch (error) {
-    console.error("Error adding client:", error);
-    alert(error.response?.data?.message || "Failed to add client. Check console.");
+    console.error("Error adding client:", error)
+    alert(error.response?.data?.message || "Failed to add client.")
   }
 }
 
-// Close modal
+
 function closeModal() {
-  emit("update:show", false);
+  emit("update:show", false)
 }
 </script>
+
 
 
 <style scoped>

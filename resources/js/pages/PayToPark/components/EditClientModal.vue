@@ -30,13 +30,28 @@ watch(() => props.id, async (newId) => {
     try {
       const response = await axios.get(`/clients/${newId}`)
       const data = response.data
+
+      // Ensure we handle Philippine timezone
+      let datePH = ''
+      let timePH = ''
+      if (data.time_in) {
+        const dateObj = new Date(data.time_in)
+        datePH = dateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }) // yyyy-mm-dd format
+        timePH = dateObj.toLocaleTimeString('en-GB', { 
+          timeZone: 'Asia/Manila', 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false
+        })
+      }
+
       const [firstName, ...rest] = (data.name || '').split(' ')
       client.value = {
         ...data,
         firstName: firstName || '',
         lastName: rest.join(' ') || '',
-        date: data.time_in?.split('T')[0] || '',
-        time: data.time_in?.split('T')[1]?.substring(0, 5) || ''
+        date: datePH,
+        time: timePH
       }
     } catch (error) {
       console.error('Failed to fetch client data:', error)
@@ -58,14 +73,13 @@ async function saveClient() {
       name: `${client.value.firstName} ${client.value.lastName}`.trim(),
       plate: client.value.plate,
     })
-  
-
     closeModal()
   } catch (error) {
     console.error('Failed to save client:', error)
   }
 }
 </script>
+
 
 <template>
  

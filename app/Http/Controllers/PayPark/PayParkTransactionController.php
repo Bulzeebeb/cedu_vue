@@ -99,41 +99,42 @@ class PayParkTransactionController extends Controller
     }
 
     public function todayWithClients()
-    {
-        $today = now()->toDateString();
+{
+    $today = now()->toDateString();
 
-        $transactions = DB::table('paypark_transactions as t')
-            ->join('pay_park_clients as c', 't.client_id', '=', 'c.id')
-            ->whereDate('t.transaction_date', $today)
-            ->select(
-                't.id as transaction_id',
-                't.transaction_date',
-                't.total_payment',
-                'c.id as client_id',
-                'c.name',
-                'c.plate',
-                'c.time_in',
-                'c.time_out',
-                'c.status',
-                'c.qr_code'
-            )
-            ->orderBy('t.transaction_date')
-            ->get();
+    // Get all today's transactions
+    $transactions = DB::table('paypark_transactions as t')
+        ->join('pay_park_clients as c', 't.client_id', '=', 'c.id')
+        ->whereDate('t.transaction_date', $today)
+        ->select(
+            't.id as transaction_id',
+            't.transaction_date',
+            't.total_payment',
+            'c.id as client_id',
+            'c.name',
+            'c.plate',
+            'c.time_in',
+            'c.time_out',
+            'c.status',
+            'c.qr_code'
+        )
+        ->orderBy('t.transaction_date', 'asc')
+        ->get();
 
-        $firstClientName = $transactions->first()->name ?? null;
-        if ($transactions->count() > 1 && $firstClientName) {
-            $firstClientName .= ' et al.';
-        }
+    // Get first paying client's name (based on transaction order)
+    $firstClientName = $transactions->first()->name ?? null;
 
-        $totalPaymentSum = $transactions->sum('total_payment');
+    // Sum all payments
+    $totalPaymentSum = $transactions->sum('total_payment');
 
-        return response()->json([
-            'name' => $firstClientName,
-            'others_checked' => true,
-            'pay_to_park_cost' => $totalPaymentSum,
-            'transactions' => $transactions
-        ]);
-    }
+    return response()->json([
+        'first_client'       => $firstClientName,         // ✅ Only first client's name
+        'others_checked'     => $transactions->count() > 1, 
+        'total_payment_sum'  => $totalPaymentSum,         // ✅ Total amount for today
+        'transactions'       => $transactions            // ✅ Full list of today's transactions
+    ]);
+}
+
 
     public function show($id)
     {

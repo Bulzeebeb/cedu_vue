@@ -35,10 +35,10 @@
           <section class="border border-gray-300 rounded-md p-4 text-sm mb-6 space-y-2 shadow-sm">
             <div class="text-right">
               <span class="text-red-600 font-semibold">Control no.:</span>
-              <span class="border-b border-black inline-block w-24 ml-2">{{ controlNumber }}</span>
+              <span class="border-b border-black inline-block w-24 ml-2"></span>
             </div>
 
-            <div>
+    <div>
   <span class="font-semibold">Name:</span>
   {{ clientData.name }}
   <span v-if="transactions.length > 1"> et al.</span>
@@ -146,14 +146,14 @@ const facilities = [
   'Farmer’s Training Center', 'Fitness Center', 'Gymnasium', 'Hostel Dining Hall', 'Hostel Rooms',
   'Hostel Training Hall', 'Open Space/Ground', 'Printing Press', 'Social Hall'
 ]
+
 onMounted(async () => {
   try {
-    const res = await axios.get('/paypark_transactions/today-with-clients')
+    const res = await axios.get('/paytopark/transactions/today-with-clients')
     
-    // Use the backend's values directly
     clientData.value.name = res.data.first_client || 'Loading...'
-    paidClients.value = res.data.transactions.map(tx => tx.client_id) // just IDs if you need them
-    totalAmount.value = res.data.total_payment_sum
+    paidClients.value = res.data.transactions.map(tx => tx.client_id)
+    totalAmount.value = res.data.total_payment_sum || 0
     transactions.value = res.data.transactions
   } catch (err) {
     console.error(err)
@@ -162,84 +162,214 @@ onMounted(async () => {
   }
 })
 
+
 const close = () => emit('close')
 
-const downloadPOS = async () => {
-  if (!clientData.value) return
-  isDownloading.value = true
+function downloadPOS(entry) {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4')
     const marginLeft = 14
     let y = 15
 
-    pdf.setFont('helvetica', 'normal').setFontSize(10)
+    const name = entry.name || 'Unknown'
+    const plate = entry.plate || 'N/A'
+    const dateToday = new Date().toLocaleDateString()
+    const controlNo = `POS-${Date.now()}`
+    const facilityCost = Number(entry.total_amount) || 0
+
+    //LOGO
+    pdf.addImage('/images/PayToPark/logo.png', 'PNG', marginLeft, y - 5, 20, 20)
+
+    // === HEADER ===
+    pdf.setTextColor(0, 0, 0)
+    pdf.setFontSize(10)
+    pdf.setFont('helvetica', 'normal')
     pdf.text('Republic of the Philippines', 105, y, { align: 'center' })
     y += 5
-    pdf.setFont('helvetica', 'bold').text('University of Southeastern Philippines', 105, y, { align: 'center' })
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('University of Southeastern Philippines', 105, y, { align: 'center' })
     y += 5
-    pdf.setFont('helvetica', 'italic').text('Resource Management Division (RMD)', 105, y, { align: 'center' })
+    pdf.setFont('helvetica', 'italic')
+    pdf.text('Resource Management Division (RMD)', 105, y, { align: 'center' })
     y += 6
-    pdf.setFont('helvetica', 'bold').setFontSize(12).text('ORDER OF PAYMENT', 105, y, { align: 'center' })
+
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(12)
+    pdf.text('ORDER OF PAYMENT', 105, y, { align: 'center' })
     y += 10
 
-    pdf.setFont('helvetica', 'normal').setFontSize(9)
+    // === INFO BOX ===
+    pdf.setFontSize(9)
+    pdf.setFont('helvetica', 'normal')
     pdf.rect(marginLeft, y, 182, 32)
-    pdf.text(`Control No.: ${controlNumber.value}`, marginLeft + 2, y + 6)
-    pdf.text(`Name: ${clientData.value.name}${paidClients.value.length > 1 ? ' et al.' : ''}`, marginLeft + 2, y + 12)
-    pdf.text('Organization: ____________________________', marginLeft + 2, y + 18)
-    pdf.text(`Date Applied: ${currentDate}`, marginLeft + 2, y + 24)
-    pdf.text('Validity Period: ____________________________', marginLeft + 2, y + 30)
+
+   // Right side (Control No.)
+    pdf.setTextColor(200, 0, 0)
+    pdf.text(`Control no.: ${controlNo}`, 180, y + 8, { align: 'right' })
+    pdf.setTextColor(0, 0, 0)
+
+    // Left side info
+    pdf.text(`Name: ${name}`, marginLeft + 2, y + 12)
+    pdf.text(`Plate: ${plate}`, marginLeft + 2, y + 18)
+    pdf.text(`Date Applied: ${dateToday}`, marginLeft + 2, y + 24)
+    pdf.text(`Validity Period: ____________________________`, marginLeft + 2, y + 30)
+
     y += 38
 
-    const facilityRows = facilities.map(item => ['☐', item, ''])
-    facilityRows.push(['☑', 'Others (specify): PAY TO PARK', totalAmount.value.toFixed(2)])
-    autoTable(pdf, {
-      startY: y,
-      head: [['', 'Facility', 'Cost']],
-      body: facilityRows,
-      theme: 'grid',
-      headStyles: { fillColor: [200, 200, 200], fontSize: 9, halign: 'center' },
-      bodyStyles: { fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 120 }, 2: { cellWidth: 52, halign: 'right' } }
-    })
-    y = pdf.lastAutoTable.finalY + 6
 
-    const paymentRows = [
-      ['☐', 'Excess Hour/s', ''],
-      ['☐', 'Overtime Pay of Staff', ''],
-      ['☐', 'Use of Generator', ''],
-      ['☐', 'Others (specify): ______________________', '']
+    // === FACILITY TABLE ===
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(10)
+    pdf.text('FACILITY', marginLeft, y)
+    y += 4
+
+    const facilities = [
+      'Billboard Posting',
+      'Classrooms',
+      'Commercial Stall',
+      'Consultancy',
+      'Covered Court',
+      'Farmer’s Training Center',
+      'Fitness Center',
+      'Gymnasium',
+      'Hostel Dining Hall',
+      'Hostel Rooms',
+      'Hostel Training Hall',
+      'Open Space/Ground',
+      'Printing Press',
+      'Social Hall',
+      'Others (specify): PAY TO PARK'
     ]
+
+    const facilityRows = facilities.map(item => {
+  const isChecked = item.includes('Others')
+  return [
+    isChecked ? '/' : '', // now handled as checkbox
+    item,
+    isChecked ? facilityCost.toFixed(2) : ''
+  ]
+})
+
     autoTable(pdf, {
-      startY: y,
-      head: [['', 'Payment', 'Cost']],
-      body: paymentRows,
-      theme: 'grid',
-      headStyles: { fillColor: [200, 200, 200], fontSize: 9, halign: 'center' },
-      bodyStyles: { fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 10, halign: 'center' }, 1: { cellWidth: 120 }, 2: { cellWidth: 52, halign: 'right' } }
-    })
+  startY: y,
+  head: [['', 'Facility', 'Cost']],
+  body: facilityRows,
+  theme: 'grid',
+  headStyles: { fillColor: [200, 200, 200], fontSize: 9, halign: 'center' },
+  bodyStyles: { fontSize: 9 },
+  columnStyles: {
+    0: { cellWidth: 12, halign: 'center' },
+    1: { cellWidth: 118 },
+    2: { cellWidth: 52, halign: 'right' }
+  },
+  didDrawCell: function (data) {
+    if (data.column.index === 0 && data.section === 'body') {
+      const { x, y, height } = data.cell
+      const size = 4 // checkbox size
+      const checkboxX = x + (data.cell.width - size) / 2
+      const checkboxY = y + (height - size) / 2
+
+      // draw square
+      pdf.rect(checkboxX, checkboxY, size, size)
+
+      // if checked
+      if (data.cell.raw && data.cell.raw.toString().includes('✔')) {
+        pdf.setFontSize(8)
+        pdf.text('/', checkboxX + 0.5, checkboxY + size - 0.5)
+      }
+    }
+  }
+})
+
+
     y = pdf.lastAutoTable.finalY + 6
 
-    pdf.setFont('helvetica', 'bold').setFontSize(10)
-    pdf.text('Total Cost: Php', 135, y)
-    pdf.text(totalAmount.value.toFixed(2), 195, y, { align: 'right' })
+    // === PAYMENT TABLE ===
+pdf.setFont('helvetica', 'bold')
+pdf.setFontSize(10)
+pdf.text('PAYMENT', marginLeft, y)
+y += 4
+
+let paymentRows = []
+let paymentsTotal = 0
+
+if (Array.isArray(entry.payments) && entry.payments.length > 0) {
+  paymentRows = entry.payments.map(p => {
+    const cost = Number(p.cost) || 0
+    paymentsTotal += cost
+    // mark ✔ if has cost
+    return [cost > 0 ? '/' : '', p.description || p.desc || 'Other', cost ? cost.toFixed(2) : '']
+  })
+} else {
+  const defaultPayments = [
+    'Excess Hour/s',
+    'Overtime Pay of Staff',
+    'Use of Generator',
+    'Others (specify): ______________________'
+  ]
+  paymentRows = defaultPayments.map(desc => ['', desc, ''])
+  paymentsTotal = 0
+}
+
+autoTable(pdf, {
+  startY: y,
+  head: [['', 'Description', 'Cost']],
+  body: paymentRows,
+  theme: 'grid',
+  headStyles: { fillColor: [200, 200, 200], fontSize: 9, halign: 'center' },
+  bodyStyles: { fontSize: 9 },
+  columnStyles: {
+    0: { cellWidth: 12, halign: 'center' },
+    1: { cellWidth: 118 },
+    2: { cellWidth: 52, halign: 'right' }
+  },
+  didDrawCell: function (data) {
+    if (data.column.index === 0 && data.section === 'body') {
+      const { x, y, height } = data.cell
+      const size = 4 // checkbox size
+      const checkboxX = x + (data.cell.width - size) / 2
+      const checkboxY = y + (height - size) / 2
+
+      // draw square
+      pdf.rect(checkboxX, checkboxY, size, size)
+
+      // draw ✔ if marked
+      if (data.cell.raw && data.cell.raw.toString().includes('✔')) {
+        pdf.setFontSize(8)
+        pdf.text('✔', checkboxX + 0.5, checkboxY + size - 0.5)
+      }
+    }
+  }
+})
+
+    y = pdf.lastAutoTable.finalY + 6
+
+    // === TOTAL COST ===
+    const totalCost = facilityCost + paymentsTotal
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(10)
+    pdf.text(`Total Cost: Php`, 135, y)
+    pdf.text(totalCost.toFixed(2), 195, y, { align: 'right' })
     y += 18
 
-    pdf.setFont('helvetica', 'normal').setFontSize(10)
+    // === SIGNATURE SECTION ===
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(10)
     pdf.text('By: Staff', marginLeft, y)
     pdf.text('Noted by: CEDU Head / RMD Director', 130, y)
     y += 6
     pdf.text('_____________________', marginLeft, y)
     pdf.text('_____________________', 130, y)
 
-    pdf.save(`POS_${controlNumber.value}.pdf`)
+    // Save
+    pdf.save(`POS_${name.replace(/\s+/g, '_')}.pdf`)
   } catch (err) {
     console.error('Error generating PDF:', err)
-  } finally {
-    isDownloading.value = false
   }
 }
+
+
+
 </script>
 
 <style scoped>

@@ -13,18 +13,13 @@ return new class extends Migration {
             $table->string('first_name');
             $table->string('middle_initial')->nullable();
             $table->string('last_name');
-
             $table->string('address')->nullable();
             $table->string('contact')->nullable();
             $table->enum('gender', ['Male', 'Female'])->nullable();
             $table->integer('age')->nullable();
 
-            // Profile picture path
-            $table->string('profile_picture')->nullable();
-
             $table->string('email')->unique();
-            $table->string('password')->nullable();
-            
+            $table->string('password');
 
             $table->enum('role', ['Admin', 'Staff'])->default('Staff');
 

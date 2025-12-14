@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
-
+import Tesseract from 'tesseract.js'
 import Header from '@/pages/Header.vue'
 import Footer from '@/pages/footer.vue'
 import ClientFormModal from '@/pages/PayToPark/components/ClientFormModal.vue'
@@ -11,7 +11,31 @@ import DailyPOSModal from '@/pages/PayToPark/components/DailyPOSModal.vue'
 import BillingCheckoutModal from '@/pages/PayToPark/components/BillingCheckoutModal.vue'
 import ClientInfoModal from '@/pages/PayToPark/components/ClientInfoModal.vue' // <-- make sure path is correct
 
-// Destructure props so template can directly reference `clients`, `fetchError`, etc.
+// --- Fixed Date Helpers (no +8 offset) ---
+function parsePHDate(dateStr) {
+  if (!dateStr) return null
+
+  const normalized = dateStr.replace(' ', 'T')
+  return new Date(normalized)
+}
+
+function formatDateTimeCell(datetime) {
+  const date = parsePHDate(datetime)
+  if (!date || isNaN(date)) return '—'
+
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase()
+  const year = date.getFullYear()
+  const time = date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  })
+
+  return `${day} ${month} ${year} | ${time}`
+}
+// --- End Date Helpers ---
+
 const { entries, clients, fetchError } = defineProps({
   entries: {
     type: Array,
@@ -51,33 +75,90 @@ const showClientModal = ref(false)
 const searchQuery = ref('')
 const scannedClient = ref({})
 const showBilling = ref(false)
-
-const isQrScannerVisible = ref(false)
-let qrScannerInstance = null
-
-// For Client Info
 const selectedClient = ref(null)
 const showClientInfoModal = ref(false)
 
+const isQrScannerVisible = ref(false)
+let qrScannerInstance = null
+const isLicenseScannerVisible = ref(false)
+const licenseData = ref({ firstName: '', lastName: '' })
+let licenseStream = null
+
+async function startLicenseScan() {
+  try {
+    isLicenseScannerVisible.value = true
+    await nextTick()
+    const video = document.getElementById('license-camera')
+    if (!video) throw new Error('License video element not found')
+    licenseStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    video.srcObject = licenseStream
+    await video.play()
+  } catch (err) {
+    alert('Unable to access camera for license scan')
+    console.error(err)
+  }
+}
+
+async function captureLicense() {
+  const video = document.getElementById('license-camera')
+  const canvas = document.createElement('canvas')
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+  try {
+    const { data: { text } } = await Tesseract.recognize(canvas, 'eng')
+    console.log('OCR Result:', text)
+
+    const nameMatch = text.match(/([A-Z\s]+),\s*([A-Z\s\.]+)/)
+    if (nameMatch) {
+      licenseData.value.lastName = nameMatch[1].trim()
+      const rawFirstNames = nameMatch[2].trim().split(/\s+/)
+      const filtered = rawFirstNames.filter(word => !/^[A-Z]\.?$/.test(word))
+      licenseData.value.firstName = filtered.slice(0, 3).join(" ")
+    }
+
+    showClientModal.value = true
+    isLicenseScannerVisible.value = false
+    stopLicenseScan()
+  } catch (err) {
+    console.error('OCR failed:', err)
+    alert('Could not read license. Try again.')
+  }
+}
+
+function stopLicenseScan() {
+  if (licenseStream) {
+    licenseStream.getTracks().forEach(track => track.stop())
+    licenseStream = null
+  }
+  isLicenseScannerVisible.value = false
+}
+
+const todayPH = new Date().toLocaleDateString("en-US")
 const filteredClients = computed(() => {
-  // clients is destructured from props above
   if (!clients || !Array.isArray(clients)) return []
   return clients.filter(client => {
-    const isStillParked = client.time_out === null || client.time_out === undefined
+    const clientDate = client.time_in
+      ? parsePHDate(client.time_in).toLocaleDateString("en-US")
+      : null
+    const isToday = clientDate === todayPH
     const matchesSearch =
       !searchQuery.value ||
       (client.name && client.name.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
       (client.plate && client.plate.toLowerCase().includes(searchQuery.value.toLowerCase()))
-    return isStillParked && matchesSearch
+    return isToday && matchesSearch
   })
 })
 
+function formatDateTime(value) {
+  return formatDateTimeCell(value)
+}
+
 function loadHtml5QrCodeScript() {
   return new Promise((resolve, reject) => {
-    if (window.Html5Qrcode) {
-      resolve()
-      return
-    }
+    if (window.Html5Qrcode) return resolve()
     const script = document.createElement('script')
     script.src = 'https://unpkg.com/html5-qrcode'
     script.onload = () => resolve()
@@ -90,12 +171,8 @@ async function startQrScan() {
   try {
     await loadHtml5QrCodeScript()
     isQrScannerVisible.value = true
-
-    // small timeout to ensure DOM has updated
     setTimeout(() => {
-      if (qrScannerInstance) {
-        qrScannerInstance.clear().catch(() => {})
-      }
+      if (qrScannerInstance) qrScannerInstance.clear().catch(() => {})
       qrScannerInstance = new window.Html5Qrcode('qr-reader')
       qrScannerInstance
         .start(
@@ -105,9 +182,7 @@ async function startQrScan() {
             await handleScannedQR(decodedText)
             stopQrScan()
           },
-          (errorMessage) => {
-            // optional: console.debug(errorMessage)
-          }
+          () => {}
         )
         .catch(err => {
           console.error('Failed to start QR scanner:', err)
@@ -121,20 +196,13 @@ async function startQrScan() {
 
 function stopQrScan() {
   if (qrScannerInstance) {
-    qrScannerInstance
-      .stop()
-      .then(() => {
-        try {
-          qrScannerInstance.clear()
-        } catch (e) {
-          // ignore clear errors
-        }
-        qrScannerInstance = null
-      })
-      .catch(err => {
-        console.error('Failed to stop QR scanner', err)
-        qrScannerInstance = null
-      })
+    qrScannerInstance.stop().then(() => {
+      try { qrScannerInstance.clear() } catch (e) {}
+      qrScannerInstance = null
+    }).catch(err => {
+      console.error('Failed to stop QR scanner', err)
+      qrScannerInstance = null
+    })
   }
   isQrScannerVisible.value = false
 }
@@ -152,7 +220,6 @@ async function handleScannedQR(decodedText) {
       scannedClient.value = response.data.client
       showBilling.value = true
     } else {
-      console.error('Scan failed or client not found.', response.data)
       alert('Client not found or scan invalid.')
     }
   } catch (error) {
@@ -175,7 +242,6 @@ function openEditModal(clientId) {
   showEditModal.value = true
 }
 
-// Updated "More" function to open modal instead of routing
 function more(client) {
   selectedClient.value = client
   showClientInfoModal.value = true
@@ -186,18 +252,19 @@ function parking_History() {
 }
 </script>
 
+
 <template>
   <div class="bg-gray-50 text-gray-900 min-h-screen font-sans">
     <Header />
 
     <main class="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
-      <!-- Greeting -->
+      <!-- Welcome Section -->
       <div class="mb-6">
         <p class="text-sm text-gray-500">WELCOME BACK!</p>
         <h1 class="text-3xl font-bold text-[#7b1c1c]">SHANNEN ANN</h1>
       </div>
 
-      <!-- Stats Cards -->
+      <!-- Dashboard Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-6">
         <div class="bg-[#650000] rounded-lg shadow-md text-center py-5 px-3">
           <div class="text-yellow-400 text-3xl mb-1">
@@ -227,33 +294,31 @@ function parking_History() {
           <div class="text-yellow-400 text-3xl mb-1">
             <i class="fas fa-coins"></i>
           </div>
-          <div class="text-white text-2xl font-bold">₱{{ totalSalesToday.toLocaleString() }}</div>
+          <div class="text-white text-2xl font-bold">
+            ₱{{ totalSalesToday.toLocaleString() }}
+          </div>
           <div class="text-yellow-400 mt-0.5 text-xs">Daily Sales</div>
         </div>
       </div>
 
-      <!-- Controls Section -->
+      <!-- Actions and Filters -->
       <div class="bg-white p-4 rounded-xl shadow-md mt-6">
         <div class="flex flex-col lg:flex-row justify-between items-center gap-4 mb-4">
-          <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search by name or plate"
-              class="px-3 py-2 rounded border border-gray-300 text-sm w-full sm:w-auto"
+              placeholder="Search by name, plate no, or date..."
+              class="px-3 py-2 rounded border border-gray-300 text-sm w-full sm:w-64"
             />
-
-            <!-- Dropdown Filter -->
             <button
               @click="openDailyPOSModal"
               class="bg-[#7b1c1c] text-white px-4 py-2 rounded hover:bg-red-900 text-sm flex items-center gap-2"
             >
-              <i class="fas fa-file"></i>
-              Download POS
+              <i class="fas fa-file"></i> Download POS
             </button>
           </div>
 
-          <!-- Right Controls -->
           <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
             <button
               @click="parking_History"
@@ -261,31 +326,40 @@ function parking_History() {
             >
               Parking History
             </button>
+
             <button
               @click="showClientModal = true"
               class="bg-[#7b1c1c] text-white px-4 py-2 rounded hover:bg-red-900 text-sm"
             >
               + ADD NEW CLIENT
             </button>
-            <!-- Scan Button -->
+
             <button
               @click="startQrScan"
               class="bg-[#7b1c1c] text-white px-4 py-2 rounded hover:bg-red-900 text-sm flex items-center gap-2"
             >
-              <i class="fas fa-qrcode"></i>
-              Scan QR Code
+              <i class="fas fa-qrcode"></i> Scan QR Code
             </button>
 
-            <!-- Fullscreen Camera Overlay -->
+            <button
+              @click="startLicenseScan"
+              class="bg-[#7b1c1c] text-white px-4 py-2 rounded hover:bg-red-900 text-sm flex items-center gap-2"
+            >
+              <i class="fas fa-id-card"></i> Scan License
+            </button>
+
+            <!-- QR Scanner Modal -->
             <div
               v-if="isQrScannerVisible"
               class="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center"
             >
-              <!-- Centered Scanner Card -->
-              <div class="bg-gray-900 rounded-2xl p-4 sm:p-6 shadow-2xl w-[90vw] max-w-md flex flex-col items-center relative">
-                <!-- Title and Close -->
+              <div
+                class="bg-gray-900 rounded-2xl p-4 sm:p-6 shadow-2xl w-[90vw] max-w-md flex flex-col items-center relative"
+              >
                 <div class="w-full flex justify-between items-center mb-2">
-                  <h2 class="text-white font-bold text-lg sm:text-xl text-center flex-1">Scan Client QR Code</h2>
+                  <h2 class="text-white font-bold text-lg sm:text-xl text-center flex-1">
+                    Scan Client QR Code
+                  </h2>
                   <button
                     @click="stopQrScan"
                     class="text-gray-400 hover:text-red-500 text-2xl ml-2 absolute right-4 top-4"
@@ -295,12 +369,10 @@ function parking_History() {
                   </button>
                 </div>
 
-                <p class="text-gray-400 text-sm mb-4 text-center">Align the QR code inside the frame</p>
-
-                <!-- QR Scanner Container -->
+                <p class="text-gray-400 text-sm mb-4 text-center">
+                  Align the QR code inside the frame
+                </p>
                 <div id="qr-reader" class="w-full h-[450px] rounded-xl overflow-hidden shadow-lg"></div>
-
-                <!-- Stop Scan Button -->
                 <button
                   @click="stopQrScan"
                   class="mt-6 w-full px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 text-base sm:text-lg"
@@ -309,10 +381,39 @@ function parking_History() {
                 </button>
               </div>
             </div>
+
+            <!-- License Scanner Modal -->
+            <div
+              v-if="isLicenseScannerVisible"
+              class="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center"
+            >
+              <div
+                class="bg-gray-900 rounded-2xl p-4 shadow-xl w-[90vw] max-w-md flex flex-col items-center relative"
+              >
+                <div class="w-full flex justify-between items-center mb-2">
+                  <h2 class="text-white font-bold text-lg text-center flex-1">Scan Driver’s License</h2>
+                  <button
+                    @click="stopLicenseScan"
+                    class="text-gray-400 hover:text-red-500 text-2xl absolute right-4 top-4"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                <video id="license-camera" autoplay playsinline class="w-full rounded-lg"></video>
+
+                <button
+                  @click="captureLicense"
+                  class="mt-4 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                >
+                  Capture & Process
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Clients Table -->
+        <!-- Table -->
         <div class="overflow-x-auto">
           <table class="w-full table-auto text-sm text-left">
             <thead>
@@ -327,6 +428,7 @@ function parking_History() {
                 <th class="py-2 px-3">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               <tr v-if="fetchError">
                 <td colspan="8" class="text-center text-red-600 py-4">
@@ -349,8 +451,8 @@ function parking_History() {
                 <td class="py-2 px-3">{{ index + 1 }}</td>
                 <td class="py-2 px-3">{{ client.name }}</td>
                 <td class="py-2 px-3">{{ client.plate }}</td>
-                <td class="py-2 px-3">{{ client.time_in }}</td>
-                <td class="py-2 px-3">{{ client.time_out || '—' }}</td>
+                <td class="py-2 px-3">{{ formatDateTime(client.time_in) }}</td>
+                <td class="py-2 px-3">{{ formatDateTime(client.time_out) }}</td>
                 <td class="py-2 px-3">{{ client.status }}</td>
                 <td class="px-6 py-4">
                   <img
@@ -377,7 +479,6 @@ function parking_History() {
                     >
                       <i class="fas fa-ellipsis-v"></i>
                     </button>
-
                   </div>
                 </td>
               </tr>
@@ -386,23 +487,13 @@ function parking_History() {
         </div>
       </div>
 
+      <!-- Modals -->
       <ClientFormModal v-model:show="showClientModal" />
+      <ClientFormModal v-model:show="showClientModal" :prefill="licenseData" />
       <EditClientModal v-model:show="showEditModal" :id="selectedClientId" />
-      <DailyPOSModal
-        :is-visible="showDailyPOSModal"
-        @close="showDailyPOSModal = false"
-      />
-
-      <BillingCheckoutModal
-        v-if="showBilling"
-        :clientData="scannedClient"
-        @close="closeBilling"
-      />
-      <ClientInfoModal
-        v-if="showClientInfoModal"
-        :client="selectedClient"
-        @close="showClientInfoModal = false"
-      />
+      <DailyPOSModal :is-visible="showDailyPOSModal" @close="showDailyPOSModal = false" />
+      <BillingCheckoutModal v-if="showBilling" :clientData="scannedClient" @close="closeBilling" />
+      <ClientInfoModal v-if="showClientInfoModal" :client="selectedClient" @close="showClientInfoModal = false" />
     </main>
 
     <Footer />

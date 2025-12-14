@@ -7,15 +7,17 @@ use Endroid\QrCode\Builder\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PayPark\PayParkClient;
-use App\Models\AuditLog;
+use App\Models\AuditLog; // ✅ Import AuditLog model
 
 class PayParkClientController extends Controller
 {
     public function index()
     {
+        
         try {
             $clients = PayParkClient::orderByDesc('created_at')->get();
 
@@ -36,6 +38,7 @@ class PayParkClientController extends Controller
                 'fetchError' => 'Failed to fetch client data: ' . $e->getMessage(),
             ]);
         }
+       
     }
 
     public function store(Request $request)
@@ -122,15 +125,15 @@ class PayParkClientController extends Controller
             return response()->json(['message' => 'Client marked as COMPLETED']);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'plate_number' => 'required|string',
-        ]);
+       $validated = $request->validate([
+    'name' => 'required|string',
+    'plate' => 'required|string',
+]);
 
-        $client->update([
-            'name' => $data['name'],
-            'plate_number' => $data['plate_number'],
-        ]);
+$client->update([
+    'name' => $data['name'],
+    'plate' => $data['plate'],
+]);
 
         // 🔹 Audit Log
         AuditLog::create([

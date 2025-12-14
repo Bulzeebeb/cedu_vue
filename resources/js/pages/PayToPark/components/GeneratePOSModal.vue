@@ -238,7 +238,7 @@ const downloadPOS = async () => {
     const facilityRows = facilities.map(item => {
       const isChecked = item.includes('Others');
       return {
-        select: isChecked ? '☑' : '☐',
+        select: isChecked ? '[ / ]' : '[  ]',   // ✅ FIXED: checkbox works in jsPDF
         facility: item,
         cost: isChecked ? totalCost.toFixed(2) : ''
       };
@@ -261,8 +261,8 @@ const downloadPOS = async () => {
         valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 120 },
+        0: { cellWidth: 12, halign: 'center' },  // widen checkbox col
+        1: { cellWidth: 118 },
         2: { cellWidth: 52, halign: 'right' }
       }
     });
@@ -283,7 +283,7 @@ const downloadPOS = async () => {
     ];
 
     const paymentRows = payments.map(item => ({
-      select: '☐',
+      select: '[  ]',   // ✅ FIXED: use [ ] for all since none are selected
       description: item,
       cost: ''
     }));
@@ -305,38 +305,39 @@ const downloadPOS = async () => {
         valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 120 },
+        0: { cellWidth: 12, halign: 'center' },
+        1: { cellWidth: 118 },
         2: { cellWidth: 52, halign: 'right' }
       }
     });
 
-    y = pdf.lastAutoTable.finalY + 6;
 
-    // === TOTAL COST ===
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(10);
-    pdf.text(`Total Cost: Php`, 135, y);
-    pdf.text(totalCost.toFixed(2), 195, y, { align: 'right' });
-    y += 18;
+        y = pdf.lastAutoTable.finalY + 6;
 
-    // === SIGNATURE SECTION ===
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text('By: Staff', marginLeft, y);
-    pdf.text('Noted by: CEDU Head / RMD Director', 130, y);
-    y += 6;
-    pdf.text('_____________________', marginLeft, y);
-    pdf.text('_____________________', 130, y);
+        // === TOTAL COST ===
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(10);
+        pdf.text(`Total Cost: Php`, 135, y);
+        pdf.text(totalCost.toFixed(2), 195, y, { align: 'right' });
+        y += 18;
 
-    // === DOWNLOAD PDF ===
-    pdf.save(`POS_${name.replace(/\s+/g, '_')}.pdf`);
-  } catch (err) {
-    console.error('Error generating PDF:', err);
-  } finally {
-    isDownloading.value = false;
-  }
-};
+        // === SIGNATURE SECTION ===
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.text('By: Staff', marginLeft, y);
+        pdf.text('Noted by: CEDU Head / RMD Director', 130, y);
+        y += 6;
+        pdf.text('_____________________', marginLeft, y);
+        pdf.text('_____________________', 130, y);
+
+        // === DOWNLOAD PDF ===
+        pdf.save(`POS_${name.replace(/\s+/g, '_')}.pdf`);
+      } catch (err) {
+        console.error('Error generating PDF:', err);
+      } finally {
+        isDownloading.value = false;
+      }
+    };
 
 
 </script>
