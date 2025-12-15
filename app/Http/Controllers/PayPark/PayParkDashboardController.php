@@ -70,12 +70,17 @@ class PayParkDashboardController extends Controller
             'avgParkingTime'    => $stats['avgParkingTime'],
             'returningClients'  => $stats['returningClientsPercent'],
             'newUsersThisMonth' => $stats['newUsers'],
+<<<<<<< Updated upstream
 
             // Chart + grid bars
             'chart'   => $chart,
             'months'  => $hoverBars,
 
             // Filters/state sent to frontend
+=======
+            'chart' => $chart,
+            'months' => $hoverBars,
+>>>>>>> Stashed changes
             'filters' => [
                 'mode'           => $mode,
                 'year'           => $year ?: null,

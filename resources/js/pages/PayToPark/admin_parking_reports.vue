@@ -14,7 +14,11 @@ const props = defineProps({
 })
 const entries = toRef(props, 'entries')
 
+<<<<<<< Updated upstream
 // Sidebar toggle state
+=======
+// Sidebar toggle
+>>>>>>> Stashed changes
 const sidebarOpen = ref(false)
 
 function toggleSidebar() {
@@ -82,6 +86,21 @@ const paginatedReports = computed(() => {
   return filteredReports.value.slice(start, start + itemsPerPage.value)
 })
 
+<<<<<<< Updated upstream
+=======
+// Visible page numbers
+const visiblePages = computed(() => {
+  const pages = []
+  let start = Math.max(1, currentPage.value - 2)
+  let end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
+// Change page
+>>>>>>> Stashed changes
 function changePage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
@@ -419,6 +438,7 @@ function downloadFilteredPDF() {
 </script>
 
 <template>
+<<<<<<< Updated upstream
   <div class="min-h-screen flex flex-col md:flex-row font-sans text-[#5F1213]">
     <!-- Sidebar -->
     <AdminSidebarP2P :sidebarOpen="sidebarOpen" @close="closeSidebar" />
@@ -428,6 +448,13 @@ function downloadFilteredPDF() {
       <!-- Header -->
       <header class="flex flex-wrap items-center justify-between mb-6 gap-3">
         <div class="flex items-center gap-3">
+=======
+  <div class="min-h-screen flex font-sans text-[#5F1213]">
+    <AdminSidebarP2P />
+    <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
+      <header class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+>>>>>>> Stashed changes
           <button class="md:hidden text-2xl hover:text-[#FFA600]" @click="toggleSidebar">
             <i class="fas fa-bars"></i>
           </button>

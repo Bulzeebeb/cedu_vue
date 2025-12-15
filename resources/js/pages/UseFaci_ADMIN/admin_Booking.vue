@@ -149,7 +149,7 @@ onMounted(() => {
 })
 
 function fetchBookings() {
-  fetch('/bookings')
+  return fetch('/bookings')
     .then(res => res.json())
     .then(data => {
       bookings.value = data
@@ -198,7 +198,7 @@ function updateBookingStatus(id, status) {
     if (booking) {
       createNotification(id, status, booking)
     }
-    fetchBookings()
+    fetchBookings() // Refresh the bookings list
   })
   .catch(error => console.error('Error updating booking:', error))
 }

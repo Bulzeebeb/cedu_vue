@@ -1,6 +1,7 @@
 <template>
   <div class="bg-gray-50 text-gray-900 min-h-screen font-sans">
     <!-- Header -->
+<<<<<<< Updated upstream
     <header
       class="bg-maroon text-white py-2 px-4 flex flex-col sm:flex-row justify-between items-center gap-2"
     >
@@ -9,6 +10,12 @@
         <h1 class="text-lg font-bold">
           CEDU <span class="text-blue-300">iCentral</span>
         </h1>
+=======
+    <header class="bg-maroon text-white py-2 px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <img src="/images/logo.png" alt="CEDU Logo" class="h-10 w-10" />
+        <h1 class="text-lg font-bold">CEDU <span class="text-blue-300">iCentral</span></h1>
+>>>>>>> Stashed changes
       </div>
     </header>
 
@@ -166,13 +173,40 @@
         </button>
       </div>
     </section>
+<<<<<<< Updated upstream
+=======
+
+    <!-- Footer -->
+    <footer class="bg-maroon text-white mt-10 py-6 px-4 sm:px-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
+      <div>
+        <h3 class="font-bold mb-1">Support</h3>
+        <p>University of Southeastern Philippines,<br />Tagum-Mabini Campus, Tagum Unit, CEDU Office, Apokon, Tagum City</p>
+        <p>cedu@usep.edu.ph<br />+88015-88888-9998</p>
+      </div>
+      <div>
+        <h3 class="font-bold mb-1">Account</h3>
+        <p>My Account</p>
+        <p>Login / Register</p>
+      </div>
+      <div>
+        <h3 class="font-bold mb-1">Quick Link</h3>
+        <p>Privacy Policy</p>
+        <p>Terms of Use</p>
+        <p>FAQ</p>
+        <p>Contact</p>
+      </div>
+    </footer>
+>>>>>>> Stashed changes
   </div>
 </template>
 
 <script setup>
 import { ref, computed, toRef, watch } from 'vue'
 import jsPDF from 'jspdf'
+<<<<<<< Updated upstream
 import autoTable from 'jspdf-autotable'
+=======
+>>>>>>> Stashed changes
 
 const props = defineProps({
   entries: {

@@ -39,6 +39,7 @@ const monthsNames = [
 
 // Sidebar toggle state
 const sidebarOpen = ref(false)
+<<<<<<< Updated upstream
 
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
@@ -48,6 +49,9 @@ function closeSidebar() {
   console.log('Sidebar closed') // ✅ this should appear
   sidebarOpen.value = false
 }
+=======
+const toggleSidebar = () => (sidebarOpen.value = !sidebarOpen)
+>>>>>>> Stashed changes
 
 const mode = ref(props.filters.mode || 'multi-year')
 const year = ref(props.filters.year)
@@ -175,7 +179,11 @@ function renderChart() {
   });
 }
 
+<<<<<<< Updated upstream
 // ✅ Live-update when backend updates chart data
+=======
+// ✅ Watch chart as a whole for updates
+>>>>>>> Stashed changes
 watch(() => props.chart, () => renderChart(), { deep: true })
 onMounted(renderChart)
 
@@ -185,6 +193,7 @@ function resetDependentSelections(newMode) {
     year.value = null; month.value = null; startDate.value = null; endDate.value = null
   } else if (newMode === 'monthly') {
     month.value = null; startDate.value = null; endDate.value = null
+<<<<<<< Updated upstream
     if (availableYears.value.length && (year.value == null)) {
       year.value = availableYears.value[0]
     }
@@ -194,6 +203,13 @@ function resetDependentSelections(newMode) {
       year.value = availableYears.value[0]
     }
     if (month.value == null) month.value = new Date().getMonth() + 1
+=======
+    if (!year.value && availableYears.value.length) year.value = availableYears.value[0]
+  } else if (newMode === 'daily') {
+    startDate.value = null; endDate.value = null
+    if (!year.value && availableYears.value.length) year.value = availableYears.value[0]
+    if (!month.value) month.value = new Date().getMonth() + 1
+>>>>>>> Stashed changes
   } else if (newMode === 'custom') {
     year.value = null; month.value = null
     if (!startDate.value || !endDate.value) {
@@ -208,6 +224,7 @@ function resetDependentSelections(newMode) {
 let fetchTimer = null
 
 function triggerFetch() {
+<<<<<<< Updated upstream
   if (fetchTimer) clearTimeout(fetchTimer)
 
   fetchTimer = setTimeout(() => {
@@ -235,6 +252,23 @@ watch(mode, async (m) => {
 })
 
 // When any filter changes, just fetch. No early returns.
+=======
+  const params = { mode: mode.value } // ✅ send mode explicitly
+  if (mode.value === 'monthly' && year.value != null) params.year = year.value
+  else if (mode.value === 'daily' && year.value != null && month.value != null) {
+    params.year = year.value; params.month = month.value
+  } else if (mode.value === 'custom' && startDate.value && endDate.value) {
+    params.startDate = startDate.value; params.endDate = endDate.value
+  }
+  router.get(route('admin.dashboard'), params, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  })
+}
+
+watch(mode, (m) => { resetDependentSelections(m); triggerFetch() })
+>>>>>>> Stashed changes
 watch([year, month, startDate, endDate], () => {
   triggerFetch()
 })
@@ -269,9 +303,15 @@ function exportChart() {
 
 <template>
   <div class="min-h-screen flex font-sans text-[#5F1213]">
+<<<<<<< Updated upstream
     <AdminSidebarP2P :sidebarOpen="sidebarOpen" @close="closeSidebar"/>
 
     <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10 transition-all duration-300">
+=======
+    <AdminSidebarP2P />
+
+    <div class="flex-1 md:ml-64 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen p-10">
+>>>>>>> Stashed changes
       <header class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
           <button class="md:hidden text-2xl" @click="toggleSidebar">
@@ -283,7 +323,12 @@ function exportChart() {
 
       <div class="h-1 w-full bg-gradient-to-r from-[#5F1213] via-[#FFA600] to-[#5F1213] rounded-full mb-6"></div>
 
+<<<<<<< Updated upstream
      
+=======
+      <!-- Filters Row -->
+      
+>>>>>>> Stashed changes
 
       <!-- KPI Cards -->
       <main class="p-4 flex-1">
@@ -314,6 +359,7 @@ function exportChart() {
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+<<<<<<< Updated upstream
   <!-- Revenue Graph -->
   <div class="col-span-2 bg-white border border-gray-200 p-6 rounded-lg shadow">
     <div class="mb-6 flex items-center justify-between">
@@ -412,6 +458,69 @@ function exportChart() {
   </div>
 </div>
 
+=======
+          <div class="col-span-2 bg-white border border-gray-200 p-6 rounded-lg shadow">
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-[#5F1213]">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                  
+        <div class="bg-white p-4 rounded-lg shadow border">
+          
+          <label class="text-sm text-gray-600">View</label>
+          <select v-model="mode" class="mt-1 w-full border rounded p-2">
+            <option value="multi-year">All Years (Totals)</option>
+            <option value="monthly">By Year → Monthly</option>
+            <option value="daily">By Month → Daily</option>
+            <option value="custom">Date Range</option>
+          </select>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow border" v-if="mode === 'monthly' || mode === 'daily'">
+          <label class="text-sm text-gray-600">Year</label>
+          <select v-model.number="year" class="mt-1 w-full border rounded p-2">
+            <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+          </select>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow border" v-if="mode === 'daily'">
+          <label class="text-sm text-gray-600">Month</label>
+          <select v-model.number="month" class="mt-1 w-full border rounded p-2">
+            <option v-for="m in monthsNames" :key="m.v" :value="m.v">{{ m.n }}</option>
+          </select>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow border" v-if="mode === 'custom'">
+          <label class="text-sm text-gray-600">Start Date</label>
+          <input type="date" v-model="startDate" class="mt-1 w-full border rounded p-2" />
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow border" v-if="mode === 'custom'">
+          <label class="text-sm text-gray-600">End Date</label>
+          <input type="date" v-model="endDate" class="mt-1 w-full border rounded p-2" />
+        </div>
+      </div>
+                REVENUE GRAPH — {{ props.chart.title }}
+              </h3>
+            </div>
+            <div class="relative h-72">
+              <canvas ref="chartCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-lg shadow space-y-6">
+            <h3 class="text-lg font-bold mb-4 text-[#5F1213]">Insights</h3>
+            <div class="flex items-center justify-between">
+              <span>Avg. Parking Time</span><span class="font-semibold">{{ props.avgParkingTime }} mins</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Returning Clients</span><span class="font-semibold">{{ props.returningClients }}%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>New Users</span><span class="font-semibold">{{ props.newUsersThisMonth }}</span>
+            </div>
+          </div>
+        </div>
+>>>>>>> Stashed changes
       </main>
     </div>
   </div>
@@ -419,4 +528,8 @@ function exportChart() {
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+<<<<<<< Updated upstream
 </style>
+=======
+</style>
+>>>>>>> Stashed changes

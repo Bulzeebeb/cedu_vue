@@ -1,7 +1,11 @@
 <template>
   <div class="min-h-screen flex flex-col md:flex-row font-sans bg-gray-100">
     <!-- Sidebar -->
+<<<<<<< Updated upstream
     <AdminSidebarP2P :sidebarOpen="sidebarOpen" @close="closeSidebar" />
+=======
+    <AdminSidebarP2P />
+>>>>>>> Stashed changes
 
     <!-- Main Content -->
     <main
@@ -122,6 +126,10 @@ const props = defineProps({
 })
 const logs = ref(props.logs.data || props.logs)
 
+<<<<<<< Updated upstream
+=======
+// Search filter
+>>>>>>> Stashed changes
 const searchQuery = ref('')
 const selectedFilter = ref('all')
 
