@@ -7,17 +7,45 @@ use Endroid\QrCode\Builder\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PayPark\PayParkClient;
-use App\Models\AuditLog;
+use App\Models\AuditLog; // ✅ Import AuditLog model
 
 class PayParkClientController extends Controller
 {
     public function index()
     {
+        
         try {
             $clients = PayParkClient::orderByDesc('created_at')->get();
+            
+            // Get the authenticated user
+            $user = Auth::user();
+            $admin = null;
+
+            if ($user) {
+                // If staff, load staff account
+                if ($user->role === 'staff' && $user->staffAccount) {
+                    $admin = [
+                        'id' => $user->id,
+                        'first_name' => $user->staffAccount->firstName,
+                        'last_name' => $user->staffAccount->lastName,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                    ];
+                } else {
+                    // Fallback for admin or other users
+                    $admin = [
+                        'id' => $user->id,
+                        'first_name' => $user->first_name ?? 'Staff',
+                        'last_name' => $user->last_name ?? '',
+                        'email' => $user->email,
+                        'role' => $user->role,
+                    ];
+                }
+            }
 
             // 🔹 Audit Log
             AuditLog::create([
@@ -28,14 +56,42 @@ class PayParkClientController extends Controller
             ]);
 
             return Inertia::render('PayToPark/staff_Dashboard', [
-                'clients' => $clients
+                'clients' => $clients,
+                'admin' => $admin
             ]);
         } catch (\Exception $e) {
+            $user = Auth::user();
+            $admin = null;
+
+            if ($user) {
+                // If staff, load staff account
+                if ($user->role === 'staff' && $user->staffAccount) {
+                    $admin = [
+                        'id' => $user->id,
+                        'first_name' => $user->staffAccount->firstName,
+                        'last_name' => $user->staffAccount->lastName,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                    ];
+                } else {
+                    // Fallback for admin or other users
+                    $admin = [
+                        'id' => $user->id,
+                        'first_name' => $user->first_name ?? 'Staff',
+                        'last_name' => $user->last_name ?? '',
+                        'email' => $user->email,
+                        'role' => $user->role,
+                    ];
+                }
+            }
+            
             return Inertia::render('PayToPark/staff_Dashboard', [
                 'clients' => [],
+                'admin' => $admin,
                 'fetchError' => 'Failed to fetch client data: ' . $e->getMessage(),
             ]);
         }
+       
     }
 
     public function store(Request $request)
@@ -122,15 +178,15 @@ class PayParkClientController extends Controller
             return response()->json(['message' => 'Client marked as COMPLETED']);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'plate_number' => 'required|string',
-        ]);
+       $validated = $request->validate([
+    'name' => 'required|string',
+    'plate' => 'required|string',
+]);
 
-        $client->update([
-            'name' => $data['name'],
-            'plate_number' => $data['plate_number'],
-        ]);
+$client->update([
+    'name' => $data['name'],
+    'plate' => $data['plate'],
+]);
 
         // 🔹 Audit Log
         AuditLog::create([

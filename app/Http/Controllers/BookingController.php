@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Models\AuditLog;
 use Inertia\Inertia;
 
 class BookingController extends Controller
@@ -79,35 +80,49 @@ class BookingController extends Controller
     }
 
     /**
-     * Get all bookings for admin
+     * Get all bookings for admin or client booking history
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $bookings = Booking::with('facility.category')
-                ->orderBy('check_in', 'desc')
+            $query = Booking::with('facility.category');
+
+            // If user_id is provided, filter for client booking history
+            if ($request->has('user_id') && $request->user_id) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            $bookings = $query->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($booking) {
                     return [
                         'id' => $booking->id,
                         'user_id' => $booking->user_id,
                         'facility' => $booking->facility->name ?? 'N/A',
+                        'facility_name' => $booking->facility->name ?? 'N/A',
                         'category' => $booking->facility->category->name ?? 'N/A',
                         'customer' => $booking->customer_name,
-                        'checkIn' => $booking->check_in->format('Y-m-d\TH:i:s'),
-                        'checkOut' => $booking->check_out->format('Y-m-d\TH:i:s'),
+                        'customer_name' => $booking->customer_name,
+                        'customer_email' => $booking->customer_email,
+                        'customer_contact' => $booking->customer_contact,
+                        'checkIn' => $booking->check_in ? $booking->check_in->format('Y-m-d\TH:i:s') : null,
+                        'checkOut' => $booking->check_out ? $booking->check_out->format('Y-m-d\TH:i:s') : null,
+                        'check_in' => $booking->check_in ? $booking->check_in->format('Y-m-d\TH:i:s') : null,
+                        'check_out' => $booking->check_out ? $booking->check_out->format('Y-m-d\TH:i:s') : null,
                         'duration' => $booking->duration,
                         'status' => $booking->status,
                         'email' => $booking->customer_email,
                         'contact' => $booking->customer_contact,
                         'total_amount' => $booking->total_amount ?? 0,
+                        'total' => $booking->total_amount ?? 0,
                         'booking_type' => $booking->booking_type,
                         'number_of_guests' => $booking->number_of_guests,
                         'additional_notes' => $booking->additional_notes,
                         'usep_affiliation' => $booking->usep_affiliation,
-                        'created_at' => $booking->created_at->format('Y-m-d\TH:i:s'),
+                        'created_at' => $booking->created_at ? $booking->created_at->format('Y-m-d\TH:i:s') : null,
+                        'updated_at' => $booking->updated_at ? $booking->updated_at->format('Y-m-d\TH:i:s') : null,
+                        'booking_date' => $booking->created_at ? $booking->created_at->format('Y-m-d') : null,
                         'special_requests' => $booking->additional_notes, // Map additional_notes to special_requests for frontend
-                        'customer_email' => $booking->customer_email,
                         'customer_phone' => $booking->customer_contact,
                         'facility_details' => $booking->facility ? $booking->facility->description : null,
                         'payment_status' => 'Pending' // Default payment status
@@ -137,6 +152,21 @@ class BookingController extends Controller
             $oldStatus = $booking->status;
             try {
                 $booking->update($validated);
+
+                // Audit Log
+                AuditLog::create([
+                    'user_id' => Auth::guard('admin')->id(),
+                    'action' => 'Updated Booking Status',
+                    'details' => json_encode([
+                        'booking_id' => $booking->id,
+                        'facility_name' => $booking->facility->name ?? 'Unknown',
+                        'customer_name' => $booking->customer_name,
+                        'previous_status' => $oldStatus,
+                        'new_status' => $validated['status'],
+                        'booking_type' => $booking->booking_type
+                    ]),
+                    'ip_address' => $request->ip(),
+                ]);
             } catch (\Exception $e) {
                 Log::error('Failed to update booking: ' . $e->getMessage());
                 throw $e;

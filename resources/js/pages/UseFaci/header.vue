@@ -7,14 +7,21 @@ const page = usePage()
 
 const showDropdown = ref(false)
 const showNotifications = ref(false)
+const showBookingHistory = ref(false)
 const isMobileMenuOpen = ref(false)
 let pollInterval = null
 let lastNotificationCount = 0
+
+const bookingHistory = ref([])
 
 const userName = computed(() => {
   const user = page.props.auth?.user
   if (!user) return 'User'
   return user.firstName || user.name || 'User'
+})
+
+const currentBookings = computed(() => {
+  return bookingHistory.value.filter(booking => booking.status === 'confirmed' || booking.status === 'pending')
 })
 
 const notifications = ref([])
@@ -23,6 +30,7 @@ const unreadCount = computed(() => notifications.value.filter(n => !n.read).leng
 
 onMounted(() => {
   fetchNotifications();
+  fetchBookingHistory();
   // Poll every 3 seconds for faster updates
   pollInterval = setInterval(() => {
     fetchNotifications();
@@ -176,6 +184,68 @@ function markAllAsRead() {
 function logout() {
   router.visit('/om-landing')
 }
+
+function fetchBookingHistory() {
+  const userId = page.props.auth?.user?.id || localStorage.getItem('user_id');
+  
+  if (!userId) {
+    console.warn('No user ID available for booking history');
+    return;
+  }
+  
+  const url = `/bookings?user_id=${userId}`;
+  
+  fetch(url, {
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      const formattedData = (Array.isArray(data) ? data : data.data || []).map(b => ({
+        ...b,
+        bookingDate: formatDate(b.created_at || b.booking_date),
+      }));
+      bookingHistory.value = formattedData;
+    })
+    .catch(error => {
+      console.error('✗ Error fetching booking history:', error);
+    });
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return 'N/A'
+  const date = new Date(timestamp)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function downloadPOS(bookingId) {
+  const userId = page.props.auth?.user?.id;
+  
+  fetch(`/bookings/${bookingId}/receipt`, {
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Receipt-${bookingId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    })
+    .catch(error => console.error('✗ Error downloading receipt:', error));
+}
 </script>
 
 <template>
@@ -204,6 +274,70 @@ function logout() {
 
       <!-- Notification + Profile Icons (Desktop Only) -->
       <div class="relative hidden md:flex items-center gap-4 ml-4">
+        
+        <!-- Booking History Icon -->
+        <div class="relative">
+          <button @click="showBookingHistory = !showBookingHistory"
+            class="relative flex items-center justify-center w-10 h-10 bg-white/20 hover:bg-yellow-400 text-white rounded-full border border-white/40 hover:scale-105 transition"
+            title="Booking History">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </button>
+
+          <!-- Booking History Dropdown -->
+          <div v-if="showBookingHistory"
+            class="absolute right-0 mt-2 w-96 bg-white text-gray-800 rounded-lg shadow-2xl z-50 animate-fade-in max-h-96 overflow-y-auto">
+            
+            <!-- Header -->
+            <div class="bg-[#650000] text-white p-4 border-b">
+              <h3 class="text-lg font-bold">Current Bookings</h3>
+            </div>
+
+            <!-- Bookings List -->
+            <div class="divide-y divide-gray-200">
+              <div v-for="booking in currentBookings" :key="booking.id"
+                class="p-4 hover:bg-gray-50 transition">
+                <div class="flex items-start justify-between gap-3">
+                  <!-- Booking Details -->
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-800">{{ booking.facility_name || 'Facility' }}</h4>
+                    <p class="text-sm text-gray-600 mt-1">ID: #{{ booking.id }}</p>
+                    <p class="text-sm text-gray-600">Date: {{ booking.bookingDate }}</p>
+                    <p class="text-sm text-gray-600">Status: 
+                      <span :class="['font-semibold', 
+                        booking.status === 'confirmed' ? 'text-green-600' : 
+                        booking.status === 'pending' ? 'text-yellow-600' : 
+                        booking.status === 'cancelled' ? 'text-red-600' : 'text-gray-600']">
+                        {{ booking.status || 'N/A' }}
+                      </span>
+                    </p>
+                    <p v-if="booking.total" class="text-sm font-semibold text-gray-800 mt-1">
+                      ₦{{ Number(booking.total).toLocaleString() }}
+                    </p>
+                  </div>
+
+                  <!-- Download Button -->
+                  <button @click="downloadPOS(booking.id)"
+                    class="ml-2 flex-shrink-0 px-3 py-1 bg-[#650000] text-white rounded hover:bg-[#8b1e1e] transition text-sm font-medium whitespace-nowrap">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-if="currentBookings.length === 0" class="p-8 text-center text-gray-500">
+              <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p>No current bookings</p>
+            </div>
+          </div>
+        </div>
         
         <!-- Notification Icon -->
         <div class="relative">

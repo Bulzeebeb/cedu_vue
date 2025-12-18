@@ -1,8 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import Tesseract from 'tesseract.js'
+
+const page = usePage()
 
 import Header from './staffHeader.vue'
 import Footer from '../footer.vue'
@@ -12,7 +15,7 @@ import DailyPOSModal from '@/pages/PayToPark/components/DailyPOSModal.vue'
 import BillingCheckoutModal from '@/pages/PayToPark/components/BillingCheckoutModal.vue'
 import ClientInfoModal from '@/pages/PayToPark/components/ClientInfoModal.vue'
 
-const { entries, clients, fetchError } = defineProps({
+const { entries, clients, fetchError, admin } = defineProps({
   entries: {
     type: Array,
     default: () => []
@@ -24,6 +27,10 @@ const { entries, clients, fetchError } = defineProps({
   fetchError: {
     type: String,
     default: ''
+  },
+  admin: {
+    type: Object,
+    default: null
   }
 })
 
@@ -46,8 +53,11 @@ const isQrScannerVisible = ref(false)
 const sortBy = ref('time_in')
 const sortOrder = ref('desc')
 const isLoading = ref(false)
+const isLicenseScannerVisible = ref(false)
+const licenseData = ref({ firstName: '', lastName: '' })
 
 let qrScannerInstance = null
+let licenseStream = null
 
 // Client Info Modal
 const selectedClient = ref(null)
@@ -57,6 +67,8 @@ const showClientInfoModal = ref(false)
 onMounted(async () => {
   try {
     isLoading.value = true
+    // Debug: Log the admin data
+    console.log('Admin data:', admin)
     const { data } = await axios.get('/dashboard-stats')
     totalVehiclesParkedToday.value = data.totalVehiclesParkedToday ?? 0
     vehiclesStillIn.value = data.vehiclesStillIn ?? 0
@@ -198,6 +210,70 @@ function stopQrScan() {
       })
   }
   isQrScannerVisible.value = false
+}
+
+// License Scanning Functions
+async function startLicenseScan() {
+  try {
+    isLicenseScannerVisible.value = true
+    await nextTick()
+    const video = document.getElementById('license-camera')
+    if (!video) throw new Error('License video element not found')
+    licenseStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    video.srcObject = licenseStream
+    await video.play()
+  } catch (err) {
+    Swal.fire({
+      title: 'Camera Error',
+      text: 'Unable to access camera for license scan',
+      icon: 'error',
+      confirmButtonColor: '#7b1c1c'
+    })
+    console.error(err)
+    isLicenseScannerVisible.value = false
+  }
+}
+
+async function captureLicense() {
+  const video = document.getElementById('license-camera')
+  const canvas = document.createElement('canvas')
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+  try {
+    const { data: { text } } = await Tesseract.recognize(canvas, 'eng')
+    console.log('OCR Result:', text)
+
+    const nameMatch = text.match(/([A-Z\s]+),\s*([A-Z\s\.]+)/)
+    if (nameMatch) {
+      licenseData.value.lastName = nameMatch[1].trim()
+      const rawFirstNames = nameMatch[2].trim().split(/\s+/)
+      const filtered = rawFirstNames.filter(word => !/^[A-Z]\.?$/.test(word))
+      licenseData.value.firstName = filtered.slice(0, 3).join(" ")
+    }
+
+    showClientModal.value = true
+    isLicenseScannerVisible.value = false
+    stopLicenseScan()
+  } catch (err) {
+    console.error('OCR failed:', err)
+    Swal.fire({
+      title: 'OCR Error',
+      text: 'Could not read license. Try again.',
+      icon: 'error',
+      confirmButtonColor: '#7b1c1c'
+    })
+  }
+}
+
+function stopLicenseScan() {
+  if (licenseStream) {
+    licenseStream.getTracks().forEach(track => track.stop())
+    licenseStream = null
+  }
+  isLicenseScannerVisible.value = false
 }
 
 async function handleScannedQR(decodedText) {
@@ -368,7 +444,7 @@ function openAddClientModal() {
       <!-- Welcome Section -->
       <div class="mb-8">
         <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Welcome Back!</p>
-        <h1 class="text-4xl font-bold text-[#7b1c1c] mt-2"><span class="font-bold">{{($page.props.admin?.first_name || 'Staff') + '!' }}</span></h1>
+        <h1 class="text-4xl font-bold text-[#7b1c1c] mt-2"><span class="font-bold">{{ (admin?.first_name || 'Staff') + '!' }}</span></h1>
         <p class="text-gray-600 mt-1">Parking Dashboard Overview</p>
       </div>
 
@@ -500,6 +576,13 @@ function openAddClientModal() {
           >
             <i class="fas fa-history"></i>
             Parking History
+          </button>
+          <button
+            @click="startLicenseScan"
+            class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+          >
+            <i class="fas fa-id-card"></i>
+            Scan License
           </button>
         </div>
       </div>
@@ -650,10 +733,49 @@ function openAddClientModal() {
           </div>
         </div>
       </transition>
+
+      <!-- License Scanner Overlay -->
+      <transition name="fade">
+        <div
+          v-if="isLicenseScannerVisible"
+          class="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center bg-black bg-opacity-50"
+        >
+          <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl w-[90vw] max-w-sm flex flex-col items-center relative">
+            <button
+              @click="stopLicenseScan"
+              class="absolute top-4 right-4 text-gray-400 hover:text-red-600 text-2xl transition-colors"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+
+            <i class="fas fa-id-card text-4xl text-purple-600 mb-4"></i>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Scan Driver's License</h2>
+            <p class="text-gray-600 text-sm text-center mb-6">Position the license within the frame to capture</p>
+
+            <video id="license-camera" autoplay playsinline class="w-full h-96 rounded-xl overflow-hidden shadow-lg mb-6 border-4 border-purple-600 object-cover"></video>
+
+            <div class="flex gap-3 w-full">
+              <button
+                @click="captureLicense"
+                class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                <i class="fas fa-camera mr-2"></i>Capture
+              </button>
+              <button
+                @click="stopLicenseScan"
+                class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                <i class="fas fa-times mr-2"></i>Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </main>
 
     <!-- Modals -->
-    <ClientFormModal v-model:show="showClientModal" />
+    <ClientFormModal v-model:show="showClientModal" :prefill="licenseData" />
     <EditClientModal v-model:show="showEditModal" :id="selectedClientId" />
     <DailyPOSModal :is-visible="showDailyPOSModal" @close="showDailyPOSModal = false" />
     <BillingCheckoutModal v-if="showBilling" :clientData="scannedClient" @close="closeBilling" />

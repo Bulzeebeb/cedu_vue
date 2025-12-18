@@ -19,6 +19,7 @@ class Booking extends Model
         'status',
         'booking_type',
         'number_of_guests',
+        'total_amount',
         'additional_notes',
         'usep_affiliation',
         'usep_id_file'
@@ -32,6 +33,11 @@ class Booking extends Model
     public function facility(): BelongsTo
     {
         return $this->belongsTo(Facility::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function userClient(): BelongsTo

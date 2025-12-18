@@ -317,6 +317,13 @@
                   >
                     <i class="fas fa-edit"></i>
                   </button>
+                  <button
+                    class="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700 transition tooltip"
+                    @click="generatePOS(booking)"
+                    title="Generate POS"
+                  >
+                    <i class="fas fa-file-pdf"></i>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -622,6 +629,13 @@
           </form>
         </div>
       </div>
+
+      <!-- POS Modal -->
+      <UseFaciPOS 
+        :isOpen="showPOSModal" 
+        :orderData="posOrderData"
+        @close="closePOSModal"
+      />
     </main>
   </div>
 </template>
@@ -629,6 +643,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AdminSidebar from './adminSidebar.vue'
+import UseFaciPOS from './UseFaciPOS.vue'
 import Swal from 'sweetalert2'
 
 // Reactive variables
@@ -641,6 +656,7 @@ const selectAll = ref(false)
 // Modal states
 const showDetailsModal = ref(false)
 const showEditModal = ref(false)
+const showPOSModal = ref(false)
 
 // Filters and search
 const searchQuery = ref('')
@@ -661,6 +677,9 @@ const editForm = ref({
   status: '',
   special_requests: ''
 })
+
+// POS related
+const posOrderData = ref({})
 
 // Statistics computed properties
 const totalBookings = computed(() => bookings.value.length)
@@ -1225,6 +1244,29 @@ function updateBooking() {
   .finally(() => {
     loading.value = false
   })
+}
+
+// POS Modal functions
+function generatePOS(booking) {
+  // Prepare order data from booking
+  posOrderData.value = {
+    orderId: booking.id,
+    customerName: booking.customer,
+    orderDate: booking.checkIn,
+    validityDate: booking.checkOut,
+    items: [
+      {
+        title: booking.facility,
+        price: booking.total_amount || 0
+      }
+    ]
+  }
+  showPOSModal.value = true
+}
+
+function closePOSModal() {
+  showPOSModal.value = false
+  posOrderData.value = {}
 }
 
 // Notification function

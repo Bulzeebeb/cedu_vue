@@ -53,6 +53,15 @@
               </svg>
               <span class="text-sm">User Accounts</span>
             </button>
+            <!--Logs Button -->
+            <button @click="goToLogs"
+              class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15 12h.01M12 15h.01M9 12h.01M12 9h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+              </svg>
+              <span class="text-sm">Logs</span>
+            </button>
             <!-- Main Menu Button -->
             <button @click="goToMainMenu"
               class="flex items-center gap-2 px-3 py-2 hover:bg-yellow-400 rounded transition w-full text-left">
@@ -131,6 +140,9 @@ function goToMyProfile() {
 }
 function goToUserAccounts() {
   router.visit('/accounts')
+}
+function goToLogs() {
+  router.visit('/logs')
 }
 function goToMainMenu() {
   router.visit('/adminchoice')

@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\AuditLog;
 
 class OrderController extends Controller
 {
@@ -17,6 +19,20 @@ class OrderController extends Controller
         try {
             // Change status to 'Completed' (with capital C) to match frontend expectations
             $order->update(['status' => 'Completed']);
+
+            // Audit Log
+            AuditLog::create([
+                'user_id' => Auth::guard('admin')->id(),
+                'action' => 'Marked Order as Paid',
+                'details' => json_encode([
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'total_amount' => $order->total_amount,
+                    'previous_status' => $order->getOriginal('status'),
+                    'new_status' => 'Completed'
+                ]),
+                'ip_address' => request()->ip(),
+            ]);
 
             return redirect()->back()->with('success', 'Order marked as paid successfully.');
         } catch (\Exception $e) {

@@ -7,7 +7,7 @@
     <main class="ml-64 flex-1 bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen p-10 text-[#5F1213]">
       <!-- Title -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold flex items-center gap-3">Manage Accounts</h1>
+        <h1 class="text-4xl font-bold flex items-center gap-3">Manage Admin and Staff Accounts</h1>
         <p class="text-gray-600 text-sm ml-1">Create, edit, and manage user accounts</p>
       </div>
 

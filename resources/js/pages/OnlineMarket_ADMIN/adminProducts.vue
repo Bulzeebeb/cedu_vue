@@ -54,7 +54,7 @@
           </div>
         </div>
         <div class="flex space-x-3">
-          <button @click="showAddChoiceModal = true" class="bg-[#5F1213] hover:bg-[#7d1a1e] text-white px-6 py-2 rounded-lg transition shadow-sm hover:shadow-md font-medium">
+          <button @click="showAddModal = true" class="bg-[#5F1213] hover:bg-[#7d1a1e] text-white px-6 py-2 rounded-lg transition shadow-sm hover:shadow-md font-medium">
             + Add Product
           </button>
           <button
@@ -217,7 +217,6 @@
     </main>
 
     <!-- Modals -->
-    <AddChoiceModal v-if="showAddChoiceModal" @close="showAddChoiceModal = false" @select-category="handleCategorySelect" />
     <AddProductModal v-if="showAddModal" :category="selectedCategory" @close="showAddModal = false" @add="handleAddProduct" />
     <EditProductModal v-if="showEditModal" :product="selectedProduct" @close="showEditModal = false" @save="saveEdit" />
     <DeleteProductModal
@@ -236,7 +235,6 @@
 import { ref, computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import axios from 'axios'
-import AddChoiceModal from './modals/addChoice.vue'
 import AddProductModal from './modals/AddProductModal.vue'
 import EditProductModal from './modals/EditProductModal.vue'
 import DeleteProductModal from './modals/DeleteProductModal.vue'
@@ -251,7 +249,6 @@ const props = defineProps({
 })
 
 const selectedIds = ref([])
-const showAddChoiceModal = ref(false)
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
@@ -423,7 +420,6 @@ const reloadProducts = () => {
 
 const handleCategorySelect = (category) => {
   selectedCategory.value = category
-  showAddChoiceModal.value = false
   showAddModal.value = true
 }
 

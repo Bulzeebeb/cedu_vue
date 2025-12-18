@@ -349,7 +349,7 @@ watch(numberOfGuests, (newCount) => {
           </div>
           <div class="p-5 text-center">
             <h3 class="font-bold text-xl text-gray-800 mb-1">{{ room.name }}</h3>
-            <p class="text-sm text-gray-600 mb-4">{{ room.price }} <span class="text-xs">/ per Pax</span></p>
+            <p class="text-sm text-gray-600 mb-4">{{ room.price }} <span class="text-xs"></span></p>
             <button
               class="bg-maroon text-white px-4 py-2 rounded-lg w-full font-medium hover:bg-maroon-dark transition disabled:bg-gray-400 disabled:cursor-not-allowed"
               :disabled="room.status === 'unavailable'"

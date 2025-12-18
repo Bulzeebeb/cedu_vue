@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
 use App\Models\Product;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use App\Models\AuditLog;
 
 class ProductController extends Controller
 {
@@ -38,7 +40,7 @@ class ProductController extends Controller
             $validated['image'] = Storage::url($imagePath);
         }
 
-        Product::create([
+        $product = Product::create([
             'name' => $validated['name'],
             'branch' => $validated['branch'],
             'category' => $validated['category'],
@@ -47,6 +49,20 @@ class ProductController extends Controller
             'unit' => $validated['unit'],
             'status' => $validated['stock'] > 0 ? 'Available' : 'Out of Stock',
             'image' => $validated['image']
+        ]);
+
+        // Audit Log
+        AuditLog::create([
+            'user_id' => Auth::guard('admin')->id(),
+            'action' => 'Created Product',
+            'details' => json_encode([
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'category' => $product->category,
+                'price' => $product->price,
+                'stock' => $product->stock
+            ]),
+            'ip_address' => $request->ip(),
         ]);
 
         return redirect()->back()->with('success', 'Product added successfully!');
@@ -89,6 +105,18 @@ class ProductController extends Controller
             $path = str_replace('/storage/', 'public/', $product->image);
             Storage::delete($path);
         }
+
+        // Audit Log
+        AuditLog::create([
+            'user_id' => Auth::guard('admin')->id(),
+            'action' => 'Deleted Product',
+            'details' => json_encode([
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'category' => $product->category
+            ]),
+            'ip_address' => request()->ip(),
+        ]);
 
         $product->delete();
 

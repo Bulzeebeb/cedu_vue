@@ -229,12 +229,6 @@ function markAllAsRead() {
           class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
           <i class="fas fa-chart-bar"></i> Reports
         </a>
-
-        <!-- Logs -->
-        <a href="#" @click.prevent="goToLogs"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200">
-          <i class="fas fa-file-alt"></i> Logs
-        </a>
       </nav>
     </div>
 

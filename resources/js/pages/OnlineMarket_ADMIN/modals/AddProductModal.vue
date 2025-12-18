@@ -149,7 +149,7 @@ const form = useForm({
 
 // Egg size state
 const selectedEggSize = ref('')
-const eggSizes = ['Peewee', 'Small', 'Medium', 'Large', 'Extra-Large', 'Jumbo']
+const eggSizes = ['Under Size Pewee', 'Pewee', 'Small', 'Medium', 'Large', 'Extra-Large', 'Jumbo']
 
 // Computed property to check if product is egg
 const isEggProduct = computed(() => {
@@ -179,7 +179,7 @@ watch([() => form.category, () => form.name, () => selectedEggSize.value], ([cat
   if (cat === 'vegetables' || cat === 'fruits') {
     form.unit = '/kilo'
   } else if (cat === 'poultry') {
-    if (lowerName.includes('')) {
+    if (lowerName.includes('egg')) {
       form.unit = eggSize ? ` - ${eggSize}` : ''
     } else if (lowerName.includes('dung')) {
       form.unit = '/sack'

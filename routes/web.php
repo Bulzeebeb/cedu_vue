@@ -35,6 +35,10 @@ use App\Http\Controllers\PayPark\PayParkTransactionController;
 use App\Http\Controllers\PayPark\PayParkHistoryController;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Http\Controllers\PayPark\ParkingSettingsController;
+
 
 
 Route::post('/admin/account/store', [AdminAccountController::class, 'store']);
@@ -174,48 +178,42 @@ Route::prefix('admin')->group(function () {
 // 🔐 SUPER ADMIN AUTH ROUTES
 // ======================
 
-Route::get('/superadmindashboard', function () {
-    return Inertia::render('adminFinal/adminDashboard');
-})->name('superadmindashboard');
-
-Route::get('/superadminpay2parkupdate', function () {
-    return Inertia::render('adminFinal/PtPUpdate');
-})->name('superadminpay2parkupdate');
-
-Route::get('/superadminonlinemarketupdate', function () {
-    return Inertia::render('adminFinal/onlineMarketUpdate');
-})->name('superadminonlinemarketupdate');
+Route::get('/superadmindashboard', [\App\Http\Controllers\SuperAdminDashboardController::class, 'index'])->name('superadmindashboard');
 
 Route::get('/superadminupdatefacility', function () {
-    return Inertia::render('adminFinal/updateFaci');
+    return Inertia::render('SuperAdminFinal/updateFaci');
 })->name('superadminupdatefacility');
 
-Route::get('/superadminpay2parkreport', function () {
-    return Inertia::render('adminFinal/PtPReport');
-})->name('superadminpay2parkreport');
-
 Route::get('/superadminonlinemarketreport', function () {
-    return Inertia::render('adminFinal/onlineMarketReports');
+    return Inertia::render('SuperAdminFinal/onlineMarketReports');
 })->name('superadminonlinemarketreport');
 
 Route::get('/superadminfacilityreport', function () {
-    return Inertia::render('adminFinal/reportFaci');
+    return Inertia::render('SuperAdminFinal/UseFaciReports');
 })->name('superadminfacilityreport');
 
 Route::get('/superadminlogs', function () {
-    return Inertia::render('adminFinal/adminLogs');
+    return Inertia::render('SuperAdminFinal/adminLogs');
 })->name('superadminlogs');
 
+Route::get('/adminstafflogs', function () {
+    return Inertia::render('SuperAdminFinal/AdminStaffLogs');
+})->name('adminstafflogs');
+
 Route::get('/superadminprofile', function () {
-    return Inertia::render('adminFinal/adminProfile');
+    return Inertia::render('SuperAdminFinal/adminProfile');
 })->name('superadminprofile');
 
 Route::get('/superadminmanageaccount', function () {
-    return Inertia::render('adminFinal/manageAccount');
+    return Inertia::render('SuperAdminFinal/manageAccount');
 })->name('superadminmanageaccount');
 
+Route::get('/superadminclientaccount', function () {
+    return Inertia::render('SuperAdminFinal/clientAccount');
+})->name('superadminclientaccount');
+
 Route::get('/sidebar', function () {
-    return Inertia::render('adminFinal/sidebar');
+    return Inertia::render('SuperAdminFinal/sidebar');
 })->name('sidebar');
 
 
@@ -404,7 +402,9 @@ Route::get('/use-of-facilities/rental', [FacilityController::class, 'showRental'
 // ======================
 // ✅ Landing page
 
-
+Route::get('/paytoparklandingpage', function () {
+    return Inertia::render('PayToPark/client_Dashboard');
+});
 
 Route::middleware('auth:admin')->group(function () {
     Route::get('/logs', [AuditLogController::class, 'index'])
@@ -422,7 +422,6 @@ Route::get('/pay_park_client/{id}', [PayParkClientController::class, 'show']);
 Route::get('/paypark_transactions/{id}', [PayParkTransactionController::class, 'show']);
 
 //newly added sa p2p
-use App\Http\Controllers\PayPark\ParkingSettingsController;
 Route::post('/parking-settings', [ParkingSettingsController::class, 'store'])->name('parking-settings.store');
 
 Route::middleware('auth:admin')->group(function () {
@@ -438,23 +437,49 @@ Route::get('/managep2p', function () {
 })->name('managep2p');
 
 // Main dashboard route
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/staffdashboardPayToPark', [PayParkClientController::class, 'index'])
+        ->name('staffdashboardPayToPark');
 
-
-Route::get('/staffdashboardPayToPark', [PayParkClientController::class, 'index'])
-    ->name('staffdashboardPayToPark');
-
-
-Route::get('/paypark_transactions/today-with-clients', [PayParkTransactionController::class, 'paidTodayWithClients']);
+    Route::get('/paypark_transactions/today-with-clients', [PayParkTransactionController::class, 'paidTodayWithClients']);
+});
 
 
 
 Route::post('/paytopark/transactions', [PayParkTransactionController::class, 'store']);
 
 use App\Http\Controllers\PayPark\PayParkDashboardController;
+use App\Http\Controllers\PayPark\StaffDashboardController;
 
 Route::get('/dashboard', [PayParkDashboardController::class, 'index'])->name('dashboard');
 
-
+// ✅ Staff Dashboard Routes
+Route::middleware('auth:admin')->prefix('staff-dashboard')->name('staff.dashboard.')->group(function () {
+    // Main dashboard page
+    Route::get('/', [StaffDashboardController::class, 'index'])->name('index');
+    
+    // Dashboard statistics and summary
+    Route::get('/stats', [StaffDashboardController::class, 'getDashboardStats'])->name('stats');
+    Route::get('/summary', [StaffDashboardController::class, 'getDashboardSummary'])->name('summary');
+    
+    // Client management
+    Route::post('/clients', [StaffDashboardController::class, 'createClient'])->name('clients.create');
+    Route::get('/clients', [StaffDashboardController::class, 'getFilteredClients'])->name('clients.list');
+    Route::get('/clients/{id}', [StaffDashboardController::class, 'getClient'])->name('clients.show');
+    Route::put('/clients/{id}', [StaffDashboardController::class, 'updateClient'])->name('clients.update');
+    
+    // QR Code scanning
+    Route::post('/scan-qr', [StaffDashboardController::class, 'scanQRCode'])->name('scan-qr');
+    
+    // Client checkout
+    Route::post('/checkout/{id}', [StaffDashboardController::class, 'checkoutClient'])->name('checkout');
+    
+    // Transaction management
+    Route::post('/transactions', [StaffDashboardController::class, 'createTransaction'])->name('transactions.create');
+    
+    // Parking history
+    Route::get('/history', [StaffDashboardController::class, 'getParkingHistory'])->name('history');
+});
 
 // Fetch all clients
 Route::get('/clients', [PayParkClientController::class, 'index'])->name('clients.index');
@@ -492,48 +517,11 @@ Route::get('/edit_Form/{id}', function ($id) {
 
 Route::get('/parking_History', [PayParkHistoryController::class, 'index'])->name('parking.history');
 
+// Dashboard stats endpoint (for backward compatibility with frontend)
+Route::get('/dashboard-stats', [StaffDashboardController::class, 'getDashboardStats'])->name('dashboard.stats');
 
-use Illuminate\Support\Facades\DB;
-
-
-// ======================
-// 🔧 PAY2PARK STAFF ROUTES
-// ======================
-
-
-
-use Carbon\Carbon;
-
-Route::get('/dashboard-stats', function () {
-    $today = Carbon::today();
-
-    return [
-        'totalVehiclesParkedToday' => DB::table('pay_park_clients')
-            ->whereDate('time_in', $today)
-            ->count(),
-
-        'vehiclesStillIn' => DB::table('pay_park_clients')
-            ->whereNull('time_out')
-            ->count(),
-
-        'vehiclesOutToday' => DB::table('pay_park_clients')
-            ->whereDate('time_out', $today)
-            ->count(),
-
-        'totalSalesToday' => DB::table('paypark_transactions')
-            ->whereDate('transaction_date', $today)
-            ->sum('total_payment'),
-    ];
-});
-
-
-
-// ======================
-// 🔧 PAY2PARK CLIENT ROUTES
-// ======================
-Route::get('/paytoparklandingpage', function () {
-    return Inertia::render('PayToPark/client_Dashboard');
-});
+// PayToPark checkout endpoint (for frontend compatibility)
+Route::post('/paytopark/checkout/{id}', [StaffDashboardController::class, 'checkoutClient'])->name('paytopark.checkout');
 
 Route::post('/paytopark/scan', [PayParkTransactionController::class, 'scan']);
 
@@ -595,9 +583,12 @@ Route::get('/use/reports', function () {
     ]);
 });
 
-Route::get('/use/logs', function () {
+// API Routes - MUST BE BEFORE INERTIA ROUTES
+Route::get('/api/activity-logs', [LogController::class, 'getLogs']);
+
+Route::get('/logs', function () {
     $admin = Auth::guard('admin')->user();
-    return Inertia::render('UseFaci_ADMIN/admin_Logs', [
+    return Inertia::render('zAdminChoicePage/admin_Logs', [
         'admin' => $admin
     ]);
 });

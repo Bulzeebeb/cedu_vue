@@ -268,6 +268,7 @@
                   >
                     <option value="per night">Per Night</option>
                     <option value="per day">Per Day</option>
+                    <option value="per hour">Per Hour</option>
                     <option value="per month">Per Month</option>
                   </select>
                 </div>

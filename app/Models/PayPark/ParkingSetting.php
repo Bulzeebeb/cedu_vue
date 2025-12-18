@@ -14,6 +14,6 @@ class ParkingSetting extends Model
         'overtime_fee',
         'overnight_fee',
         'opening_hour',
-        'closing_hour',
+        'closing_hour'
     ];
 }

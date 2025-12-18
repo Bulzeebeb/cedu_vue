@@ -5,9 +5,9 @@
     <main class="ml-64 flex-1 bg-gradient-to-br from-gray-50 to-gray-200 p-10">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-[#5F1213] flex items-center gap-2">
-          <i class=""></i> Log History
+          <i class="fas fa-history"></i> Super Admin Logs
         </h1>
-        <p class="text-gray-700 mt-1 text-sm">Super Admin overview of all Admin and Staff activities</p>
+        <p class="text-gray-700 mt-1 text-sm">Super Admin activities</p>
       </div>
 
       <!-- Filters -->

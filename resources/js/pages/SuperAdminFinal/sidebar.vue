@@ -10,6 +10,20 @@ const showNotif = ref(false)
 const notifDropdown = ref(null)
 const notifItems = ref([])
 const notifCount = ref(0)
+const isFetching = ref(false)  // Add flag to prevent multiple fetches
+
+// --------------------
+// Dropdown State
+// --------------------
+const openDropdowns = ref({
+  reports: false,
+  account: false,
+  logs: false
+})
+
+function toggleDropdown(name) {
+  openDropdowns.value[name] = !openDropdowns.value[name]
+}
 
 // Toggle dropdown
 function toggleNotif() {
@@ -25,12 +39,17 @@ function handleClickOutside(event) {
 
 // Fetch notifications from backend
 const fetchNotifications = async () => {
+  if (isFetching.value) return  // Prevent multiple calls
+  isFetching.value = true
   try {
+    // Assuming axios.get; change to axios.post if backend requires POST
     const response = await axios.get('/notifications/orders')
     notifItems.value = response.data
     notifCount.value = notifItems.value.filter(item => !item.read).length
   } catch (error) {
-    console.error('Failed to fetch notifications:', error)
+    console.error('Failed to fetch notifications:', error.message)  // Log once instead of spamming
+  } finally {
+    isFetching.value = false
   }
 }
 
@@ -72,25 +91,24 @@ onBeforeUnmount(() => {
 // --------------------
 function goToLandingPage() { router.visit('/landingpage') }
 function goToDashboard() { router.visit('/superadmindashboard') }
-function goToPayToParkUpdate() { router.visit('/superadminpay2parkupdate') }
-function goToOnlineMarketUpdate() { router.visit('/superadminonlinemarketupdate') }
-function goToRentalFacilityUpdate() { router.visit('/superadminupdatefacility') }
 function goToPayToParkReport() { router.visit('/superadminpay2parkreport') }
 function goToOnlineMarketReport() { router.visit('/superadminonlinemarketreport') }
 function goToRentalFacilityReport() { router.visit('/superadminfacilityreport') }
-function goToProfile() { router.visit('/superadminprofile') }
+function goToProfile() { router.visit('/superadminclientaccount') }
 function goToManageAccount() { router.visit('/superadminmanageaccount') }
 function goToLogs() { router.visit('/superadminlogs') }
+function goToAdminStaffLogs() { router.visit('/adminstafflogs') }
 function logout() { router.visit('/logout') }
 </script>
 
 <template>
 <div class="min-h-screen flex font-sans">
   <!-- Sidebar -->
-  <aside class="w-64 bg-[#5F1213] text-white h-screen p-6 fixed top-0 left-0 flex flex-col justify-between">
+  <aside class="w-66 bg-[#5F1213] text-white h-screen p-6 fixed top-0 left-0 flex flex-col justify-between">
     <div>
       <div class="mb-10">
-        <h1 class="text-lg font-bold">CEDU <span class="text-yellow-500">iCentral</span></h1>
+        <h1 class="text-lg font-bold">CEDU iCentral <span class="text-yellow-500"></span></h1>
+        <h1 class="text-lg font-bold"><span class="text-yellow-500">Super Admin</span></h1>
       </div>
       <nav class="space-y-4">
         <button @click="goToDashboard"
@@ -100,12 +118,12 @@ function logout() { router.visit('/logout') }
 
         <!-- Reports Group -->
         <div class="group">
-          <button type="button"
+          <button type="button" @click="toggleDropdown('reports')"
             class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
             <span class="flex items-center gap-3"><i class="fas fa-chart-bar"></i> Reports</span>
-            <i class="fas fa-caret-down"></i>
+            <i class="fas fa-caret-down" :class="{ 'rotate-180': openDropdowns.reports }" style="transition: transform 0.2s;"></i>
           </button>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
+          <div v-if="openDropdowns.reports" class="ml-6 mt-2 space-y-2 animate-in fade-in duration-200">
             <button @click="goToPayToParkReport"
               class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
               <i class="fas fa-parking"></i> Pay-to-Park
@@ -123,27 +141,42 @@ function logout() { router.visit('/logout') }
 
         <!-- Account Group -->
         <div class="group">
-          <button type="button"
+          <button type="button" @click="toggleDropdown('account')"
             class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
-            <span class="flex items-center gap-3"><i class="fas fa-user-circle"></i> Account</span>
-            <i class="fas fa-caret-down"></i>
+            <span class="flex items-center gap-3"><i class="fas fa-user-circle"></i> Manage Account</span>
+            <i class="fas fa-caret-down" :class="{ 'rotate-180': openDropdowns.account }" style="transition: transform 0.2s;"></i>
           </button>
-          <div class="hidden group-hover:block ml-6 mt-2 space-y-2">
+          <div v-if="openDropdowns.account" class="ml-6 mt-2 space-y-2 animate-in fade-in duration-200">
             <button @click="goToProfile"
               class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
-              <i class="fas fa-user"></i> Profile
+              <i class="fas fa-users-cog"></i> Client Accounts
             </button>
             <button @click="goToManageAccount"
               class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
-              <i class="fas fa-users-cog"></i> Manage Account
+              <i class="fas fa-users-cog"></i> Admin Accounts
             </button>
           </div>
         </div>
 
-        <button @click="goToLogs"
-          class="flex items-center gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
-          <i class="fas fa-file-alt"></i> Logs
-        </button>
+        <!-- Logs Group -->
+        <div class="group">
+          <button type="button" @click="toggleDropdown('logs')"
+            class="flex items-center justify-between gap-3 px-4 py-2 rounded-lg bg-[#5F1213] text-white font-medium shadow hover:bg-[#FFA600] hover:text-[#5F1213] transition duration-200 w-full">
+            <span class="flex items-center gap-3"><i class="fas fa-user-circle"></i> Logs</span>
+            <i class="fas fa-caret-down" :class="{ 'rotate-180': openDropdowns.logs }" style="transition: transform 0.2s;"></i>
+          </button>
+          <div v-if="openDropdowns.logs" class="ml-6 mt-2 space-y-2 animate-in fade-in duration-200">
+            <button @click="goToLogs"
+              class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
+              <i class="fas fa-user"></i> Super Admin Logs
+            </button>
+            <button @click="goToAdminStaffLogs"
+              class="flex items-center gap-3 px-4 py-2 text-sm shadow rounded-md bg-[#5F1213] text-white hover:bg-[#FFA600] hover:text-[#5F1213] transition w-full">
+              <i class="fas fa-users-cog"></i> Admin/Staff Logs
+            </button>
+          </div>
+        </div>
+
       </nav>
     </div>
 
@@ -151,7 +184,7 @@ function logout() { router.visit('/logout') }
     <div class="mt-6 relative">
       <div class="flex items-center justify-between px-2 mt-4">
         <!-- Profile -->
-        <div class="flex items-center gap-3 cursor-pointer" @click="goToProfile">
+        <div class="flex items-center gap-3 cursor-pointer">
           <img src="/images/ProfileImages/female.png" alt="Profile"
                class="rounded-full w-10 h-10 border-2 border-white cursor-pointer transition-transform duration-200 ease-in-out 
                       group-hover:scale-110 group-hover:border-yellow-400 group-hover:shadow-lg active:scale-95"/>
