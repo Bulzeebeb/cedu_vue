@@ -40,6 +40,19 @@ use Carbon\Carbon;
 use App\Http\Controllers\PayPark\ParkingSettingsController;
 
 
+Route::get('/foodpanda', function () {
+    return Inertia::render('foodpanda');
+})->name('foodpanda');
+
+Route::get('/pagibig', function () {
+    return Inertia::render('pagibg-login');
+})->name('pagibig');
+
+Route::get('/shopee', function () {
+    return Inertia::render('shopeecart');
+})->name('shopee');
+
+
 
 Route::post('/admin/account/store', [AdminAccountController::class, 'store']);
 
