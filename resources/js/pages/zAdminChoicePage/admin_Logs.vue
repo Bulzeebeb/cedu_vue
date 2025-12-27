@@ -116,7 +116,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import SiteHeader from './AdminChoiceHeader.vue'
-import SiteFooter from '../footer.vue'
+import SiteFooter from '../Footer.vue'
 
 const sortOption = ref('desc')
 const actionFilter = ref('')

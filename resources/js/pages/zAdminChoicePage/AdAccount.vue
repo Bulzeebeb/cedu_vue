@@ -75,7 +75,7 @@
 
 <script setup>
 import SiteHeader from './AdminChoiceHeader.vue'
-import Footer from '../footer.vue'
+import Footer from '../Footer.vue'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'

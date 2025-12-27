@@ -150,7 +150,7 @@
 import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import SiteHeader from '../zClientChoicePage/cHeader.vue'
-import SiteFooter from '../footer.vue'
+import SiteFooter from '../Footer.vue'
 
 // Props from backend
 const props = defineProps({

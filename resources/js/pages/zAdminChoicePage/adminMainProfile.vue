@@ -418,7 +418,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { Link, usePage, router } from '@inertiajs/vue3'
 import SiteHeader from './AdminChoiceHeader.vue'
-import Footer from '../footer.vue'
+import Footer from '../Footer.vue'
 import Swal from 'sweetalert2'
 
 const page = usePage()

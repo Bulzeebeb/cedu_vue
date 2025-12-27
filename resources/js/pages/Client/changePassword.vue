@@ -87,7 +87,7 @@ import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import axios from 'axios'
 import SiteHeader from '../zClientChoicePage/cHeader.vue'
-import SiteFooter from '../footer.vue'
+import SiteFooter from '../Footer.vue'
 
 const otpSent = ref(false)
 

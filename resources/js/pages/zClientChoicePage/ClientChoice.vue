@@ -38,7 +38,7 @@
 
 <script>
 import SiteHeader from './cHeader.vue'
-import Footer from '../footer.vue'
+import Footer from '../Footer.vue'
 import { router } from '@inertiajs/vue3'
 
 export default {

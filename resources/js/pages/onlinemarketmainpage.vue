@@ -106,8 +106,8 @@ function goToPoultry() {
 </template>
 
 <script>
-import SiteHeader from './header.vue';
-import SiteFooter from './footer.vue';
+import SiteHeader from './Header.vue';
+import SiteFooter from './Footer.vue';
 
 export default {
   name: 'CEDUOnlineMarketLanding',

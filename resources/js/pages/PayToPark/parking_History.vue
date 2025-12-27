@@ -131,7 +131,7 @@
 import { ref, computed, toRef } from 'vue'
 import jsPDF from 'jspdf'
 import SiteHeader from './staffHeader.vue'
-import SiteFooter from '../footer.vue'
+import SiteFooter from '../Footer.vue'
 
 const props = defineProps({
   entries: {

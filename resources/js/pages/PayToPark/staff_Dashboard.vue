@@ -8,7 +8,7 @@ import Tesseract from 'tesseract.js'
 const page = usePage()
 
 import Header from './staffHeader.vue'
-import Footer from '../footer.vue'
+import Footer from '../Footer.vue'
 import ClientFormModal from '@/pages/PayToPark/components/ClientFormModal.vue'
 import EditClientModal from '@/pages/PayToPark/components/EditClientModal.vue'
 import DailyPOSModal from '@/pages/PayToPark/components/DailyPOSModal.vue'

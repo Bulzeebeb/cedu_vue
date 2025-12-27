@@ -134,17 +134,14 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import Header from './Header.vue'
-import Footer from './footer.vue'
-
-export default {
-  name: 'AboutUs',
+import Footer from './Footer.vue'
   components: {
     Header,
     Footer
   }
-}
+
 </script>
 
 <style scoped>
