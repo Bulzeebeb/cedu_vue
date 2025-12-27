@@ -106,7 +106,7 @@ function goToPoultry() {
 </template>
 
 <script>
-import SiteHeader from './Header.vue';
+import SiteHeader from './header.vue';
 import SiteFooter from './footer.vue';
 
 export default {

@@ -12,7 +12,7 @@ function omLandingPage() {
 function goToFacilities() {
   router.visit('/facilities')
 }
-import Header from './Header.vue'
+import Header from './header.vue'
 import Footer from './footer.vue'
 </script>
 
