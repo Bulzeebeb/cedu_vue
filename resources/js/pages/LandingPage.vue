@@ -147,7 +147,7 @@
 </template>
 
 <script>
-import Header from './header.vue'
+import Header from './Header.vue'
 import Footer from './footer.vue'
 
 // Swiper imports

@@ -1,6 +1,4 @@
 <script setup>
-import Header from './header.vue'
-import Footer from './footer.vue'
 import { router } from '@inertiajs/vue3'
 
 function goToVegetable() {
@@ -108,7 +106,7 @@ function goToPoultry() {
 </template>
 
 <script>
-import SiteHeader from './header.vue';
+import SiteHeader from './Header.vue';
 import SiteFooter from './footer.vue';
 
 export default {

@@ -18,7 +18,7 @@ const goToRental = () => {
   router.visit('/use-of-facilities/rental') 
 }
 
-import Header from './header.vue'
+import Header from './Header.vue'
 import Footer from './footer.vue'
 </script>
 
